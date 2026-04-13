@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Variables CSS (tokens sincronizados con Tailwind) ────────────────────── */
+:root {
+  --color-primary: #00696b;
+  --color-primary-container: #00ced1;
+  --color-secondary: #a43c12;
+  --color-secondary-container: #fe7e4f;
+  --color-surface: #fafaeb;
+  --color-on-surface: #1b1c14;
+  --font-display: 'Manrope', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  color-scheme: light;
+}
+
+/* ── Base ──────────────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  background-color: #fafaeb;
+  color: #1b1c14;
+  font-family: 'Inter', sans-serif;
+  min-height: 100dvh;
+}
+
+#root {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Scrollbar personalizado (atelier aesthetic) ──────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #efefe0; }
+::-webkit-scrollbar-thumb { background: #bac9c9; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #6b7a7a; }
+
+/* ── Selección de texto con color primario ───────────────────────────────── */
+::selection { background: #00ced1; color: #ffffff; }
+
+/* ── Glassmorphism utility ──────────────────────────────────────────────── */
+.glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Gradiente primario (botones, acentos) ───────────────────────────────── */
+.gradient-primary {
+  background: linear-gradient(135deg, #00696b 0%, #00ced1 100%);
+}
+
+.gradient-secondary {
+  background: linear-gradient(135deg, #a43c12 0%, #fe7e4f 100%);
+}
+
+/* ── Animaciones micro ───────────────────────────────────────────────────── */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.25s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.15s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── No-Line rule: rows alternados sin <hr> ─────────────────────────────── */
+.row-alt:nth-child(even) { background-color: #f4f5e6; }
+.row-alt:nth-child(odd)  { background-color: #fafaeb; }
+
+/* ── Focus ring accesible ────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid #00696b;
+  outline-offset: 2px;
+  border-radius: 4px;
+}

@@ -1,0 +1,406 @@
+// ============================================================
+// Disfracesly — Prisma Schema
+// Mapeo 1:1 con ultimate.sql (gestion schema, 23 tablas, 6 enums)
+// DATABASE_URL debe incluir ?schema=gestion para que Prisma
+// use ese schema como search_path.
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum EstadoPiezaStock {
+  DISPONIBLE
+  RESERVADA
+  ALQUILADA
+  VENDIDA
+  FUERA_DE_SERVICIO
+}
+
+enum EtapaAlquiler {
+  RESERVADO
+  LISTO_PARA_RETIRO
+  RETIRADO
+  DEVUELTO
+  CANCELADO
+}
+
+enum EtapaVenta {
+  RESERVADO
+  LISTO_PARA_ENTREGA
+  ENTREGADO
+  VENDIDO
+  CANCELADO
+}
+
+enum TipoInteraccion {
+  RETIRO
+  DEVOLUCION
+  OTRA
+}
+
+enum TipoPago {
+  SENA
+  DEPOSITO
+  SALDO
+  DEVOLUCION_DEPOSITO
+  AJUSTE
+}
+
+enum MetodoPago {
+  EFECTIVO
+  TRANSFERENCIA
+}
+
+// ============================================================
+// CATÁLOGO / INVENTARIO
+// ============================================================
+
+model CategoriaMotivo {
+  id_categoria_motivo BigInt    @id @default(autoincrement())
+  nombre              String    @db.VarChar(100)
+  descripcion         String?
+  deleted_at          DateTime?
+
+  piezas   PiezaCategoria[]
+  imagenes CategoriaMotivoImagen[]
+
+  @@map("categoria_motivo")
+}
+
+model Pieza {
+  id_pieza    BigInt    @id @default(autoincrement())
+  nombre      String    @db.VarChar(100)
+  descripcion String?
+  deleted_at  DateTime?
+
+  categorias PiezaCategoria[]
+  disfraces  DisfrazPieza[]
+  stocks     PiezaStock[]
+  imagenes   PiezaImagen[]
+
+  @@map("pieza")
+}
+
+model Disfraz {
+  id_disfraz  BigInt    @id @default(autoincrement())
+  nombre      String    @db.VarChar(100)
+  descripcion String?
+  deleted_at  DateTime?
+
+  piezas   DisfrazPieza[]
+  imagenes DisfrazImagen[]
+
+  @@map("disfraz")
+}
+
+// Tabla pivot: pieza ↔ categoria_motivo
+model PiezaCategoria {
+  id_pieza_categoria  BigInt @id @default(autoincrement())
+  id_pieza            BigInt
+  id_categoria_motivo BigInt
+
+  pieza           Pieza           @relation(fields: [id_pieza], references: [id_pieza])
+  categoriaMotivo CategoriaMotivo @relation(fields: [id_categoria_motivo], references: [id_categoria_motivo])
+
+  @@unique([id_pieza, id_categoria_motivo])
+  @@map("pieza_categoria")
+}
+
+// Tabla pivot: disfraz ↔ pieza
+model DisfrazPieza {
+  id_disfraz_pieza BigInt @id @default(autoincrement())
+  id_disfraz       BigInt
+  id_pieza         BigInt
+
+  disfraz Disfraz @relation(fields: [id_disfraz], references: [id_disfraz])
+  pieza   Pieza   @relation(fields: [id_pieza], references: [id_pieza])
+
+  @@unique([id_disfraz, id_pieza])
+  @@map("disfraz_pieza")
+}
+
+// Unidad física de stock de una pieza
+model PiezaStock {
+  id_pieza_stock     BigInt           @id @default(autoincrement())
+  id_pieza           BigInt
+  talle              String?          @db.VarChar(20)
+  medidas            String?
+  estado_pieza_stock EstadoPiezaStock @default(DISPONIBLE)
+  descripcion        String?
+  deleted_at         DateTime?
+
+  pieza    Pieza              @relation(fields: [id_pieza], references: [id_pieza])
+  detalles OperacionDetalle[]
+  imagenes PiezaStockImagen[]
+
+  @@map("pieza_stock")
+}
+
+// ============================================================
+// PERSONAS Y SEGURIDAD
+// ============================================================
+
+model Persona {
+  id_persona BigInt    @id @default(autoincrement())
+  documento  String    @unique @db.VarChar(20)
+  nombre     String    @db.VarChar(100)
+  apellido   String    @db.VarChar(100)
+  deleted_at DateTime?
+
+  usuario       Usuario?
+  cliente       Cliente?
+  interacciones InteraccionOperacion[]
+  pagos         PagoOperacion[]
+
+  @@map("persona")
+}
+
+model Rol {
+  id_rol      BigInt  @id @default(autoincrement())
+  nombre      String  @unique @db.VarChar(60)
+  descripcion String? @db.VarChar(255)
+
+  permisos RolPermiso[]
+  usuarios Usuario[]
+
+  @@map("rol")
+}
+
+model Permiso {
+  id_permiso  BigInt  @id @default(autoincrement())
+  nombre      String  @unique @db.VarChar(80)
+  descripcion String? @db.VarChar(255)
+
+  roles RolPermiso[]
+
+  @@map("permiso")
+}
+
+// Tabla pivot: rol ↔ permiso
+model RolPermiso {
+  id_rol     BigInt
+  id_permiso BigInt
+
+  rol     Rol     @relation(fields: [id_rol], references: [id_rol])
+  permiso Permiso @relation(fields: [id_permiso], references: [id_permiso])
+
+  @@id([id_rol, id_permiso])
+  @@map("rol_permiso")
+}
+
+model Usuario {
+  id_usuario BigInt    @id @default(autoincrement())
+  id_persona BigInt    @unique
+  id_rol     BigInt
+  correo     String    @unique @db.VarChar(100)
+  contrasena String
+  deleted_at DateTime?
+
+  persona       Persona                @relation(fields: [id_persona], references: [id_persona])
+  rol           Rol                    @relation(fields: [id_rol], references: [id_rol])
+  interacciones InteraccionOperacion[]
+
+  @@map("usuario")
+}
+
+model Cliente {
+  id_cliente  BigInt    @id @default(autoincrement())
+  id_persona  BigInt    @unique
+  domicilio   String?   @db.VarChar(255)
+  telefono    String    @db.VarChar(50)
+  fecha_alta  DateTime  @default(now()) @db.Date
+  motivo_baja String?   @db.VarChar(255)
+  deleted_at  DateTime?
+
+  persona     Persona     @relation(fields: [id_persona], references: [id_persona])
+  operaciones Operacion[]
+
+  @@map("cliente")
+}
+
+// ============================================================
+// OPERACIONES
+// ============================================================
+
+model Operacion {
+  id_operacion       BigInt    @id @default(autoincrement())
+  id_cliente         BigInt
+  fecha_constitucion DateTime  @default(now())
+  fecha_retiro       DateTime?
+  monto_total        Decimal   @default(0) @db.Decimal(12, 2)
+  observaciones      String?
+  deleted_at         DateTime?
+
+  cliente       Cliente                @relation(fields: [id_cliente], references: [id_cliente])
+  detalles      OperacionDetalle[]
+  alquiler      Alquiler?
+  venta         Venta?
+  interacciones InteraccionOperacion[]
+  pagos         PagoOperacion[]
+
+  @@map("operacion")
+}
+
+// Detalle de las piezas de stock dentro de la operación
+model OperacionDetalle {
+  id_operacion_detalle BigInt @id @default(autoincrement())
+  id_operacion         BigInt
+  id_pieza_stock       BigInt
+
+  operacion  Operacion  @relation(fields: [id_operacion], references: [id_operacion])
+  piezaStock PiezaStock @relation(fields: [id_pieza_stock], references: [id_pieza_stock])
+
+  @@unique([id_operacion, id_pieza_stock])
+  @@map("operacion_detalle")
+}
+
+// Subtipo ALQUILER (XOR con venta, enforced por trigger en DB)
+model Alquiler {
+  id_alquiler               BigInt        @id @default(autoincrement())
+  id_operacion              BigInt        @unique
+  etapa                     EtapaAlquiler @default(RESERVADO)
+  fecha_devolucion          DateTime?
+  deposito_monto            Decimal       @default(0) @db.Decimal(12, 2)
+  deposito_devuelto_monto   Decimal       @default(0) @db.Decimal(12, 2)
+  deposito_motivo_retencion String?       @db.VarChar(255)
+
+  operacion Operacion @relation(fields: [id_operacion], references: [id_operacion])
+
+  @@map("alquiler")
+}
+
+// Subtipo VENTA (XOR con alquiler, enforced por trigger en DB)
+model Venta {
+  id_venta                 BigInt     @id @default(autoincrement())
+  id_operacion             BigInt     @unique
+  etapa                    EtapaVenta @default(RESERVADO)
+  fecha_entrega_estimada   DateTime?
+  especificaciones_medidas String?
+  sena_monto               Decimal    @default(0) @db.Decimal(12, 2)
+
+  operacion Operacion @relation(fields: [id_operacion], references: [id_operacion])
+
+  @@map("venta")
+}
+
+// ============================================================
+// INTERACCIONES Y PAGOS
+// ============================================================
+
+model InteraccionOperacion {
+  id_interaccion_operacion BigInt          @id @default(autoincrement())
+  id_usuario               BigInt
+  id_persona               BigInt
+  id_operacion             BigInt
+  tipo                     TipoInteraccion
+  fecha_hora               DateTime        @default(now())
+  observaciones            String?
+  deleted_at               DateTime?
+
+  usuario   Usuario   @relation(fields: [id_usuario], references: [id_usuario])
+  persona   Persona   @relation(fields: [id_persona], references: [id_persona])
+  operacion Operacion @relation(fields: [id_operacion], references: [id_operacion])
+
+  @@map("interaccion_operacion")
+}
+
+model PagoOperacion {
+  id_pago_operacion BigInt     @id @default(autoincrement())
+  id_persona        BigInt
+  id_operacion      BigInt
+  tipo              TipoPago
+  metodo            MetodoPago
+  monto             Decimal    @db.Decimal(12, 2)
+  fecha             DateTime   @default(now())
+  deleted_at        DateTime?
+
+  persona   Persona   @relation(fields: [id_persona], references: [id_persona])
+  operacion Operacion @relation(fields: [id_operacion], references: [id_operacion])
+
+  @@map("pago_operacion")
+}
+
+// ============================================================
+// IMÁGENES (sistema polimórfico por tabla de unión)
+// ============================================================
+
+model Imagen {
+  id_imagen     BigInt    @id @default(autoincrement())
+  url           String
+  thumbnail_url String?
+  texto_alt     String?   @db.VarChar(255)
+  fecha_subida  DateTime  @default(now())
+  deleted_at    DateTime?
+
+  piezas     PiezaImagen[]
+  stocks     PiezaStockImagen[]
+  disfraces  DisfrazImagen[]
+  categorias CategoriaMotivoImagen[]
+
+  @@map("imagen")
+}
+
+model PiezaImagen {
+  id_pieza_imagen BigInt  @id @default(autoincrement())
+  id_pieza        BigInt
+  id_imagen       BigInt
+  es_principal    Boolean @default(false)
+  orden           Int     @default(0) @db.SmallInt
+
+  pieza  Pieza  @relation(fields: [id_pieza], references: [id_pieza])
+  imagen Imagen @relation(fields: [id_imagen], references: [id_imagen])
+
+  @@unique([id_pieza, id_imagen])
+  @@map("pieza_imagen")
+}
+
+model PiezaStockImagen {
+  id_pieza_stock_imagen BigInt  @id @default(autoincrement())
+  id_pieza_stock        BigInt
+  id_imagen             BigInt
+  es_principal          Boolean @default(false)
+  orden                 Int     @default(0) @db.SmallInt
+
+  piezaStock PiezaStock @relation(fields: [id_pieza_stock], references: [id_pieza_stock])
+  imagen     Imagen     @relation(fields: [id_imagen], references: [id_imagen])
+
+  @@unique([id_pieza_stock, id_imagen])
+  @@map("pieza_stock_imagen")
+}
+
+model DisfrazImagen {
+  id_disfraz_imagen BigInt  @id @default(autoincrement())
+  id_disfraz        BigInt
+  id_imagen         BigInt
+  es_principal      Boolean @default(false)
+  orden             Int     @default(0) @db.SmallInt
+
+  disfraz Disfraz @relation(fields: [id_disfraz], references: [id_disfraz])
+  imagen  Imagen  @relation(fields: [id_imagen], references: [id_imagen])
+
+  @@unique([id_disfraz, id_imagen])
+  @@map("disfraz_imagen")
+}
+
+model CategoriaMotivoImagen {
+  id_categoria_motivo_imagen BigInt  @id @default(autoincrement())
+  id_categoria_motivo        BigInt
+  id_imagen                  BigInt
+  es_principal               Boolean @default(false)
+
+  categoriaMotivo CategoriaMotivo @relation(fields: [id_categoria_motivo], references: [id_categoria_motivo])
+  imagen          Imagen          @relation(fields: [id_imagen], references: [id_imagen])
+
+  @@unique([id_categoria_motivo, id_imagen])
+  @@map("categoria_motivo_imagen")
+}
