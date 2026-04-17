@@ -4,6 +4,11 @@ const { authenticate } = require('../../middleware/auth.middleware');
 const { validate } = require('../../middleware/validate.middleware');
 const { piezaSchema, disfrazSchema, categoriaSchema } = require('./catalogo.service');
 
+// ─── Rutas públicas (SIN autenticación) ──────────────────────────────────────
+router.get('/disfraces/publico', ctrl.getDisfracesPúblico);
+router.get('/disfraces/:id/publico', ctrl.getDisfrazByIdPublico);
+
+// ─── Rutas protegidas ─────────────────────────────────────────────────────────
 router.use(authenticate);
 
 // Piezas
@@ -19,7 +24,7 @@ router.post('/categorias', validate(categoriaSchema), ctrl.createCategoria);
 router.put('/categorias/:id', validate(categoriaSchema.partial()), ctrl.updateCategoria);
 router.delete('/categorias/:id', ctrl.deleteCategoria);
 
-// Disfraces
+// Disfraces (admin)
 router.get('/disfraces', ctrl.getAllDisfraces);
 router.post('/disfraces', validate(disfrazSchema), ctrl.createDisfraz);
 

@@ -1,24 +1,89 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Disfracesly — Sistema de gestión de alquileres y ventas de disfraces" />
-    <meta name="theme-color" content="#00696b" />
 
-    <!-- Google Fonts: Manrope (display) + Inter (body) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap"
-      rel="stylesheet"
-    />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Disfracesly — Alquiler y venta de disfraces." />
+  <meta name="theme-color" content="#65a30d" />
 
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>Disfracesly — Admin</title>
-  </head>
-  <body class="bg-background text-on-surface antialiased">
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+  <!-- Google Fonts: Manrope (display) + Inter (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+
+  <link rel="icon" type="image/png" href="/logo.png" id="favicon" />
+  <link rel="apple-touch-icon" href="/logo.png" />
+  <title>DisfracesLy</title>
+
+  <script>
+    (function () {
+      /**
+       * Dynamic favicon: switches between white (dark-mode) and
+       * black (light-mode) versions of the logo automatically.
+       *
+       * The original logo.png is white on a transparent background.
+       * For light-mode browsers we invert white pixels → black.
+       */
+      function setFavicon(isDark) {
+        var link = document.getElementById('favicon');
+        if (!link) return;
+
+        if (isDark) {
+          // Dark mode → use original white logo
+          link.href = '/logo.png';
+          return;
+        }
+
+        // Light mode → tint logo with brand primary color (#00696b)
+        var img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = function () {
+          var size = 64; // favicon resolution
+          var canvas = document.createElement('canvas');
+          canvas.width = size;
+          canvas.height = size;
+          var ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, size, size);
+          var imageData = ctx.getImageData(0, 0, size, size);
+          var data = imageData.data;
+
+          // Brand primary: #00696b → R:0, G:105, B:107
+          var tR = 0, tG = 105, tB = 107;
+          for (var i = 0; i < data.length; i += 4) {
+            // Use pixel brightness as intensity mask
+            var brightness = (data[i] + data[i + 1] + data[i + 2]) / 3 / 255;
+            data[i] = Math.round(tR * brightness); // R
+            data[i + 1] = Math.round(tG * brightness); // G
+            data[i + 2] = Math.round(tB * brightness); // B
+            // alpha unchanged
+          }
+
+          ctx.putImageData(imageData, 0, 0);
+          link.href = canvas.toDataURL('image/png');
+        };
+        img.src = '/logo.png';
+      }
+
+      // Initial check
+      var mql = window.matchMedia('(prefers-color-scheme: dark)');
+      setFavicon(mql.matches);
+
+      // Listen for changes (e.g. user toggles OS theme)
+      mql.addEventListener('change', function (e) {
+        setFavicon(e.matches);
+      });
+    })();
+  </script>
+</head>
+
+<body class="bg-background text-on-surface antialiased">
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
 </html>

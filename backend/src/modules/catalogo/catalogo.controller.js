@@ -39,8 +39,17 @@ async function createDisfraz(req, res, next) {
   try { res.status(201).json(await svc.createDisfraz(req.body)); } catch (e) { next(e); }
 }
 
+// ─── Públicos (sin autenticación) ─────────────────────────────────────────────
+async function getDisfracesPúblico(req, res, next) {
+  try { res.json(await svc.getDisfracesPúblico(req.query)); } catch (e) { next(e); }
+}
+async function getDisfrazByIdPublico(req, res, next) {
+  try { res.json(await svc.getDisfrazByIdPublico(req.params.id)); } catch (e) { next(e); }
+}
+
 module.exports = {
   getAllPiezas, getPiezaById, createPieza, updatePieza, deletePieza,
   getAllCategorias, createCategoria, updateCategoria, deleteCategoria,
   getAllDisfraces, createDisfraz,
+  getDisfracesPúblico, getDisfrazByIdPublico,
 };

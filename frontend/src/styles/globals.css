@@ -2,10 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Variables CSS (tokens sincronizados con Tailwind) ────────────────────── */
+/* ── Google Fonts ─────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+
+/* ── Variables CSS (tokens sincronizados con Tailwind Lime) ──────────────── */
 :root {
-  --color-primary: #00696b;
-  --color-primary-container: #00ced1;
+  --color-primary: #65a30d;
+  --color-primary-container: #a3e635;
   --color-secondary: #a43c12;
   --color-secondary-container: #fe7e4f;
   --color-surface: #fafaeb;
@@ -13,6 +17,23 @@
   --font-display: 'Manrope', sans-serif;
   --font-body: 'Inter', sans-serif;
   color-scheme: light;
+}
+
+/* ── Material Symbols ─────────────────────────────────────────────────────── */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
 /* ── Base ──────────────────────────────────────────────────────────────────── */
@@ -40,32 +61,55 @@ body {
   flex-direction: column;
 }
 
-/* ── Scrollbar personalizado (atelier aesthetic) ──────────────────────────── */
+/* ── Scrollbar personalizado ──────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: #efefe0; }
 ::-webkit-scrollbar-thumb { background: #bac9c9; border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: #6b7a7a; }
 
-/* ── Selección de texto con color primario ───────────────────────────────── */
-::selection { background: #00ced1; color: #ffffff; }
+/* ── Selección de texto ───────────────────────────────────────────────────── */
+::selection { background: #a3e635; color: #1a2e05; }
 
-/* ── Glassmorphism utility ──────────────────────────────────────────────── */
+/* ── Focus ring accesible ────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid #65a30d;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Glassmorphism ───────────────────────────────────────────────────────── */
 .glass {
+  background: rgba(250, 250, 235, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.glass-panel {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
 
-/* ── Gradiente primario (botones, acentos) ───────────────────────────────── */
+.ivory-glass {
+  background: rgba(250, 250, 235, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Gradiente editorial Lime ─────────────────────────────────────────────── */
+.editorial-gradient {
+  background: linear-gradient(135deg, #65a30d 0%, #a3e635 100%);
+}
+
 .gradient-primary {
-  background: linear-gradient(135deg, #00696b 0%, #00ced1 100%);
+  background: linear-gradient(135deg, #65a30d 0%, #a3e635 100%);
 }
 
 .gradient-secondary {
   background: linear-gradient(135deg, #a43c12 0%, #fe7e4f 100%);
 }
 
-/* ── Animaciones micro ───────────────────────────────────────────────────── */
+/* ── Animaciones micro ────────────────────────────────────────────────────── */
 @layer utilities {
   .animate-fade-in {
     animation: fadeIn 0.2s ease-out;
@@ -77,6 +121,10 @@ body {
 
   .animate-scale-in {
     animation: scaleIn 0.15s ease-out;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
   }
 }
 
@@ -95,13 +143,11 @@ body {
   to   { opacity: 1; transform: scale(1); }
 }
 
-/* ── No-Line rule: rows alternados sin <hr> ─────────────────────────────── */
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(3deg); }
+  50%       { transform: translateY(-12px) rotate(3deg); }
+}
+
+/* ── Rows alternados ─────────────────────────────────────────────────────── */
 .row-alt:nth-child(even) { background-color: #f4f5e6; }
 .row-alt:nth-child(odd)  { background-color: #fafaeb; }
-
-/* ── Focus ring accesible ────────────────────────────────────────────────── */
-:focus-visible {
-  outline: 2px solid #00696b;
-  outline-offset: 2px;
-  border-radius: 4px;
-}

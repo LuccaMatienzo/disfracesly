@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#fafaeb",
+                        "tertiary": "#50606f",
+                        "inverse-primary": "#a3e635",
+                        "surface-container-highest": "#e3e3d5",
+                        "on-primary-fixed": "#1a2e05",
+                        "primary-fixed-dim": "#a3e635",
+                        "inverse-on-surface": "#f1f2e3",
+                        "surface-container-low": "#f4f5e6",
+                        "surface-tint": "#65a30d",
+                        "on-tertiary-fixed": "#0d1d2a",
+                        "on-secondary-container": "#6b1f00",
+                        "on-error-container": "#93000a",
+                        "tertiary-container": "#abbbcc",
+                        "surface-container": "#efefe0",
+                        "secondary-fixed-dim": "#ffb59c",
+                        "on-primary-container": "#3f6212",
+                        "primary": "#65a30d",
+                        "surface": "#fafaeb",
+                        "on-surface-variant": "#3b4949",
+                        "on-primary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "background": "#fafaeb",
+                        "on-secondary-fixed": "#380c00",
+                        "tertiary-fixed-dim": "#b8c8da",
+                        "primary-container": "#84cc16",
+                        "surface-variant": "#e3e3d5",
+                        "secondary-container": "#fe7e4f",
+                        "error": "#ba1a1a",
+                        "secondary": "#a43c12",
+                        "on-tertiary-container": "#3c4b5a",
+                        "outline": "#6b7a7a",
+                        "on-surface": "#1b1c14",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed": "#ffdbcf",
+                        "tertiary-fixed": "#d4e4f6",
+                        "surface-dim": "#dbdbcd",
+                        "inverse-surface": "#2f3128",
+                        "on-secondary-fixed-variant": "#822800",
+                        "outline-variant": "#bac9c9",
+                        "surface-container-high": "#e9e9db",
+                        "on-tertiary": "#ffffff",
+                        "on-background": "#1b1c14",
+                        "primary-fixed": "#d9f99d",
+                        "on-tertiary-fixed-variant": "#394857",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed-variant": "#4d7c0f"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fafaeb;
+            color: #1b1c14;
+        }
+        h1, h2, h3 {
+            font-family: 'Manrope', sans-serif;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- TopNavBar -->
+<nav class="bg-[#fafaeb]/85 dark:bg-zinc-900/85 backdrop-blur-md fixed top-0 w-full z-50 shadow-xl shadow-black/5">
+<div class="flex justify-between items-center max-w-7xl mx-auto px-8 py-4">
+<div class="flex items-center gap-2">
+<img alt="Disfracesly Logo" class="h-10 w-10 object-contain" data-alt="Stylized crocodile logo in vibrant coral orange, representing the Disfracesly administrative brand mascot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVUuRvdIgOxO7xfh5IUVy7nykP0Fv15EDb0Nt2OeK9RaPNS69ADZ5w1pD5VqLHKmdOLN3z0S_obr_rX1u1mWK5iusIPNcuGBQsAuh_0a8PK7xYreRdfOI5P6rBWIv8BBtdHcF70n3YQ94-8E_rmPAkw4WN-nBenkQrqUAfCkvzUy7kmdKOCOH6uOfNUw1maGuHCNZXUbaqycEW6PC999xqfhPES8GPPjDopnmvKMQIgA0FucQrui6PLX4NOUwtqnRwoeiIZRMiQLwQ"/>
+<span class="text-[#fe7e4f] font-black text-2xl tracking-tight">Disfracesly</span>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-[#65a30d] dark:text-[#84cc16] border-b-2 border-[#84cc16] pb-1 font-['Manrope'] font-bold text-lg" href="#">Inventory</a>
+<a class="text-[#50606f] dark:text-zinc-400 font-medium font-['Manrope'] text-lg hover:text-[#84cc16] transition-colors duration-300" href="#">Orders</a>
+<a class="text-[#50606f] dark:text-zinc-400 font-medium font-['Manrope'] text-lg hover:text-[#84cc16] transition-colors duration-300" href="#">Cleaning</a>
+<a class="text-[#50606f] dark:text-zinc-400 font-medium font-['Manrope'] text-lg hover:text-[#84cc16] transition-colors duration-300" href="#">Rentals</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-[#50606f] font-medium font-['Manrope'] hover:text-[#fe7e4f] transition-all">Contact</button>
+<button class="bg-gradient-to-br from-[#65a30d] to-[#84cc16] text-white px-6 py-2 rounded-xl font-bold font-['Manrope'] scale-95 active:scale-90 transition-transform">Sign In</button>
+</div>
+</div>
+</nav>
+<main class="pt-24">
+<!-- Hero Section -->
+<section class="relative px-8 py-20 max-w-7xl mx-auto overflow-hidden">
+<div class="grid lg:grid-cols-2 gap-12 items-center">
+<div class="z-10">
+<span class="inline-block px-4 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label text-xs font-bold tracking-widest mb-6">THE ATELIER OS</span>
+<h1 class="text-5xl lg:text-7xl font-extrabold text-on-surface leading-tight mb-8">
+                        Total Control of Your <span class="text-primary italic">Costume Empire.</span>
+</h1>
+<p class="text-xl text-tertiary mb-10 max-w-lg leading-relaxed">
+                        The ultimate digital atelier for store managers. Orchestrate inventory, rentals, and customer loyalty with editorial precision and effortless elegance.
+                    </p>
+<div class="flex flex-col sm:flex-row gap-4">
+<button class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-8 py-4 rounded-xl font-bold text-lg shadow-lg shadow-primary/20 hover:scale-105 transition-transform">Request a Demo</button>
+<button class="px-8 py-4 rounded-xl font-bold text-lg text-primary hover:bg-surface-container-low transition-colors flex items-center gap-2">
+                            Explore Features <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="relative">
+<div class="absolute -top-12 -right-12 w-64 h-64 bg-secondary-container opacity-10 rounded-full blur-3xl"></div>
+<div class="absolute -bottom-12 -left-12 w-64 h-64 bg-primary-container opacity-10 rounded-full blur-3xl"></div>
+<div class="relative rounded-[2.5rem] overflow-hidden shadow-2xl rotate-2 bg-surface-container-lowest p-4">
+<img alt="Costume Atelier Management" class="rounded-[1.5rem] w-full h-[500px] object-cover" data-alt="Cinematic shot of a high-end costume atelier with colorful luxury fabrics and a digital tablet showing management software in soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWP_hgmD6lqvxlqqYWEj0rLoIPSDKhhqVxzg-9FFuW1r5ACEzDFbSsOTKTxypuJ2DHXamQRmkpbNLJm83XjbAIYo_JGJHQlnevxpgSyy3FJ9L4y-T7sOcxJPD5gDOYtgSGVadJOx5CukvvSCdP2c-PVLc6mMiNYkIK8wrC6wkXLM4fxJmyBdvhICwzuFl1dwshOwgiYAqP1-IHUVVUzFqdPBl8ySsPr9HOgfPXCI-3NruxLvmJFCyGkm3txmwRZQA2lyO7B4OaeJWO"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Feature Bento Grid -->
+<section class="px-8 py-24 bg-surface-container-low">
+<div class="max-w-7xl mx-auto">
+<div class="mb-16 text-center max-w-2xl mx-auto">
+<h2 class="text-4xl font-bold mb-6">Designed for Operational Excellence</h2>
+<p class="text-tertiary">Move beyond sterile spreadsheets. Our interface treats your inventory like a gallery and your customers like guests.</p>
+</div>
+<div class="grid md:grid-cols-3 gap-6">
+<!-- Feature 1 -->
+<div class="md:col-span-2 bg-surface-container-lowest p-8 rounded-3xl shadow-sm group hover:shadow-xl transition-shadow flex flex-col justify-between overflow-hidden relative">
+<div class="relative z-10">
+<div class="w-12 h-12 rounded-xl bg-primary-container flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+</div>
+<h3 class="text-2xl font-bold mb-4">Master Inventory Management</h3>
+<p class="text-tertiary max-w-md">Track every sequin and stitch. Real-time availability updates across all channels ensure you never double-book a classic.</p>
+</div>
+<div class="mt-8 relative h-48 rounded-2xl overflow-hidden">
+<img alt="Inventory Grid View" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" data-alt="Organized close-up of high-quality garments on hangers with soft bokeh background and professional studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6vgwlPvW_z8Rdv_AEvrBdshUumt5_WOoT97YZFfwh3QzbON7-5ZTFf-hBns-n4l-BjB7QzDqPIvvmf497ZzDjgWzvF5MUYI4cWuWt4XNbeJPo9LuwVL_lFYonYzbKmPc5wqV1tcapsmG8tctvNpQtdIDBs_tHTs3PH46mK6t0JJs0EKagVA0BrOCnfYqv6haNTidWy1nhkXSCvAO_64Wlo4EZ3uxFLEwb765fUEua7E_St8FSqKVZUMCC4jfT1iJOc-9QMVgaJ1fF"/>
+</div>
+</div>
+<!-- Feature 2 -->
+<div class="bg-gradient-to-br from-primary to-primary-container p-8 rounded-3xl shadow-sm text-on-primary flex flex-col">
+<div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">monitoring</span>
+</div>
+<h3 class="text-2xl font-bold mb-4">Real-Time Analytics</h3>
+<p class="text-white/80 mb-8">Visualize peak seasons and top-performing themes with intuitive, heatmapped revenue charts.</p>
+<div class="mt-auto bg-white/10 rounded-2xl p-4 backdrop-blur-sm border border-white/10">
+<div class="flex justify-between items-end h-24 gap-2">
+<div class="w-full bg-white/30 h-1/2 rounded-t-lg"></div>
+<div class="w-full bg-white/50 h-3/4 rounded-t-lg"></div>
+<div class="w-full bg-white/80 h-full rounded-t-lg"></div>
+<div class="w-full bg-white/40 h-2/3 rounded-t-lg"></div>
+</div>
+</div>
+</div>
+<!-- Feature 3 -->
+<div class="bg-surface-container-lowest p-8 rounded-3xl shadow-sm">
+<div class="w-12 h-12 rounded-xl bg-secondary-container flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-on-secondary-container" style="font-variation-settings: 'FILL' 1;">loyalty</span>
+</div>
+<h3 class="text-2xl font-bold mb-4">Customer Loyalty</h3>
+<p class="text-tertiary">Personalized rental history and automated reminders build lasting relationships with your VIP performers.</p>
+</div>
+<!-- Feature 4 -->
+<div class="md:col-span-2 bg-surface p-8 rounded-3xl shadow-sm border-2 border-surface-container-high flex items-center gap-8">
+<div class="flex-1">
+<h3 class="text-2xl font-bold mb-4">The Cleaning Queue</h3>
+<p class="text-tertiary">Integrated sanitation tracking from 'Return' to 'Shelf-Ready'. Never miss a maintenance cycle again.</p>
+</div>
+<div class="hidden sm:block w-48 h-32 rounded-2xl bg-tertiary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-on-tertiary-container">sanitizer</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Testimonial Section -->
+<section class="px-8 py-24 bg-surface">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-16 items-center">
+<div class="md:w-1/2 relative">
+<img alt="Store Manager Portrait" class="w-full aspect-square object-cover rounded-[3rem]" data-alt="Portrait of a smiling professional woman in a creative workspace, soft window lighting, cinematic photography" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxv4FqNbY6zZbJlyfi7MS2rwHdxOA8_iXqh5tkUVsQMNidMH_mYe2LJ0GDdgPky_imPDuy8XjvMueKIVQvzFObiUHYdnK0_6SHT7AOrhV3pBUjQZIeV85PoJkAOzBm3ChLLumMaBnt1yL1F1bXL1tX-xheucnszOdH9-zQ5MjUIWOyPN8NuaxxXX9-kvb4g4gtMVIcqTTMcif8Bc3mIVz0maQD1rPjL7TLJ9Bu_EUue435UOjAYMmt1Dby61-RlLCKREDm-OLyPrTH"/>
+<div class="absolute -bottom-6 -right-6 bg-secondary-container p-8 rounded-3xl shadow-xl max-w-xs">
+<p class="text-on-secondary-container font-bold text-lg italic">"Disfracesly transformed our chaotic October rush into a synchronized performance."</p>
+</div>
+</div>
+<div class="md:w-1/2">
+<span class="text-primary font-bold tracking-widest text-xs uppercase mb-4 block">Store Manager Success</span>
+<h2 class="text-4xl font-bold mb-8 leading-tight">Trusted by over 200 premium costume boutiques globally.</h2>
+<div class="flex gap-4 items-center">
+<div class="h-[2px] w-12 bg-primary"></div>
+<p class="text-lg font-medium">Clara Rossi, Creative Director at Atelier Fantasia</p>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="px-8 py-24">
+<div class="max-w-5xl mx-auto bg-on-surface text-surface-bright rounded-[3rem] p-12 md:p-20 text-center relative overflow-hidden">
+<div class="absolute top-0 right-0 w-96 h-96 bg-primary opacity-20 blur-[100px]"></div>
+<div class="absolute bottom-0 left-0 w-96 h-96 bg-secondary opacity-20 blur-[100px]"></div>
+<h2 class="text-4xl md:text-5xl font-bold mb-8 relative z-10">Ready to elevate your administrative experience?</h2>
+<p class="text-surface-variant text-xl mb-12 max-w-2xl mx-auto relative z-10">Join the exclusive network of Disfracesly partners and reclaim your creative time.</p>
+<div class="flex flex-col sm:flex-row justify-center gap-6 relative z-10">
+<button class="bg-secondary-container text-on-secondary-container px-10 py-5 rounded-full font-bold text-xl hover:scale-105 transition-transform">Request a Demo</button>
+<button class="bg-white/10 backdrop-blur-md text-white px-10 py-5 rounded-full font-bold text-xl border border-white/20 hover:bg-white/20 transition-all">View Pricing</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-[#f4f5e6] dark:bg-zinc-950 w-full py-12 px-8">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex items-center gap-2">
+<span class="text-[#fe7e4f] font-bold text-xl">Disfracesly</span>
+<span class="text-[#50606f] dark:text-zinc-500 text-sm">Administrative Atelier</span>
+</div>
+<div class="flex flex-wrap justify-center gap-8 font-['Inter'] text-sm tracking-wide">
+<a class="text-[#50606f] dark:text-zinc-500 hover:text-[#fe7e4f] underline transition-all" href="#">Privacy Policy</a>
+<a class="text-[#50606f] dark:text-zinc-500 hover:text-[#fe7e4f] underline transition-all" href="#">Terms of Service</a>
+<a class="text-[#50606f] dark:text-zinc-500 hover:text-[#fe7e4f] underline transition-all" href="#">Security</a>
+<a class="text-[#50606f] dark:text-zinc-500 hover:text-[#fe7e4f] underline transition-all" href="#">Help Center</a>
+</div>
+<p class="text-[#50606f] dark:text-zinc-500 font-['Inter'] text-sm tracking-wide opacity-80">© 2024 Disfracesly Administrative Atelier. All rights reserved.</p>
+</div>
+</footer>
+</body></html>
