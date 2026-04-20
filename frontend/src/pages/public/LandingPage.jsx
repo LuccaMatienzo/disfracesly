@@ -82,7 +82,7 @@ export default function LandingPage() {
               </span>
             </h1>
             <div className="mb-10 max-w-lg">
-              <p className="font-body text-xl text-on-surface-variant leading-relaxed mb-4">
+              <p className="font-body text-xl text-on-surface-variant leading-relaxed">
                 Detrás de cada disfraz hay un nombre, una historia, más de 15 años de trayectoria y dedicación.
               </p>
               <p className="font-body text-xl text-on-surface-variant leading-relaxed">
