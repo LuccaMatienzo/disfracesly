@@ -9,7 +9,7 @@ export default function PublicFooter() {
         <div className="col-span-1 space-y-4">
           <div className="flex items-center gap-2">
             <img
-              src="/logo.png"
+              src="/logo_svg_verdelima.svg"
               alt="Disfracesly"
               className="h-8 w-auto object-contain"
               onError={(e) => { e.target.style.display = 'none'; }}

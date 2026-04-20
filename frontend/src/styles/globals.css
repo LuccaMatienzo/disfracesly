@@ -37,7 +37,9 @@
 }
 
 /* ── Base ──────────────────────────────────────────────────────────────────── */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -62,13 +64,29 @@ body {
 }
 
 /* ── Scrollbar personalizado ──────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #efefe0; }
-::-webkit-scrollbar-thumb { background: #bac9c9; border-radius: 999px; }
-::-webkit-scrollbar-thumb:hover { background: #6b7a7a; }
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #efefe0;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #bac9c9;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6b7a7a;
+}
 
 /* ── Selección de texto ───────────────────────────────────────────────────── */
-::selection { background: #a3e635; color: #1a2e05; }
+::selection {
+  background: #a3e635;
+  color: #1a2e05;
+}
 
 /* ── Focus ring accesible ────────────────────────────────────────────────── */
 :focus-visible {
@@ -129,25 +147,56 @@ body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to   { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0) rotate(3deg); }
-  50%       { transform: translateY(-12px) rotate(3deg); }
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(3deg);
+  }
+
+  50% {
+    transform: translateY(-12px) rotate(3deg);
+  }
 }
 
 /* ── Rows alternados ─────────────────────────────────────────────────────── */
-.row-alt:nth-child(even) { background-color: #f4f5e6; }
-.row-alt:nth-child(odd)  { background-color: #fafaeb; }
+.row-alt:nth-child(even) {
+  background-color: #f4f5e6;
+}
+
+.row-alt:nth-child(odd) {
+  background-color: #fafaeb;
+}

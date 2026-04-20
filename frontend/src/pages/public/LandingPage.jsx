@@ -76,9 +76,9 @@ export default function LandingPage() {
               Alquiler y Venta de Disfraces Confeccionados Artesanalmente
             </span>
             <h1 className="font-headline text-[3.5rem] md:text-[4.5rem] font-black leading-[1.05] tracking-tight text-on-surface mb-6">
-              Transforma{' '}
+              Dale vida a tu{' '}
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500">
-                tu Realidad
+                imaginación
               </span>
             </h1>
             <div className="mb-10 max-w-lg">
@@ -87,7 +87,7 @@ export default function LandingPage() {
               </p>
               <p className="font-body text-xl text-on-surface-variant leading-relaxed">
                 Liliana Elizabeth Sosa diseña y crea cada pieza a mano,
-                cuidando cada detalle para transformar momentos especiales en inolvidables.
+                cuidando cada detalle para vestir tus mejores recuerdos.
               </p>
             </div>
 

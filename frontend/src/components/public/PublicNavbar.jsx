@@ -22,7 +22,7 @@ export default function PublicNavbar() {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 group">
           <img
-            src="/logo.png"
+            src="/logo_svg_verdelima.svg"
             alt="Disfracesly logo"
             className="h-16 w-auto object-contain"
             onError={(e) => { e.target.style.display = 'none'; }}

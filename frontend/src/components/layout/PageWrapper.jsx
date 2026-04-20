@@ -5,11 +5,11 @@ import { useToast } from '@/hooks/useToast';
 import ToastContainer from '@/components/ui/Toast';
 
 const NAV_ITEMS = [
-  { to: '/admin',              label: 'Panel General',  icon: 'grid_view',       end: true },
-  { to: '/admin/catalogo',     label: 'Catálogo',       icon: 'apparel',         end: false },
-  { to: '/admin/operaciones',  label: 'Alquileres',     icon: 'calendar_today',  end: false },
-  { to: '/admin/clientes',     label: 'Clientes',       icon: 'people',          end: false },
-  { to: '/admin/stock',        label: 'Stock',          icon: 'inventory_2',     end: false },
+  { to: '/admin', label: 'Panel General', icon: 'grid_view', end: true },
+  { to: '/admin/catalogo', label: 'Catálogo', icon: 'apparel', end: false },
+  { to: '/admin/operaciones', label: 'Alquileres', icon: 'calendar_today', end: false },
+  { to: '/admin/clientes', label: 'Clientes', icon: 'people', end: false },
+  { to: '/admin/stock', label: 'Stock', icon: 'inventory_2', end: false },
 ];
 
 export default function PageWrapper() {
@@ -44,22 +44,23 @@ export default function PageWrapper() {
       >
         {/* Logo + toggle */}
         <div
-          className={`flex items-center border-b border-outline-variant/20 shrink-0 transition-all duration-300 ${
-            sidebarOpen ? 'gap-3 px-5 py-5 justify-between' : 'flex-col gap-2 px-3 py-4 justify-center'
-          }`}
+          className={`flex items-center border-b border-outline-variant/20 shrink-0 transition-all duration-300 ${sidebarOpen ? 'gap-3 px-5 py-5 justify-between' : 'flex-col gap-2 px-3 py-4 justify-center'
+            }`}
         >
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 rounded-xl editorial-gradient flex items-center justify-center shrink-0 shadow-md">
-              <img
-                src="/logo.png"
-                alt="Disfracesly"
-                className="w-6 h-6 object-contain"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.parentElement.innerHTML = '<span class="text-white text-sm font-black">D</span>';
-                }}
-              />
-            </div>
+            <img
+              src="/logo_svg_verdelima.svg"
+              alt="DisfracesLy"
+              className={`object-contain drop-shadow-md shrink-0 transition-all duration-300 ${sidebarOpen ? 'w-14 h-14' : 'w-10 h-10'
+                }`}
+              onError={(e) => {
+                e.target.style.display = 'none';
+                const fallback = document.createElement('span');
+                fallback.className = 'text-primary text-xl font-black';
+                fallback.textContent = 'D';
+                e.target.parentElement?.insertBefore(fallback, e.target);
+              }}
+            />
             {sidebarOpen && (
               <div className="min-w-0">
                 <p className="font-headline font-black text-on-surface truncate text-base leading-none">
@@ -73,9 +74,8 @@ export default function PageWrapper() {
           </div>
           <button
             onClick={() => setSidebarOpen((p) => !p)}
-            className={`flex items-center justify-center rounded-lg text-tertiary hover:text-primary hover:bg-primary/8 transition-all shrink-0 ${
-              sidebarOpen ? 'w-7 h-7' : 'w-8 h-8 mt-1'
-            }`}
+            className={`flex items-center justify-center rounded-lg text-tertiary hover:text-primary hover:bg-primary/8 transition-all shrink-0 ${sidebarOpen ? 'w-7 h-7' : 'w-8 h-8 mt-1'
+              }`}
             aria-label={sidebarOpen ? 'Colapsar menú' : 'Expandir menú'}
           >
             <span className="material-symbols-outlined text-xl">
@@ -88,9 +88,8 @@ export default function PageWrapper() {
         <div className={`px-3 pt-4 pb-2 shrink-0 ${!sidebarOpen && 'flex justify-center'}`}>
           <button
             onClick={() => navigate('/admin/operaciones')}
-            className={`editorial-gradient text-white font-headline font-bold text-sm shadow-md hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 rounded-xl ${
-              sidebarOpen ? 'w-full px-4 py-3' : 'w-10 h-10 justify-center p-0'
-            }`}
+            className={`editorial-gradient text-white font-headline font-bold text-sm shadow-md hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 rounded-xl ${sidebarOpen ? 'w-full px-4 py-3' : 'w-10 h-10 justify-center p-0'
+              }`}
           >
             <span className="material-symbols-outlined text-xl">add</span>
             {sidebarOpen && 'Nuevo Alquiler'}
@@ -162,9 +161,8 @@ export default function PageWrapper() {
           </div>
           <button
             onClick={handleLogout}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mt-1 text-on-surface-variant hover:text-error hover:bg-error/5 transition-all text-sm ${
-              !sidebarOpen && 'justify-center'
-            }`}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mt-1 text-on-surface-variant hover:text-error hover:bg-error/5 transition-all text-sm ${!sidebarOpen && 'justify-center'
+              }`}
           >
             <span className="material-symbols-outlined text-xl shrink-0">logout</span>
             {sidebarOpen && 'Cerrar sesión'}

@@ -6,7 +6,7 @@ export default {
       // ── Design System "The Curated Atelier — Lime" (Stitch tokens) ───────
       colors: {
         primary: {
-          DEFAULT: '#65a30d',
+          DEFAULT: '#65a30dff',
           container: '#a3e635',
           fixed: '#d9f99d',
           'fixed-dim': '#a3e635',
@@ -65,45 +65,45 @@ export default {
 
       // ── Tipografía ────────────────────────────────────────────────────────
       fontFamily: {
-        display:  ['"Manrope"', 'sans-serif'],
+        display: ['"Manrope"', 'sans-serif'],
         headline: ['"Manrope"', 'sans-serif'],
-        sans:     ['"Inter"', 'sans-serif'],
-        body:     ['"Inter"', 'sans-serif'],
-        label:    ['"Inter"', 'sans-serif'],
+        sans: ['"Inter"', 'sans-serif'],
+        body: ['"Inter"', 'sans-serif'],
+        label: ['"Inter"', 'sans-serif'],
       },
 
       // ── Escala tipográfica ────────────────────────────────────────────────
       fontSize: {
-        'display-lg':  ['3.5rem',   { lineHeight: '1.1',  fontWeight: '800' }],
-        'display-md':  ['2.25rem',  { lineHeight: '1.15', fontWeight: '700' }],
-        'headline-lg': ['2rem',     { lineHeight: '1.2',  fontWeight: '700' }],
-        'headline-md': ['1.5rem',   { lineHeight: '1.25', fontWeight: '700' }],
-        'title-lg':    ['1.375rem', { lineHeight: '1.3',  fontWeight: '600' }],
-        'title-md':    ['1rem',     { lineHeight: '1.4',  fontWeight: '600' }],
-        'body-lg':     ['1rem',     { lineHeight: '1.5',  fontWeight: '400' }],
-        'body-md':     ['0.875rem', { lineHeight: '1.5',  fontWeight: '400' }],
-        'label-lg':    ['0.75rem',  { lineHeight: '1.4',  fontWeight: '500', letterSpacing: '0.05em' }],
-        'label-sm':    ['0.625rem', { lineHeight: '1.4',  fontWeight: '500', letterSpacing: '0.06em' }],
+        'display-lg': ['3.5rem', { lineHeight: '1.1', fontWeight: '800' }],
+        'display-md': ['2.25rem', { lineHeight: '1.15', fontWeight: '700' }],
+        'headline-lg': ['2rem', { lineHeight: '1.2', fontWeight: '700' }],
+        'headline-md': ['1.5rem', { lineHeight: '1.25', fontWeight: '700' }],
+        'title-lg': ['1.375rem', { lineHeight: '1.3', fontWeight: '600' }],
+        'title-md': ['1rem', { lineHeight: '1.4', fontWeight: '600' }],
+        'body-lg': ['1rem', { lineHeight: '1.5', fontWeight: '400' }],
+        'body-md': ['0.875rem', { lineHeight: '1.5', fontWeight: '400' }],
+        'label-lg': ['0.75rem', { lineHeight: '1.4', fontWeight: '500', letterSpacing: '0.05em' }],
+        'label-sm': ['0.625rem', { lineHeight: '1.4', fontWeight: '500', letterSpacing: '0.06em' }],
       },
 
       // ── Radios ────────────────────────────────────────────────────────────
       borderRadius: {
         DEFAULT: '0.5rem',
-        lg:    '0.75rem',
-        xl:    '1.5rem',
+        lg: '0.75rem',
+        xl: '1.5rem',
         '2xl': '2rem',
         '3xl': '3rem',
-        pill:  '9999px',
-        full:  '9999px',
+        pill: '9999px',
+        full: '9999px',
       },
 
       // ── Sombras ───────────────────────────────────────────────────────────
       boxShadow: {
         ambient: '0 2px 24px 0 rgba(27,28,20,0.04)',
-        float:   '0 8px 32px 0 rgba(27,28,20,0.08)',
-        card:    '0 2px 16px 0 rgba(27,28,20,0.06)',
-        glass:   '0 4px 30px 0 rgba(27,28,20,0.05)',
-        editorial:'0 24px 48px -12px rgba(27,28,20,0.10)',
+        float: '0 8px 32px 0 rgba(27,28,20,0.08)',
+        card: '0 2px 16px 0 rgba(27,28,20,0.06)',
+        glass: '0 4px 30px 0 rgba(27,28,20,0.05)',
+        editorial: '0 24px 48px -12px rgba(27,28,20,0.10)',
       },
 
       backdropBlur: {

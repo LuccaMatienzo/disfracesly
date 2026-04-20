@@ -16,69 +16,15 @@
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
     rel="stylesheet" />
 
-  <link rel="icon" type="image/png" href="/logo.png" id="favicon" />
-  <link rel="apple-touch-icon" href="/logo.png" />
+  <link rel="icon" type="image/png" href="/favicon/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg" />
+  <link rel="shortcut icon" href="/favicon/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-title" content="DisfracesLy" />
+  <link rel="manifest" href="/favicon/site.webmanifest" />
   <title>DisfracesLy</title>
 
-  <script>
-    (function () {
-      /**
-       * Dynamic favicon: switches between white (dark-mode) and
-       * black (light-mode) versions of the logo automatically.
-       *
-       * The original logo.png is white on a transparent background.
-       * For light-mode browsers we invert white pixels → black.
-       */
-      function setFavicon(isDark) {
-        var link = document.getElementById('favicon');
-        if (!link) return;
 
-        if (isDark) {
-          // Dark mode → use original white logo
-          link.href = '/logo.png';
-          return;
-        }
-
-        // Light mode → tint logo with brand primary color (#00696b)
-        var img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = function () {
-          var size = 64; // favicon resolution
-          var canvas = document.createElement('canvas');
-          canvas.width = size;
-          canvas.height = size;
-          var ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, size, size);
-          var imageData = ctx.getImageData(0, 0, size, size);
-          var data = imageData.data;
-
-          // Brand primary: #00696b → R:0, G:105, B:107
-          var tR = 0, tG = 105, tB = 107;
-          for (var i = 0; i < data.length; i += 4) {
-            // Use pixel brightness as intensity mask
-            var brightness = (data[i] + data[i + 1] + data[i + 2]) / 3 / 255;
-            data[i] = Math.round(tR * brightness); // R
-            data[i + 1] = Math.round(tG * brightness); // G
-            data[i + 2] = Math.round(tB * brightness); // B
-            // alpha unchanged
-          }
-
-          ctx.putImageData(imageData, 0, 0);
-          link.href = canvas.toDataURL('image/png');
-        };
-        img.src = '/logo.png';
-      }
-
-      // Initial check
-      var mql = window.matchMedia('(prefers-color-scheme: dark)');
-      setFavicon(mql.matches);
-
-      // Listen for changes (e.g. user toggles OS theme)
-      mql.addEventListener('change', function (e) {
-        setFavicon(e.matches);
-      });
-    })();
-  </script>
 </head>
 
 <body class="bg-background text-on-surface antialiased">

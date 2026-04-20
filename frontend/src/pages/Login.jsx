@@ -37,22 +37,22 @@ export default function Login() {
 
         {/* Logo + título */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl editorial-gradient shadow-lg mb-4">
+          <div className="inline-flex items-center justify-center mb-4">
             <img
-              src="/logo.png"
+              src="/logo_svg_verdelima.svg"
               alt="Disfracesly"
-              className="w-10 h-10 object-contain"
+              className="w-[6.5rem] h-[6.5rem] sm:w-[7.5rem] sm:h-[7.5rem] object-contain drop-shadow-md"
               onError={(e) => {
                 e.target.style.display = 'none';
-                e.target.parentElement.innerHTML = '<span class="text-white text-2xl font-black">D</span>';
+                e.target.parentElement.innerHTML = '<span class="text-primary text-4xl font-black">D</span>';
               }}
             />
           </div>
           <h1 className="font-headline font-black text-2xl text-on-surface tracking-tight">
-            Atelier Access
+            DisfracesLy
           </h1>
           <p className="text-tertiary text-sm mt-1 font-label uppercase tracking-widest">
-            Internal Administrative Portal
+            Acceso al Sistema
           </p>
         </div>
 
@@ -121,7 +121,7 @@ export default function Login() {
               id="remember"
             />
             <span className="text-sm text-on-surface-variant">
-              Remember this workstation
+              Recordar este equipo
             </span>
           </label>
 
@@ -146,7 +146,7 @@ export default function Login() {
               </>
             ) : (
               <>
-                Enter Atelier
+                Iniciar sesión
                 <span className="material-symbols-outlined text-xl">arrow_forward</span>
               </>
             )}
