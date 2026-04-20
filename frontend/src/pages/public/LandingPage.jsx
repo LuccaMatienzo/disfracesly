@@ -73,7 +73,7 @@ export default function LandingPage() {
           {/* Text */}
           <div>
             <span className="inline-block px-4 py-1.5 rounded-full bg-primary-container text-[#1a2e05] font-label text-xs tracking-widest mb-6">
-              Alquiler y Venta de Disfraces Confeccionaddos Artesanalmente
+              Alquiler y Venta de Disfraces Confeccionados Artesanalmente
             </span>
             <h1 className="font-headline text-[3.5rem] md:text-[4.5rem] font-black leading-[1.05] tracking-tight text-on-surface mb-6">
               Transforma{' '}
@@ -81,11 +81,15 @@ export default function LandingPage() {
                 tu Realidad
               </span>
             </h1>
-            <p className="font-body text-xl text-on-surface-variant leading-relaxed mb-10 max-w-lg">
-              Detrás de cada disfraz hay un nombre, una historia, más de 15 años de trayectoria y dedicación.
-              Liliana Elizabeth Sosa diseña y crea cada pieza a mano,
-              cuidando cada detalle para acompañar momentos especiales y hacerlos inolvidables.
-            </p>
+            <div className="mb-10 max-w-lg">
+              <p className="font-body text-xl text-on-surface-variant leading-relaxed mb-4">
+                Detrás de cada disfraz hay un nombre, una historia, más de 15 años de trayectoria y dedicación.
+              </p>
+              <p className="font-body text-xl text-on-surface-variant leading-relaxed">
+                Liliana Elizabeth Sosa diseña y crea cada pieza a mano,
+                cuidando cada detalle para transformar momentos especiales en inolvidables.
+              </p>
+            </div>
 
             <div className="flex flex-wrap gap-4">
               <Link
