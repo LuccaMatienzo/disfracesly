@@ -52,7 +52,7 @@ export default function OperacionesList() {
       label: '',
       width: '80px',
       render: (_, r) => (
-        <Link to={`/operaciones/${r.id_operacion}`}>
+        <Link to={`/admin/operaciones/${r.id_operacion}`}>
           <Button variant="ghost" size="sm">Ver</Button>
         </Link>
       ),
@@ -69,10 +69,10 @@ export default function OperacionesList() {
           </p>
         </div>
         <div className="flex gap-3">
-          <Link to="/operaciones/alquiler/nuevo">
+          <Link to="/admin/operaciones/alquiler/nuevo">
             <Button variant="outline">+ Alquiler</Button>
           </Link>
-          <Link to="/operaciones/venta/nuevo">
+          <Link to="/admin/operaciones/venta/nuevo">
             <Button variant="secondary">+ Venta</Button>
           </Link>
         </div>

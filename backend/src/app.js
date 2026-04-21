@@ -17,6 +17,7 @@ const stockRoutes = require('./modules/stock/stock.routes');
 const operacionRoutes = require('./modules/operaciones/operaciones.routes');
 const pagoRoutes = require('./modules/pagos/pagos.routes');
 const imagenRoutes = require('./modules/imagenes/imagenes.routes');
+const dashboardRoutes = require('./modules/dashboard/dashboard.routes');
 
 const app = express();
 
@@ -84,6 +85,7 @@ app.use('/api/stock', apiLimiter, stockRoutes);
 app.use('/api/operaciones', apiLimiter, operacionRoutes);
 app.use('/api/pagos', apiLimiter, pagoRoutes);
 app.use('/api/imagenes', apiLimiter, imagenRoutes);
+app.use('/api/dashboard', apiLimiter, dashboardRoutes);
 
 // ─── 404 ─────────────────────────────────────────────────────────────────────
 app.use((_req, res) => {

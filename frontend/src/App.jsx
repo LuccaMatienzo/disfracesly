@@ -18,6 +18,7 @@ const StockForm       = lazy(() => import('@/pages/Stock/StockForm'));
 const OperacionesList = lazy(() => import('@/pages/Operaciones/OperacionesList'));
 const AlquilerForm    = lazy(() => import('@/pages/Operaciones/AlquilerForm'));
 const VentaForm       = lazy(() => import('@/pages/Operaciones/VentaForm'));
+const OperacionDetalle = lazy(() => import('@/pages/Operaciones/OperacionDetalle'));
 const ClientesList    = lazy(() => import('@/pages/Clientes/ClientesList'));
 const ClienteForm     = lazy(() => import('@/pages/Clientes/ClienteForm'));
 const CatalogoList    = lazy(() => import('@/pages/Catalogo/CatalogoList'));
@@ -89,6 +90,7 @@ export default function App() {
 
           {/* Operaciones */}
           <Route path="operaciones" element={<OperacionesList />} />
+          <Route path="operaciones/:id" element={<OperacionDetalle />} />
           <Route path="operaciones/alquiler/nuevo" element={<AlquilerForm />} />
           <Route path="operaciones/venta/nuevo" element={<VentaForm />} />
 

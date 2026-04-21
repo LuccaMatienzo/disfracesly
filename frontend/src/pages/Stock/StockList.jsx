@@ -32,7 +32,7 @@ export default function StockList() {
       label: '',
       width: '100px',
       render: (_, r) => (
-        <Link to={`/stock/${r.id_pieza_stock}/editar`}>
+        <Link to={`/admin/stock/${r.id_pieza_stock}/editar`}>
           <Button variant="ghost" size="sm">Editar</Button>
         </Link>
       ),
@@ -49,7 +49,7 @@ export default function StockList() {
             Gestión de piezas individuales de stock
           </p>
         </div>
-        <Link to="/stock/nuevo">
+        <Link to="/admin/stock/nuevo">
           <Button>+ Agregar pieza</Button>
         </Link>
       </div>

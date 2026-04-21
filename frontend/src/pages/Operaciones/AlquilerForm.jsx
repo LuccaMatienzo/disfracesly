@@ -59,7 +59,7 @@ export default function AlquilerForm() {
       deposito_monto: Number(data.deposito_monto),
       monto_total: Number(data.monto_total),
     });
-    navigate('/operaciones');
+    navigate('/admin/operaciones');
   };
 
   const clientes = clientesData?.data ?? [];

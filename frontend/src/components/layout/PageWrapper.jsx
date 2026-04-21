@@ -47,7 +47,11 @@ export default function PageWrapper() {
           className={`flex items-center border-b border-outline-variant/20 shrink-0 transition-all duration-300 ${sidebarOpen ? 'gap-3 px-5 py-5 justify-between' : 'flex-col gap-2 px-3 py-4 justify-center'
             }`}
         >
-          <div className="flex items-center gap-2.5 min-w-0">
+          <div 
+            className="flex items-center gap-2.5 min-w-0 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => navigate('/admin')}
+            title="Ir al Panel General"
+          >
             <img
               src="/logo_svg_verdelima.svg"
               alt="DisfracesLy"
@@ -64,10 +68,7 @@ export default function PageWrapper() {
             {sidebarOpen && (
               <div className="min-w-0">
                 <p className="font-headline font-black text-on-surface truncate text-base leading-none">
-                  Disfracesly
-                </p>
-                <p className="font-label text-[10px] text-tertiary uppercase tracking-widest leading-none mt-0.5">
-                  Admin Portal
+                  DisfracesLy
                 </p>
               </div>
             )}
@@ -129,20 +130,6 @@ export default function PageWrapper() {
             </NavLink>
           ))}
         </nav>
-
-        {/* Divider + Quick links */}
-        {sidebarOpen && (
-          <div className="px-4 py-2 shrink-0">
-            <p className="text-[10px] font-label uppercase tracking-widest text-tertiary mb-2">Acceso Rápido</p>
-            <NavLink
-              to="/"
-              className="flex items-center gap-2 text-tertiary hover:text-primary text-xs py-1 transition-colors"
-            >
-              <span className="material-symbols-outlined text-base">public</span>
-              Ver Sitio Público
-            </NavLink>
-          </div>
-        )}
 
         {/* User footer */}
         <div className="px-2 pb-4 border-t border-outline-variant/20 pt-3 shrink-0">

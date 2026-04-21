@@ -25,7 +25,7 @@ export default function ClientesList() {
     {
       key: 'acciones', label: '', width: '100px',
       render: (_, r) => (
-        <Link to={`/clientes/${r.id_cliente}/editar`}><Button variant="ghost" size="sm">Editar</Button></Link>
+        <Link to={`/admin/clientes/${r.id_cliente}/editar`}><Button variant="ghost" size="sm">Editar</Button></Link>
       ),
     },
   ];
@@ -37,7 +37,7 @@ export default function ClientesList() {
           <h1 className="font-display text-headline-md font-bold text-on-surface">Clientes</h1>
           <p className="text-body-md text-on-surface-variant mt-0.5">Registro de clientes activos</p>
         </div>
-        <Link to="/clientes/nuevo"><Button>+ Nuevo cliente</Button></Link>
+        <Link to="/admin/clientes/nuevo"><Button>+ Nuevo cliente</Button></Link>
       </div>
       <div className="bg-surface-container-lowest rounded-2xl shadow-card p-5">
         <Input

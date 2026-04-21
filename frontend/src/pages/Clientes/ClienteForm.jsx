@@ -25,7 +25,7 @@ export default function ClienteForm() {
         : api.post('/clientes', data).then((r) => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['clientes'] });
-      navigate('/clientes');
+      navigate('/admin/clientes');
     },
   });
 

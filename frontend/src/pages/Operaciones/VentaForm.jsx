@@ -42,7 +42,7 @@ export default function VentaForm() {
       sena_monto: Number(data.sena_monto),
       monto_total: Number(data.monto_total),
     });
-    navigate('/operaciones');
+    navigate('/admin/operaciones');
   };
 
   const clientes = clientesData?.data ?? [];

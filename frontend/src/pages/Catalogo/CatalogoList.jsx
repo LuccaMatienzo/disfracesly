@@ -36,7 +36,7 @@ export default function CatalogoList() {
     {
       key: 'acciones', label: '', width: '100px',
       render: (_, r) => (
-        <Link to={`/catalogo/piezas/${r.id_pieza}/editar`}><Button variant="ghost" size="sm">Editar</Button></Link>
+        <Link to={`/admin/catalogo/piezas/${r.id_pieza}/editar`}><Button variant="ghost" size="sm">Editar</Button></Link>
       ),
     },
   ];
@@ -52,7 +52,7 @@ export default function CatalogoList() {
           <p className="text-body-md text-on-surface-variant mt-0.5">Piezas y disfraces del sistema</p>
         </div>
         {tab === 'piezas' && (
-          <Link to="/catalogo/piezas/nueva"><Button>+ Nueva pieza</Button></Link>
+          <Link to="/admin/catalogo/piezas/nueva"><Button>+ Nueva pieza</Button></Link>
         )}
       </div>
 

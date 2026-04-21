@@ -30,7 +30,7 @@ export default function PiezaForm() {
         : api.post('/catalogo/piezas', data).then((r) => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['piezas'] });
-      navigate('/catalogo');
+      navigate('/admin/catalogo');
     },
   });
 
