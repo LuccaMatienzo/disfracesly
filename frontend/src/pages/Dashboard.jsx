@@ -106,16 +106,14 @@ function DonutChart({ data }) {
 
 function KpiPreparation({ data }) {
   return (
-    <div className="bg-white rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden flex flex-col justify-center">
-      <div className="flex justify-between items-center w-full">
-        <div>
-          <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">En Preparación</p>
-          <p className="text-4xl font-headline font-black text-on-surface">{data.total}</p>
-          <p className="text-sm text-on-surface-variant">pedidos</p>
-        </div>
-        <div className="flex flex-col justify-center">
-          <span className="material-symbols-outlined text-[48px] text-tertiary/30">inventory_2</span>
-        </div>
+    <div className="bg-white rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
+      <div className="absolute top-8 right-6 pointer-events-none opacity-20 text-tertiary">
+        <span className="material-symbols-outlined" style={{ fontSize: '50px' }}>inventory_2</span>
+      </div>
+      <div className="relative z-10 flex flex-col w-full">
+        <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">En Preparación</p>
+        <p className="text-4xl font-headline font-black text-on-surface">{data.total}</p>
+        <p className="text-sm text-on-surface-variant">pedidos</p>
       </div>
       <div className="mt-3 w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
         <div
@@ -135,16 +133,14 @@ function KpiPreparation({ data }) {
 
 function KpiReadyForPickup({ data }) {
   return (
-    <div className="bg-white rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden flex flex-col justify-center">
-      <div className="flex justify-between items-center w-full">
-        <div>
-          <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">Listos para Retiro</p>
-          <p className="text-4xl font-headline font-black text-on-surface">{data.totalPackages}</p>
-          <p className="text-sm text-on-surface-variant">paquetes</p>
-        </div>
-        <div className="flex flex-col justify-center">
-          <span className="material-symbols-outlined text-[48px] text-tertiary/30">package_2</span>
-        </div>
+    <div className="bg-white rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
+      <div className="absolute top-8 right-6 pointer-events-none opacity-20 text-tertiary">
+        <span className="material-symbols-outlined" style={{ fontSize: '50px' }}>package_2</span>
+      </div>
+      <div className="relative z-10 flex flex-col w-full">
+        <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">Listos para Retiro</p>
+        <p className="text-4xl font-headline font-black text-on-surface">{data.totalPackages}</p>
+        <p className="text-sm text-on-surface-variant">paquetes</p>
       </div>
     </div>
   );
@@ -152,16 +148,14 @@ function KpiReadyForPickup({ data }) {
 
 function KpiActiveRentals({ data }) {
   return (
-    <div className="bg-white rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden flex flex-col justify-center">
-      <div className="flex justify-between items-center w-full">
-        <div>
-          <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">Alquileres Activos</p>
-          <p className="text-4xl font-headline font-black text-on-surface">{data.totalItems}</p>
-          <p className="text-sm text-on-surface-variant">artículos</p>
-        </div>
-        <div className="flex flex-col justify-center">
-          <span className="material-symbols-outlined text-[48px] text-tertiary/30">checkroom</span>
-        </div>
+    <div className="bg-white rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
+      <div className="absolute top-8 right-6 pointer-events-none opacity-20 text-tertiary">
+        <span className="material-symbols-outlined" style={{ fontSize: '50px' }}>checkroom</span>
+      </div>
+      <div className="relative z-10 flex flex-col w-full">
+        <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">Alquileres Activos</p>
+        <p className="text-4xl font-headline font-black text-on-surface">{data.totalItems}</p>
+        <p className="text-sm text-on-surface-variant">artículos</p>
       </div>
       <div className="flex gap-4 mt-2 text-xs">
         {data.overdue > 0 && (
@@ -178,15 +172,13 @@ function KpiActiveRentals({ data }) {
 function KpiMonthlyRevenue({ data }) {
   const isPositive = data.percentChange >= 0;
   return (
-    <div className="bg-white rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden flex flex-col justify-center">
-      <div className="flex justify-between items-center w-full">
-        <div>
-          <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">Ingresos del Mes</p>
-          <p className="text-3xl font-headline font-black text-on-surface">{formatCurrency(data.current)}</p>
-        </div>
-        <div className="flex flex-col justify-center">
-          <span className="material-symbols-outlined text-[48px] text-tertiary/30">payments</span>
-        </div>
+    <div className="bg-white rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
+      <div className="absolute top-8 right-6 pointer-events-none opacity-20 text-tertiary">
+        <span className="material-symbols-outlined" style={{ fontSize: '50px' }}>payments</span>
+      </div>
+      <div className="relative z-10 flex flex-col w-full">
+        <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">Ingresos del Mes</p>
+        <p className="text-3xl font-headline font-black text-on-surface">{formatCurrency(data.current)}</p>
       </div>
       <div className="flex items-center gap-1 mt-2">
         <span className={`material-symbols-outlined text-base ${isPositive ? 'text-primary' : 'text-error'}`}>
