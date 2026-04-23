@@ -3,17 +3,9 @@ import { useSearchParams } from 'react-router-dom';
 import PublicNavbar from '@/components/public/PublicNavbar';
 import PublicFooter from '@/components/public/PublicFooter';
 import CostumeCard from '@/components/public/CostumeCard';
-import { useCatalogoPublico } from '@/hooks/useCatalogoPublico';
+import { useCatalogoPublico, useCategoriasPublicas } from '@/hooks/useCatalogoPublico';
 
-const CATEGORIAS_RAPIDAS = [
-  { value: '', label: 'Todos' },
-  { value: 'Fantasía', label: 'Fantasía' },
-  { value: 'Histórico', label: 'Histórico' },
-  { value: 'Cosplay', label: 'Cosplay' },
-  { value: 'Infantil', label: 'Infantil' },
-  { value: 'Burlesco', label: 'Burlesco' },
-  { value: 'Victoriano', label: 'Victoriano' },
-];
+
 
 const Skeleton = () => (
   <div className="bg-surface-container-low rounded-2xl overflow-hidden animate-pulse">
@@ -30,6 +22,8 @@ export default function CatalogoPublico() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get('search') ?? '');
   const [selectedCat, setSelectedCat] = useState(searchParams.get('categoria') ?? '');
+
+  const { categorias, isLoading: loadingCat } = useCategoriasPublicas();
 
   const { data, total, page, totalPages, isLoading, error, applyFilters, goToPage } =
     useCatalogoPublico({
@@ -66,7 +60,11 @@ export default function CatalogoPublico() {
             Catálogo de Disfraces
           </h1>
           <p className="text-on-surface-variant text-lg mb-6">
-            {total > 0 ? `${total} disfraz${total !== 1 ? 'es' : ''} disponibles` : 'Cargando...'}
+            {isLoading
+              ? 'Cargando...'
+              : total > 0
+                ? total === 1 ? '1 disfraz disponible' : `${total} disfraces disponibles`
+                : 'No se encontraron resultados'}
           </p>
 
           {/* Search bar */}
@@ -95,19 +93,24 @@ export default function CatalogoPublico() {
       {/* ── Inventory Ribbon ───────────────────────────────────────────────── */}
       <section className="border-b border-outline-variant/20 px-6 md:px-10">
         <div className="max-w-7xl mx-auto py-4 flex gap-3 overflow-x-auto scrollbar-none">
-          {CATEGORIAS_RAPIDAS.map(({ value, label }) => (
-            <button
-              key={value}
-              onClick={() => handleCat(value)}
-              className={`px-4 py-2 rounded-full font-label text-sm font-semibold whitespace-nowrap transition-all ${
-                selectedCat === value
+          {loadingCat ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-9 w-24 rounded-full bg-surface-container animate-pulse" />
+            ))
+          ) : (
+            categorias.map(({ value, label }) => (
+              <button
+                key={value}
+                onClick={() => handleCat(value)}
+                className={`px-4 py-2 rounded-full font-label text-sm font-semibold whitespace-nowrap transition-all ${selectedCat === value
                   ? 'editorial-gradient text-white shadow-md'
                   : 'bg-surface-container text-on-surface-variant hover:bg-primary-container hover:text-[#1a2e05]'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+                  }`}
+              >
+                {label}
+              </button>
+            ))
+          )}
         </div>
       </section>
 
@@ -168,11 +171,10 @@ export default function CatalogoPublico() {
                   <button
                     key={p}
                     onClick={() => goToPage(p)}
-                    className={`w-10 h-10 rounded-xl font-label font-bold text-sm transition-all ${
-                      p === page
-                        ? 'editorial-gradient text-white shadow-md'
-                        : 'bg-surface-container text-on-surface-variant hover:bg-primary-container hover:text-[#1a2e05]'
-                    }`}
+                    className={`w-10 h-10 rounded-xl font-label font-bold text-sm transition-all ${p === page
+                      ? 'editorial-gradient text-white shadow-md'
+                      : 'bg-surface-container text-on-surface-variant hover:bg-primary-container hover:text-[#1a2e05]'
+                      }`}
                   >
                     {p}
                   </button>

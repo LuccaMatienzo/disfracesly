@@ -166,11 +166,28 @@ async function main() {
   }
   console.log('✅ Categorías creadas');
 
-  // 5. Piezas
+  // 5. Piezas y Disfraces
   const piezas = [];
+  const disfraces = [];
   for (const p of PIEZAS) {
     const pieza = await prisma.pieza.create({ data: p });
     piezas.push(pieza);
+
+    // Create the disfraz grouping
+    const disfraz = await prisma.disfraz.create({
+      data: {
+        nombre: p.nombre,
+        descripcion: p.descripcion,
+      }
+    });
+    disfraces.push(disfraz);
+
+    await prisma.disfrazPieza.create({
+      data: {
+        id_disfraz: disfraz.id_disfraz,
+        id_pieza: pieza.id_pieza,
+      }
+    });
 
     // Associate with 1-2 categories
     const catCount = rand(1, 2);
@@ -184,7 +201,7 @@ async function main() {
       });
     }
   }
-  console.log('✅ Piezas creadas con categorías');
+  console.log('✅ Piezas y Disfraces creados con categorías');
 
   // 6. Stock — 3-5 units per piece
   const stockItems = [];

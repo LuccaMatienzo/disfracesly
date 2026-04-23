@@ -7,6 +7,7 @@ const { piezaSchema, disfrazSchema, categoriaSchema } = require('./catalogo.serv
 // ─── Rutas públicas (SIN autenticación) ──────────────────────────────────────
 router.get('/disfraces/publico', ctrl.getDisfracesPúblico);
 router.get('/disfraces/:id/publico', ctrl.getDisfrazByIdPublico);
+router.get('/categorias/publico', ctrl.getAllCategoriasPublico);
 
 // ─── Rutas protegidas ─────────────────────────────────────────────────────────
 router.use(authenticate);

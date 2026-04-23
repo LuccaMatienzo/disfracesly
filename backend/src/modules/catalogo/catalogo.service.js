@@ -269,8 +269,13 @@ async function getDisfrazByIdPublico(id) {
               categorias: { include: { categoriaMotivo: true } },
               stocks: {
                 where: { deleted_at: null },
-                include: { imagenes: { include: { imagen: true }, take: 1 } },
-                select: { estado_pieza_stock: true, talle: true, medidas: true, descripcion: true, imagenes: true },
+                select: { 
+                  estado_pieza_stock: true, 
+                  talle: true, 
+                  medidas: true, 
+                  descripcion: true, 
+                  imagenes: { include: { imagen: true }, take: 1 } 
+                },
               },
             },
           },

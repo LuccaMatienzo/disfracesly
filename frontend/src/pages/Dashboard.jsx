@@ -26,18 +26,18 @@ function formatCurrency(amount) {
 }
 
 const BADGE_ETAPA = {
-  'Activo':     { cls: 'bg-primary-container text-[#1a2e05]' },
+  'Activo': { cls: 'bg-primary-container text-[#1a2e05]' },
   'Confirmado': { cls: 'bg-tertiary-container text-on-surface' },
-  'Pendiente':  { cls: 'bg-secondary-container text-white' },
+  'Pendiente': { cls: 'bg-secondary-container text-white' },
   'Por vencer': { cls: 'bg-error/15 text-error' },
-  'Entregado':  { cls: 'bg-surface-container text-tertiary' },
+  'Entregado': { cls: 'bg-surface-container text-tertiary' },
 };
 
 const STATUS_CONFIG = {
-  Pickup:  { color: '#4caf50', dotColor: '#4caf50', label: 'Retiro' },
-  Return:  { color: '#4caf50', dotColor: '#4caf50', label: 'Devolución' },
-  Sale:    { color: '#ef5350', dotColor: '#ef5350', label: 'Venta', isSale: true },
-  Otra:    { color: '#9e9e9e', dotColor: '#9e9e9e', label: 'Otro' },
+  Pickup: { color: '#4caf50', dotColor: '#4caf50', label: 'Retiro' },
+  Return: { color: '#4caf50', dotColor: '#4caf50', label: 'Devolución' },
+  Sale: { color: '#ef5350', dotColor: '#ef5350', label: 'Venta', isSale: true },
+  Otra: { color: '#9e9e9e', dotColor: '#9e9e9e', label: 'Otro' },
 };
 
 // ─── Donut Chart ──────────────────────────────────────────────────────────────
@@ -113,7 +113,7 @@ function KpiPreparation({ data }) {
       <div className="relative z-10 flex flex-col w-full">
         <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">En Preparación</p>
         <p className="text-4xl font-headline font-black text-on-surface">{data.total}</p>
-        <p className="text-sm text-on-surface-variant">pedidos</p>
+        <p className="text-sm text-on-surface-variant">Pedidos</p>
       </div>
       <div className="mt-3 w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
         <div
@@ -125,7 +125,7 @@ function KpiPreparation({ data }) {
         />
       </div>
       {data.urgentTomorrow > 0 && (
-        <p className="text-xs text-on-surface-variant mt-1.5">{data.urgentTomorrow} urgentes para mañana</p>
+        <p className="text-xs text-on-surface-variant mt-1.5">{data.urgentTomorrow} Urgentes para mañana</p>
       )}
     </div>
   );
@@ -140,7 +140,7 @@ function KpiReadyForPickup({ data }) {
       <div className="relative z-10 flex flex-col w-full">
         <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">Listos para Retiro</p>
         <p className="text-4xl font-headline font-black text-on-surface">{data.totalPackages}</p>
-        <p className="text-sm text-on-surface-variant">paquetes</p>
+        <p className="text-sm text-on-surface-variant">Paquetes</p>
       </div>
     </div>
   );
@@ -155,7 +155,7 @@ function KpiActiveRentals({ data }) {
       <div className="relative z-10 flex flex-col w-full">
         <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">Alquileres Activos</p>
         <p className="text-4xl font-headline font-black text-on-surface">{data.totalItems}</p>
-        <p className="text-sm text-on-surface-variant">artículos</p>
+        <p className="text-sm text-on-surface-variant">Artículos</p>
       </div>
       <div className="flex gap-4 mt-2 text-xs">
         {data.overdue > 0 && (
@@ -232,9 +232,8 @@ function RecentMovements({ movements }) {
               return (
                 <tr
                   key={mov.id}
-                  className={`border-b border-outline-variant/10 last:border-0 hover:bg-surface-container-low/60 transition-colors ${
-                    i % 2 === 0 ? '' : 'bg-surface-container-low/30'
-                  }`}
+                  className={`border-b border-outline-variant/10 last:border-0 hover:bg-surface-container-low/60 transition-colors ${i % 2 === 0 ? '' : 'bg-surface-container-low/30'
+                    }`}
                 >
                   <td className="px-6 py-3.5">
                     <span className="inline-flex items-center gap-1.5">
@@ -375,9 +374,8 @@ function UpcomingReturns({ returns: list }) {
               return (
                 <tr
                   key={op.id}
-                  className={`border-b border-outline-variant/10 last:border-0 hover:bg-surface-container-low/60 transition-colors ${
-                    i % 2 === 0 ? '' : 'bg-surface-container-low/30'
-                  }`}
+                  className={`border-b border-outline-variant/10 last:border-0 hover:bg-surface-container-low/60 transition-colors ${i % 2 === 0 ? '' : 'bg-surface-container-low/30'
+                    }`}
                 >
                   <td className="px-6 py-4 font-medium text-on-surface text-sm">{op.cliente}</td>
                   <td className="px-6 py-4 text-on-surface-variant text-sm">{op.disfraz}</td>
@@ -481,7 +479,7 @@ export default function Dashboard() {
           {saludo}, {user?.persona?.nombre ?? 'Admin'}
         </h1>
         <p className="text-on-surface-variant mt-1">
-          Resumen de operaciones del atelier
+          Resumen de operaciones de la tienda
         </p>
       </div>
 

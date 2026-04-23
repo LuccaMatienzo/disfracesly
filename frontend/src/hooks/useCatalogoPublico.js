@@ -27,7 +27,7 @@ export function useCatalogoPublico(initialFilters = {}) {
       if (!res.ok) throw new Error('Error cargando catálogo');
       const json = await res.json();
       setData(json.data ?? []);
-      setTotal(json.total ?? 0);
+      setTotal(json.meta?.total ?? 0);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -62,6 +62,30 @@ export function useCatalogoPublico(initialFilters = {}) {
   };
 }
 
+export function useCategoriasPublicas() {
+  const [categorias, setCategorias] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await globalThis.fetch(`${API_BASE}/catalogo/categorias/publico?limit=100`);
+        if (res.ok) {
+          const json = await res.json();
+          setCategorias([{ value: '', label: 'Todos' }, ...json.data.map(c => ({ value: String(c.id_categoria_motivo), label: c.nombre }))]);
+        }
+      } catch (e) {
+        console.error('Error fetching categories:', e);
+        setCategorias([{ value: '', label: 'Todos' }]);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  return { categorias, isLoading };
+}
 export async function fetchDisfrazById(id) {
   const res = await globalThis.fetch(`${API_BASE}/catalogo/disfraces/${id}/publico`);
   if (!res.ok) {
