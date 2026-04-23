@@ -50,7 +50,7 @@ export default function CatalogoPublico() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <PublicNavbar />
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}

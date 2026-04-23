@@ -87,7 +87,7 @@ export default function DetalleDisfraz() {
   const imgs = disfraz.imagenes?.length ? disfraz.imagenes : [PLACEHOLDER];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <PublicNavbar />
 
       <main className="pt-24 pb-16 px-6 md:px-10 max-w-7xl mx-auto">

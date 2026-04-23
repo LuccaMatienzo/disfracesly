@@ -60,7 +60,7 @@ const JOURNEY_STEPS = [
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-background text-on-background">
+    <div className="min-h-screen bg-background text-on-background overflow-x-hidden">
       <PublicNavbar />
 
       {/* ── Hero ────────────────────────────────────────────────────────────── */}
