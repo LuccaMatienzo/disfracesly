@@ -1,11 +1,5 @@
 import { Link } from 'react-router-dom';
 
-const BADGE = {
-  DISPONIBLE:  { label: 'Disponible',   cls: 'bg-primary-container text-[#1a2e05]' },
-  RESERVADA:   { label: 'Reservada',    cls: 'bg-secondary-container text-white' },
-  ALQUILADA:   { label: 'Alquilada',    cls: 'bg-tertiary-container text-on-surface' },
-  SIN_STOCK:   { label: 'Sin Stock',    cls: 'bg-surface-container-high text-tertiary' },
-};
 
 export default function CostumeCard({ disfraz }) {
   const {
@@ -18,7 +12,6 @@ export default function CostumeCard({ disfraz }) {
     categorias = [],
   } = disfraz;
 
-  const badge = BADGE[disponibilidad] ?? BADGE.SIN_STOCK;
 
   return (
     <article className="group relative bg-surface-container-lowest rounded-2xl overflow-hidden shadow-card hover:shadow-editorial transition-all duration-300 hover:-translate-y-1 flex flex-col">
@@ -42,10 +35,6 @@ export default function CostumeCard({ disfraz }) {
             </span>
           </div>
         )}
-        {/* Badge flotante */}
-        <span className={`absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${badge.cls}`}>
-          {badge.label}
-        </span>
       </Link>
 
       {/* Info */}
@@ -53,7 +42,7 @@ export default function CostumeCard({ disfraz }) {
         {/* Categorías */}
         {categorias.length > 0 && (
           <p className="text-[10px] font-label uppercase tracking-widest text-tertiary mb-1">
-            {categorias.slice(0, 2).join(' · ')}
+            {categorias.slice(0, 2).map(c => c.nombre).join(' · ')}
           </p>
         )}
         <h3 className="font-headline font-bold text-on-surface text-lg leading-tight mb-2 line-clamp-2">

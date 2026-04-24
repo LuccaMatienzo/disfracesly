@@ -240,8 +240,11 @@ async function getDisfracesPúblico(query) {
 
     const imagenPrincipal = d.imagenes[0]?.imagen?.url ?? null;
     const categorias = d.piezas
-      .flatMap((dp) => dp.pieza.categorias.map((pc) => pc.categoriaMotivo.nombre))
-      .filter((v, i, arr) => arr.indexOf(v) === i);
+      .flatMap((dp) => dp.pieza.categorias.map((pc) => ({
+        id: pc.categoriaMotivo.id_categoria_motivo,
+        nombre: pc.categoriaMotivo.nombre
+      })))
+      .filter((v, i, arr) => arr.findIndex(t => t.id === v.id) === i);
 
     return {
       id_disfraz: d.id_disfraz,
@@ -302,9 +305,13 @@ async function getDisfrazByIdPublico(id) {
   )];
 
   const imagenes = disfraz.imagenes.map((di) => di.imagen?.url).filter(Boolean);
+  
   const categorias = disfraz.piezas
-    .flatMap((dp) => dp.pieza.categorias.map((pc) => pc.categoriaMotivo.nombre))
-    .filter((v, i, arr) => arr.indexOf(v) === i);
+    .flatMap((dp) => dp.pieza.categorias.map((pc) => ({
+      id: pc.categoriaMotivo.id_categoria_motivo,
+      nombre: pc.categoriaMotivo.nombre
+    })))
+    .filter((v, i, arr) => arr.findIndex(t => t.id === v.id) === i);
 
   const piezas = disfraz.piezas.map((dp) => ({
     id_pieza: dp.pieza.id_pieza,

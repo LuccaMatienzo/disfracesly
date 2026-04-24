@@ -4,12 +4,6 @@ import { fetchDisfrazById } from '@/hooks/useCatalogoPublico';
 import PublicNavbar from '@/components/public/PublicNavbar';
 import PublicFooter from '@/components/public/PublicFooter';
 
-const DISPONIBILIDAD_BADGE = {
-  DISPONIBLE: { label: 'Disponible', cls: 'bg-primary-container text-[#1a2e05]' },
-  RESERVADA:  { label: 'Reservada',  cls: 'bg-secondary-container text-on-surface' },
-  ALQUILADA:  { label: 'Alquilada', cls: 'bg-tertiary-container text-on-surface' },
-  SIN_STOCK:  { label: 'Sin Stock',  cls: 'bg-surface-container text-tertiary' },
-};
 
 const PLACEHOLDER = 'https://placehold.co/600x750/efefe0/6b7a7a?text=Disfracesly';
 
@@ -44,6 +38,7 @@ export default function DetalleDisfraz() {
           nombre: disfraz.nombre,
           talle: talleSeleccionado,
           imagenPrincipal: disfraz.imagenPrincipal,
+          categorias: disfraz.categorias,
         },
         fechaRetiro,
         fechaDevolucion,
@@ -83,7 +78,6 @@ export default function DetalleDisfraz() {
     );
   }
 
-  const badge = DISPONIBILIDAD_BADGE[disfraz.disponibilidad] ?? DISPONIBILIDAD_BADGE.SIN_STOCK;
   const imgs = disfraz.imagenes?.length ? disfraz.imagenes : [PLACEHOLDER];
 
   return (
@@ -99,7 +93,12 @@ export default function DetalleDisfraz() {
           <span className="material-symbols-outlined text-xs">chevron_right</span>
           {disfraz.categorias?.[0] && (
             <>
-              <span className="hover:text-primary">{disfraz.categorias[0]}</span>
+              <Link 
+                to={`/catalogo?categoria=${disfraz.categorias[0].id}`} 
+                className="hover:text-primary transition-colors"
+              >
+                {disfraz.categorias[0].nombre}
+              </Link>
               <span className="material-symbols-outlined text-xs">chevron_right</span>
             </>
           )}
@@ -142,13 +141,13 @@ export default function DetalleDisfraz() {
           <div className="lg:col-span-5 space-y-8">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${badge.cls}`}>
-                  {badge.label}
-                </span>
                 {disfraz.categorias?.[0] && (
-                  <span className="text-tertiary font-label text-xs uppercase tracking-widest">
-                    {disfraz.categorias[0]}
-                  </span>
+                  <Link 
+                    to={`/catalogo?categoria=${disfraz.categorias[0].id}`}
+                    className="text-tertiary font-label text-xs uppercase tracking-widest hover:text-primary transition-colors"
+                  >
+                    {disfraz.categorias[0].nombre}
+                  </Link>
                 )}
               </div>
               <h1 className="font-headline text-4xl font-black text-on-surface leading-tight mb-4">
@@ -196,7 +195,13 @@ export default function DetalleDisfraz() {
                   <input
                     type="date"
                     value={fechaRetiro}
-                    onChange={(e) => setFechaRetiro(e.target.value)}
+                    onChange={(e) => {
+                      const nuevaFecha = e.target.value;
+                      setFechaRetiro(nuevaFecha);
+                      if (fechaDevolucion && fechaDevolucion < nuevaFecha) {
+                        setFechaDevolucion('');
+                      }
+                    }}
                     className="bg-transparent text-sm font-medium text-on-surface focus:outline-none"
                   />
                 </div>
@@ -205,6 +210,7 @@ export default function DetalleDisfraz() {
                   <input
                     type="date"
                     value={fechaDevolucion}
+                    min={fechaRetiro}
                     onChange={(e) => setFechaDevolucion(e.target.value)}
                     className="bg-transparent text-sm font-medium text-on-surface focus:outline-none"
                   />
@@ -216,8 +222,7 @@ export default function DetalleDisfraz() {
             <div className="pt-2">
               <button
                 onClick={handleSolicitar}
-                disabled={disfraz.disponibilidad === 'SIN_STOCK'}
-                className="w-full py-5 rounded-xl editorial-gradient text-white font-headline font-bold text-lg shadow-editorial hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-5 rounded-xl editorial-gradient text-white font-headline font-bold text-lg shadow-editorial hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
               >
                 <span className="material-symbols-outlined text-2xl">chat</span>
                 Solicitar por WhatsApp

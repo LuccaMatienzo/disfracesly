@@ -3,7 +3,7 @@ export default {
   content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}'],
   theme: {
     extend: {
-      // ── Design System "The Curated Atelier — Lime" (Stitch tokens) ───────
+      // ── Design System "The Curated Tienda — Lime" (Stitch tokens) ───────
       colors: {
         primary: {
           DEFAULT: '#65a30dff',

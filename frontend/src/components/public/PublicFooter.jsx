@@ -17,7 +17,7 @@ export default function PublicFooter() {
             <span className="font-headline text-xl font-black text-[#fe7e4f]">Disfracesly</span>
           </div>
           <p className="text-tertiary text-sm leading-relaxed">
-            Elevando la experiencia de los disfraces a un atelier curado. Calidad, historia y artesanía en cada fibra.
+            Elevando la experiencia de los disfraces a una tienda curada. Calidad, historia y artesanía en cada fibra.
           </p>
         </div>
 

@@ -14,7 +14,7 @@ const FEATURED = [
   {
     label: 'Histórico',
     title: 'María Antonieta',
-    sub: 'Versailles Atelier',
+    sub: 'Versailles Tienda',
     color: 'from-[#65a30d] to-[#a3e635]',
     emoji: '🌹',
     span: '',
@@ -58,6 +58,8 @@ const JOURNEY_STEPS = [
   },
 ];
 
+const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER ?? '5493814120331';
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background text-on-background overflow-x-hidden">
@@ -100,7 +102,7 @@ export default function LandingPage() {
                 <span className="material-symbols-outlined text-xl">arrow_forward</span>
               </Link>
               <a
-                href="https://wa.me/5493814120331"
+                href={`https://wa.me/${WHATSAPP_NUMBER}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-8 py-4 rounded-xl border-2 border-outline-variant font-headline font-bold text-base text-on-surface hover:border-[#25d366] hover:text-[#25d366] transition-all flex items-center gap-2"
@@ -201,7 +203,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── The Atelier Journey ───────────────────────────────────────────── */}
+      {/* ── The Tienda Journey ───────────────────────────────────────────── */}
       <section className="py-20 px-6 md:px-10">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">

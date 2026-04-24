@@ -8,7 +8,6 @@ const LandingPage       = lazy(() => import('@/pages/public/LandingPage'));
 const CatalogoPublico   = lazy(() => import('@/pages/public/CatalogoPublico'));
 const DetalleDisfraz    = lazy(() => import('@/pages/public/DetalleDisfraz'));
 const SolicitudPedido   = lazy(() => import('@/pages/public/SolicitudPedido'));
-const GestionInteligente = lazy(() => import('@/pages/public/GestionInteligente'));
 
 // ─── Páginas admin ────────────────────────────────────────────────────────────
 const Login           = lazy(() => import('@/pages/Login'));
@@ -60,7 +59,6 @@ export default function App() {
         <Route path="/catalogo" element={<CatalogoPublico />} />
         <Route path="/catalogo/:id" element={<DetalleDisfraz />} />
         <Route path="/solicitud" element={<SolicitudPedido />} />
-        <Route path="/gestion" element={<GestionInteligente />} />
 
         {/* ── Login de empleados ─────────────────────────────────────────── */}
         <Route
