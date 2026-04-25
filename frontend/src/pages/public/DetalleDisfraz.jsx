@@ -174,7 +174,7 @@ export default function DetalleDisfraz() {
                       className={`w-14 h-14 flex items-center justify-center rounded-xl font-label font-bold text-sm transition-all ${
                         talleSeleccionado === t
                           ? 'editorial-gradient text-white shadow-md scale-105'
-                          : 'bg-surface-container-low text-tertiary hover:bg-primary-container hover:text-[#1a2e05]'
+                          : 'bg-surface-container-low text-tertiary hover:bg-primary-container hover:text-primary-on-container'
                       }`}
                     >
                       {t}

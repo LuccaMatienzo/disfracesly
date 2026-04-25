@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 export default function PublicFooter() {
   return (
-    <footer className="bg-[#fafaeb] w-full border-t border-[#f4f5e6]">
+    <footer className="bg-background w-full border-t border-surface-container-low">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-12 px-10 py-16 max-w-7xl mx-auto">
 
         {/* Branding */}
@@ -14,7 +14,7 @@ export default function PublicFooter() {
               className="h-8 w-auto object-contain"
               onError={(e) => { e.target.style.display = 'none'; }}
             />
-            <span className="font-headline text-xl font-black text-[#fe7e4f]">Disfracesly</span>
+            <span className="font-headline text-xl font-black text-coral">Disfracesly</span>
           </div>
           <p className="text-tertiary text-sm leading-relaxed">
             Elevando la experiencia de los disfraces a una tienda curada. Calidad, historia y artesanía en cada fibra.

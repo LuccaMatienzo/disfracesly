@@ -37,7 +37,7 @@ export default function PageWrapper() {
       <aside
         className={`
           fixed top-0 left-0 h-full z-30
-          flex flex-col bg-white border-r border-outline-variant/20
+          flex flex-col bg-card-panel border-r border-outline-variant/20
           shadow-glass transition-all duration-300
           ${sidebarOpen ? 'w-64' : 'w-[4.5rem]'}
         `}
@@ -162,7 +162,7 @@ export default function PageWrapper() {
         className={`flex-1 flex flex-col transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-[4.5rem]'}`}
       >
         {/* Top header */}
-        <header className="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-outline-variant/20 px-6 py-3 flex items-center gap-4">
+        <header className="sticky top-0 z-20 bg-card-panel/90 backdrop-blur-md border-b border-outline-variant/20 px-6 py-3 flex items-center gap-4">
           {/* Search */}
           <div className="relative flex-1 max-w-sm">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-tertiary text-lg pointer-events-none">

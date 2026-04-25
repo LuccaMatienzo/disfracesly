@@ -14,8 +14,8 @@ export default function PublicNavbar() {
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-[#fafaeb]/90 backdrop-blur-md shadow-editorial'
-          : 'bg-[#fafaeb]/75 backdrop-blur-sm'
+          ? 'bg-background/90 backdrop-blur-md shadow-editorial'
+          : 'bg-background/75 backdrop-blur-sm'
       }`}
     >
       <div className="flex justify-between items-center px-6 md:px-10 py-4 max-w-screen-2xl mx-auto">
@@ -27,7 +27,7 @@ export default function PublicNavbar() {
             className="h-16 w-auto object-contain"
             onError={(e) => { e.target.style.display = 'none'; }}
           />
-          <span className="font-headline text-4xl font-black text-[#fe7e4f] tracking-tight group-hover:opacity-80 transition-opacity">
+          <span className="font-headline text-4xl font-black text-coral tracking-tight group-hover:opacity-80 transition-opacity">
             Disfracesly
           </span>
         </Link>

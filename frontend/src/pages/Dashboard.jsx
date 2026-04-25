@@ -26,7 +26,7 @@ function formatCurrency(amount) {
 }
 
 const BADGE_ETAPA = {
-  'Activo': { cls: 'bg-primary-container text-[#1a2e05]' },
+  'Activo': { cls: 'bg-primary-container text-primary-on-container' },
   'Confirmado': { cls: 'bg-tertiary-container text-on-surface' },
   'Pendiente': { cls: 'bg-secondary-container text-white' },
   'Por vencer': { cls: 'bg-error/15 text-error' },
@@ -106,7 +106,7 @@ function DonutChart({ data }) {
 
 function KpiPreparation({ data }) {
   return (
-    <div className="bg-white rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
+    <div className="bg-card-panel rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
       <div className="absolute top-8 right-6 pointer-events-none opacity-20 text-tertiary">
         <span className="material-symbols-outlined" style={{ fontSize: '50px' }}>inventory_2</span>
       </div>
@@ -133,7 +133,7 @@ function KpiPreparation({ data }) {
 
 function KpiReadyForPickup({ data }) {
   return (
-    <div className="bg-white rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
+    <div className="bg-card-panel rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
       <div className="absolute top-8 right-6 pointer-events-none opacity-20 text-tertiary">
         <span className="material-symbols-outlined" style={{ fontSize: '50px' }}>package_2</span>
       </div>
@@ -148,7 +148,7 @@ function KpiReadyForPickup({ data }) {
 
 function KpiActiveRentals({ data }) {
   return (
-    <div className="bg-white rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
+    <div className="bg-card-panel rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
       <div className="absolute top-8 right-6 pointer-events-none opacity-20 text-tertiary">
         <span className="material-symbols-outlined" style={{ fontSize: '50px' }}>checkroom</span>
       </div>
@@ -172,7 +172,7 @@ function KpiActiveRentals({ data }) {
 function KpiMonthlyRevenue({ data }) {
   const isPositive = data.percentChange >= 0;
   return (
-    <div className="bg-white rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
+    <div className="bg-card-panel rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
       <div className="absolute top-8 right-6 pointer-events-none opacity-20 text-tertiary">
         <span className="material-symbols-outlined" style={{ fontSize: '50px' }}>payments</span>
       </div>
@@ -197,7 +197,7 @@ function KpiMonthlyRevenue({ data }) {
 function RecentMovements({ movements }) {
   if (!movements || movements.length === 0) {
     return (
-      <div className="bg-white rounded-2xl shadow-card p-6">
+      <div className="bg-card-panel rounded-2xl shadow-card p-6">
         <h2 className="font-headline font-bold text-on-surface text-lg mb-4">Movimientos Recientes</h2>
         <p className="text-on-surface-variant text-sm">No hay movimientos recientes</p>
       </div>
@@ -205,7 +205,7 @@ function RecentMovements({ movements }) {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-card overflow-hidden">
+    <div className="bg-card-panel rounded-2xl shadow-card overflow-hidden">
       <div className="px-6 py-4 border-b border-outline-variant/20 flex items-center justify-between">
         <h2 className="font-headline font-bold text-on-surface text-lg">Movimientos Recientes</h2>
         <a href="/admin/operaciones" className="text-sm text-on-surface-variant font-label font-semibold hover:underline">
@@ -279,13 +279,13 @@ function RecentMovements({ movements }) {
 
 function CashFlow({ data }) {
   const items = [
-    { label: 'INGRESOS TOTALES', value: data.totalIncome, icon: 'account_balance_wallet', bg: 'bg-[#e8f5e9]', iconColor: 'text-[#4caf50]' },
-    { label: 'SEÑAS EN CUSTODIA', value: data.depositsInCustody, icon: 'lock', bg: 'bg-[#fff8e1]', iconColor: 'text-[#ff9800]' },
-    { label: 'SALDO PENDIENTE', value: data.pendingBalance, icon: 'credit_score', bg: 'bg-[#ffebee]', iconColor: 'text-[#ef5350]' },
+    { label: 'INGRESOS TOTALES', value: data.totalIncome, icon: 'account_balance_wallet', bg: 'bg-primary-container', iconColor: 'text-primary' },
+    { label: 'SEÑAS EN CUSTODIA', value: data.depositsInCustody, icon: 'lock', bg: 'bg-secondary-fixed', iconColor: 'text-secondary' },
+    { label: 'SALDO PENDIENTE', value: data.pendingBalance, icon: 'credit_score', bg: 'bg-error-container', iconColor: 'text-error' },
   ];
 
   return (
-    <div className="bg-white rounded-2xl shadow-card p-6">
+    <div className="bg-card-panel rounded-2xl shadow-card p-6">
       <h2 className="font-headline font-bold text-on-surface text-lg mb-4">Flujo de Caja (Hoy)</h2>
       <div className="space-y-4">
         {items.map((item) => (
@@ -315,7 +315,7 @@ function StockStatusCard({ data }) {
   ];
 
   return (
-    <div className="bg-white rounded-2xl shadow-card p-6">
+    <div className="bg-card-panel rounded-2xl shadow-card p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-headline font-bold text-on-surface text-lg">Estado del Stock</h2>
         <a href="/admin/stock" className="text-xs text-on-surface-variant font-label font-semibold bg-surface-container-low px-3 py-1 rounded-full hover:bg-surface-container transition-colors">
@@ -332,7 +332,7 @@ function StockStatusCard({ data }) {
 function UpcomingReturns({ returns: list }) {
   if (!list || list.length === 0) {
     return (
-      <div className="bg-white rounded-2xl shadow-card p-6">
+      <div className="bg-card-panel rounded-2xl shadow-card p-6">
         <h2 className="font-headline font-bold text-on-surface text-lg mb-4">
           Próximos alquileres a vencer
         </h2>
@@ -342,7 +342,7 @@ function UpcomingReturns({ returns: list }) {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-card overflow-hidden">
+    <div className="bg-card-panel rounded-2xl shadow-card overflow-hidden">
       <div className="px-6 py-4 border-b border-outline-variant/20 flex items-center justify-between">
         <h2 className="font-headline font-bold text-on-surface text-lg">
           Próximos alquileres a vencer
@@ -400,7 +400,7 @@ function UpcomingReturns({ returns: list }) {
 
 function SkeletonCard() {
   return (
-    <div className="bg-white rounded-2xl shadow-card p-5 animate-pulse">
+    <div className="bg-card-panel rounded-2xl shadow-card p-5 animate-pulse">
       <div className="h-3 w-24 bg-surface-container rounded-full mb-3" />
       <div className="h-10 w-20 bg-surface-container rounded-lg mb-2" />
       <div className="h-3 w-16 bg-surface-container rounded-full" />

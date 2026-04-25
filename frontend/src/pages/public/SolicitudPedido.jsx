@@ -254,7 +254,7 @@ export default function SolicitudPedido() {
                       onBlur={handleBlurNombre}
                       placeholder="Tu nombre completo"
                       required
-                      className={`w-full pl-12 pr-4 py-4 rounded-xl bg-white border text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 transition ${errors.nombre
+                      className={`w-full pl-12 pr-4 py-4 rounded-xl bg-card-panel border text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 transition ${errors.nombre
                         ? 'border-error focus:ring-error/40'
                         : 'border-outline-variant/40 focus:ring-primary/40'
                         }`}
@@ -280,7 +280,7 @@ export default function SolicitudPedido() {
                       onBlur={handleBlurTelefono}
                       placeholder="Número de teléfono celular (3812345678)"
                       required
-                      className={`w-full pl-12 pr-4 py-4 rounded-xl bg-white border text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 transition ${errors.telefono
+                      className={`w-full pl-12 pr-4 py-4 rounded-xl bg-card-panel border text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 transition ${errors.telefono
                         ? 'border-error focus:ring-error/40'
                         : 'border-outline-variant/40 focus:ring-primary/40'
                         }`}
@@ -299,7 +299,7 @@ export default function SolicitudPedido() {
                     onChange={(e) => setNotas(e.target.value)}
                     placeholder="Notas adicionales: talle exacto, evento, dudas..."
                     rows={3}
-                    className="w-full pl-12 pr-4 py-4 rounded-xl bg-white border border-outline-variant/40 text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 focus:ring-primary/40 transition resize-none"
+                    className="w-full pl-12 pr-4 py-4 rounded-xl bg-card-panel border border-outline-variant/40 text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 focus:ring-primary/40 transition resize-none"
                   />
                 </div>
               </div>
@@ -317,7 +317,7 @@ export default function SolicitudPedido() {
             </button>
 
             {sent && (
-              <div className="p-4 rounded-xl bg-primary-container text-[#1a2e05] flex gap-3 items-start animate-slide-up">
+              <div className="p-4 rounded-xl bg-primary-container text-primary-on-container flex gap-3 items-start animate-slide-up">
                 <span className="material-symbols-outlined text-xl mt-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
                 <div>
                   <p className="font-headline font-bold">¡WhatsApp abierto!</p>
@@ -338,7 +338,7 @@ export default function SolicitudPedido() {
 
           {/* ── Resumen del pedido ─────────────────────────────────────────── */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl shadow-card p-6 sticky top-24">
+            <div className="bg-card-panel rounded-2xl shadow-card p-6 sticky top-24">
               <h3 className="font-headline font-bold text-lg text-on-surface mb-4 border-b border-outline-variant/20 pb-3">
                 Resumen del pedido
               </h3>

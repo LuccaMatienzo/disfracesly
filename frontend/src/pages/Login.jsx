@@ -25,7 +25,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fafaeb] flex items-center justify-center relative overflow-hidden p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center relative overflow-hidden p-4">
 
       {/* ── Blobs decorativos ─────────────────────────────────────────────── */}
       <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-primary/15 blur-3xl pointer-events-none" />
@@ -33,7 +33,7 @@ export default function Login() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-primary/5 blur-3xl pointer-events-none" />
 
       {/* ── Glass Panel ───────────────────────────────────────────────────── */}
-      <div className="relative w-full max-w-md bg-white/85 backdrop-blur-xl rounded-3xl shadow-editorial border border-white/60 p-10 animate-slide-up">
+      <div className="relative w-full max-w-md bg-card-panel/85 backdrop-blur-xl rounded-3xl shadow-editorial border border-outline-variant/30 p-10 animate-slide-up">
 
         {/* Logo + título */}
         <div className="text-center mb-8">

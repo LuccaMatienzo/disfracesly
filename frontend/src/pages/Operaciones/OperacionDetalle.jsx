@@ -370,8 +370,8 @@ export default function OperacionDetalle() {
           {/* Pagos */}
           <div className="bg-surface-container-lowest rounded-2xl shadow-card p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-[#e8f5e9] flex items-center justify-center">
-                <span className="material-symbols-outlined text-xl text-[#4caf50]">payments</span>
+              <div className="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center">
+                <span className="material-symbols-outlined text-xl text-primary">payments</span>
               </div>
               <div>
                 <h2 className="font-headline text-title-md text-on-surface">
@@ -449,7 +449,7 @@ export default function OperacionDetalle() {
                 {(op.interacciones ?? []).map((inter) => (
                   <div key={inter.id_interaccion_operacion} className="relative">
                     {/* Dot */}
-                    <div className="absolute -left-[25px] top-1 w-3 h-3 rounded-full bg-primary border-2 border-white" />
+                    <div className="absolute -left-[25px] top-1 w-3 h-3 rounded-full bg-primary border-2 border-background" />
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <p className="text-sm font-medium text-on-surface">

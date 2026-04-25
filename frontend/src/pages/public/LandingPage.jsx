@@ -74,7 +74,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Text */}
           <div>
-            <span className="inline-block px-4 py-1.5 rounded-full bg-primary-container text-[#1a2e05] font-label text-xs tracking-widest mb-6">
+            <span className="inline-block px-4 py-1.5 rounded-full bg-primary-container text-primary-on-container font-label text-xs tracking-widest mb-6">
               Alquiler y Venta de Disfraces Confeccionados Artesanalmente
             </span>
             <h1 className="font-headline text-[3.5rem] md:text-[4.5rem] font-black leading-[1.05] tracking-tight text-on-surface mb-6">
@@ -141,12 +141,12 @@ export default function LandingPage() {
               <div className="w-full h-full rounded-3xl bg-gradient-to-br from-primary-container to-primary/30 flex items-center justify-center shadow-editorial border border-primary/10">
                 <div className="text-center p-8">
                   <span className="text-8xl block mb-4">ARG</span>
-                  <p className="font-headline font-black text-2xl text-[#1a2e05]">25 de Mayo</p>
+                  <p className="font-headline font-black text-2xl text-primary-on-container">25 de Mayo</p>
                   <p className="text-sm text-primary mt-2 font-label uppercase tracking-widest">Colección Premium</p>
                 </div>
               </div>
               {/* Accent card */}
-              <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-float px-5 py-4 flex items-center gap-3">
+              <div className="absolute -bottom-6 -left-6 bg-card-panel rounded-2xl shadow-float px-5 py-4 flex items-center gap-3">
                 <span className="material-symbols-outlined text-primary text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
                 <div>
                   <p className="font-headline font-bold text-sm text-on-surface">Disponible ahora</p>
@@ -221,7 +221,7 @@ export default function LandingPage() {
                 {/* Connector line */}
                 <div className="hidden md:block absolute top-8 left-full w-full h-px bg-outline-variant/40 z-0 w-1/2" />
 
-                <div className="relative z-10 flex flex-col items-start gap-4 p-8 rounded-2xl bg-white border border-outline-variant/20 shadow-card hover:-translate-y-1 transition-transform">
+                <div className="relative z-10 flex flex-col items-start gap-4 p-8 rounded-2xl bg-card-panel border border-outline-variant/20 shadow-card hover:-translate-y-1 transition-transform">
                   <div className="w-14 h-14 rounded-xl editorial-gradient flex items-center justify-center shadow-md">
                     <span className="material-symbols-outlined text-white text-2xl">{icon}</span>
                   </div>

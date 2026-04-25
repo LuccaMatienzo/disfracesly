@@ -77,7 +77,7 @@ export default function CatalogoPublico() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar disfraces..."
-                className="w-full pl-10 pr-4 py-3 rounded-xl bg-white border border-outline-variant/40 text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
+                className="w-full pl-10 pr-4 py-3 rounded-xl bg-card-panel border border-outline-variant/40 text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
               />
             </div>
             <button
@@ -104,7 +104,7 @@ export default function CatalogoPublico() {
                 onClick={() => handleCat(value)}
                 className={`px-4 py-2 rounded-full font-label text-sm font-semibold whitespace-nowrap transition-all ${selectedCat === value
                   ? 'editorial-gradient text-white shadow-md'
-                  : 'bg-surface-container text-on-surface-variant hover:bg-primary-container hover:text-[#1a2e05]'
+                  : 'bg-surface-container text-on-surface-variant hover:bg-primary-container hover:text-primary-on-container'
                   }`}
               >
                 {label}
@@ -173,7 +173,7 @@ export default function CatalogoPublico() {
                     onClick={() => goToPage(p)}
                     className={`w-10 h-10 rounded-xl font-label font-bold text-sm transition-all ${p === page
                       ? 'editorial-gradient text-white shadow-md'
-                      : 'bg-surface-container text-on-surface-variant hover:bg-primary-container hover:text-[#1a2e05]'
+                      : 'bg-surface-container text-on-surface-variant hover:bg-primary-container hover:text-primary-on-container'
                       }`}
                   >
                     {p}
