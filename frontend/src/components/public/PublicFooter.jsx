@@ -1,9 +1,9 @@
-import { Link } from 'react-router-dom';
+
 
 export default function PublicFooter() {
   return (
     <footer className="bg-background w-full border-t border-surface-container-low">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-12 px-10 py-16 max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-12 px-10 py-12 max-w-7xl mx-auto">
 
         {/* Branding */}
         <div className="col-span-1 space-y-4">
@@ -17,27 +17,8 @@ export default function PublicFooter() {
             <span className="font-headline text-xl font-black text-coral">Disfracesly</span>
           </div>
           <p className="text-tertiary text-sm leading-relaxed">
-            Elevando la experiencia de los disfraces a una tienda curada. Calidad, historia y artesanía en cada fibra.
+            Elevando la experiencia de los disfraces. Calidad y autenticidad en cada disfraz.
           </p>
-        </div>
-
-        {/* Colecciones */}
-        <div className="col-span-1">
-          <h5 className="font-label text-xs tracking-widest uppercase font-bold text-primary mb-6">
-            Colecciones
-          </h5>
-          <ul className="space-y-3">
-            {['Históricos', 'Fantasía', 'Cosplay', 'Victorianos'].map((cat) => (
-              <li key={cat}>
-                <Link
-                  to={`/catalogo?categoria=${cat}`}
-                  className="text-tertiary text-sm hover:text-primary hover:translate-x-1 inline-block transition-all duration-200"
-                >
-                  {cat}
-                </Link>
-              </li>
-            ))}
-          </ul>
         </div>
 
         {/* Contactanos */}
@@ -95,16 +76,6 @@ export default function PublicFooter() {
           <p className="text-tertiary text-sm mb-6">
             © {new Date().getFullYear()} Liliana Elizabeth Sosa.
           </p>
-          <div className="flex gap-4">
-            <a
-              href="https://wa.me/5493814120331"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:scale-110 transition-transform"
-              aria-label="WhatsApp"
-            >
-            </a>
-          </div>
         </div>
 
       </div>

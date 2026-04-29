@@ -104,6 +104,28 @@ function DonutChart({ data }) {
 
 // ─── KPI Top Cards ────────────────────────────────────────────────────────────
 
+function KpiActiveRentals({ data }) {
+  return (
+    <div className="bg-card-panel rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
+      <div className="absolute top-8 right-6 pointer-events-none opacity-20 text-tertiary">
+        <span className="material-symbols-outlined" style={{ fontSize: '50px' }}>checkroom</span>
+      </div>
+      <div className="relative z-10 flex flex-col w-full">
+        <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">Operaciones Activas</p>
+        <p className="text-4xl font-headline font-black text-on-surface">{data.totalItems}</p>
+      </div>
+      {/* <div className="flex gap-4 mt-2 text-xs">
+        {data.overdue > 0 && (
+          <span className="text-error font-semibold">Atrasados ({data.overdue})</span>
+        )}
+        {data.dueToday > 0 && (
+          <span className="text-primary font-semibold">Vencen Hoy ({data.dueToday})</span>
+        )}
+      </div> */}
+    </div>
+  );
+}
+
 function KpiPreparation({ data }) {
   return (
     <div className="bg-card-panel rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
@@ -113,7 +135,6 @@ function KpiPreparation({ data }) {
       <div className="relative z-10 flex flex-col w-full">
         <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">En Preparación</p>
         <p className="text-4xl font-headline font-black text-on-surface">{data.total}</p>
-        <p className="text-sm text-on-surface-variant">Pedidos</p>
       </div>
       <div className="mt-3 w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
         <div
@@ -140,34 +161,11 @@ function KpiReadyForPickup({ data }) {
       <div className="relative z-10 flex flex-col w-full">
         <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">Listos para Retiro</p>
         <p className="text-4xl font-headline font-black text-on-surface">{data.totalPackages}</p>
-        <p className="text-sm text-on-surface-variant">Paquetes</p>
       </div>
     </div>
   );
 }
 
-function KpiActiveRentals({ data }) {
-  return (
-    <div className="bg-card-panel rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
-      <div className="absolute top-8 right-6 pointer-events-none opacity-20 text-tertiary">
-        <span className="material-symbols-outlined" style={{ fontSize: '50px' }}>checkroom</span>
-      </div>
-      <div className="relative z-10 flex flex-col w-full">
-        <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">Alquileres Activos</p>
-        <p className="text-4xl font-headline font-black text-on-surface">{data.totalItems}</p>
-        <p className="text-sm text-on-surface-variant">Artículos</p>
-      </div>
-      <div className="flex gap-4 mt-2 text-xs">
-        {data.overdue > 0 && (
-          <span className="text-error font-semibold">Atrasados ({data.overdue})</span>
-        )}
-        {data.dueToday > 0 && (
-          <span className="text-primary font-semibold">Vencen Hoy ({data.dueToday})</span>
-        )}
-      </div>
-    </div>
-  );
-}
 
 function KpiMonthlyRevenue({ data }) {
   const isPositive = data.percentChange >= 0;
@@ -485,9 +483,9 @@ export default function Dashboard() {
 
       {/* ── KPI Cards ─────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+        <KpiActiveRentals data={activeRentals} />
         <KpiPreparation data={inPreparation} />
         <KpiReadyForPickup data={readyForPickup} />
-        <KpiActiveRentals data={activeRentals} />
         <KpiMonthlyRevenue data={monthlyRevenue} />
       </div>
 

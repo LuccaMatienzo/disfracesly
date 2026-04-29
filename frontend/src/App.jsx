@@ -1,7 +1,7 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import PageWrapper from '@/components/layout/PageWrapper';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 
 // ─── Páginas públicas ─────────────────────────────────────────────────────────
 const LandingPage       = lazy(() => import('@/pages/public/LandingPage'));
@@ -49,9 +49,21 @@ function AccessRoute({ children }) {
   return !isAuthenticated ? children : <Navigate to="/admin" replace />;
 }
 
+// ─── Scroll Restoration ────────────────────────────────────────────────────────
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
+
 export default function App() {
   return (
     <Suspense fallback={<PageLoading />}>
+      <ScrollToTop />
       <Routes>
 
         {/* ── Sitio público (sin autenticación) ──────────────────────────── */}

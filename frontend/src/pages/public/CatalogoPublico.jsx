@@ -1,11 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import PublicNavbar from '@/components/public/PublicNavbar';
 import PublicFooter from '@/components/public/PublicFooter';
 import CostumeCard from '@/components/public/CostumeCard';
 import { useCatalogoPublico, useCategoriasPublicas } from '@/hooks/useCatalogoPublico';
-
-
 
 const Skeleton = () => (
   <div className="bg-surface-container-low rounded-2xl overflow-hidden animate-pulse">
@@ -20,33 +18,84 @@ const Skeleton = () => (
 
 export default function CatalogoPublico() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [search, setSearch] = useState(searchParams.get('search') ?? '');
-  const [selectedCat, setSelectedCat] = useState(searchParams.get('categoria') ?? '');
+  const currentSearch = searchParams.get('search') ?? '';
+  const currentCat = searchParams.get('categoria') ?? '';
+
+  const [search, setSearch] = useState(currentSearch);
+  const [selectedCat, setSelectedCat] = useState(currentCat);
 
   const { categorias, isLoading: loadingCat } = useCategoriasPublicas();
 
-  const { data, total, page, totalPages, isLoading, error, applyFilters, goToPage } =
+  const { data, total, page, totalPages, isLoading, error, applyFilters, goToPage, filters } =
     useCatalogoPublico({
-      search: searchParams.get('search') ?? '',
-      categoria: searchParams.get('categoria') ?? '',
+      search: currentSearch,
+      categoria: currentCat,
     });
+
+  // Sync state with URL when back button is used
+  useEffect(() => {
+    let applied = false;
+    if (filters.categoria !== currentCat) {
+      setSelectedCat(currentCat);
+      applied = true;
+    }
+    if (filters.search !== currentSearch) {
+      setSearch(currentSearch);
+      applied = true;
+    }
+
+    if (applied) {
+      applyFilters({ search: currentSearch, categoria: currentCat });
+    }
+  }, [currentSearch, currentCat, filters.search, filters.categoria, applyFilters]);
+
+  // Handle slider arrows
+  const scrollContainerRef = useRef(null);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(true);
+
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setShowLeftArrow(scrollLeft > 0);
+      setShowRightArrow(Math.ceil(scrollLeft) < scrollWidth - clientWidth - 1);
+    }
+  };
+
+  useEffect(() => {
+    handleScroll();
+    window.addEventListener('resize', handleScroll);
+    return () => window.removeEventListener('resize', handleScroll);
+  }, [categorias]);
+
+  const scrollLeftBtn = () => {
+    if (scrollContainerRef.current) {
+      const width = scrollContainerRef.current.clientWidth;
+      scrollContainerRef.current.scrollBy({ left: -width, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRightBtn = () => {
+    if (scrollContainerRef.current) {
+      const width = scrollContainerRef.current.clientWidth;
+      scrollContainerRef.current.scrollBy({ left: width, behavior: 'smooth' });
+    }
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
     const newParams = new URLSearchParams();
     if (search) newParams.set('search', search);
-    if (selectedCat) newParams.set('categoria', selectedCat);
+    if (currentCat) newParams.set('categoria', currentCat);
     setSearchParams(newParams);
-    applyFilters({ search, categoria: selectedCat });
   };
 
   const handleCat = (cat) => {
-    setSelectedCat(cat);
     const newParams = new URLSearchParams();
-    if (search) newParams.set('search', search);
+    // Limpiar búsqueda al cambiar de categoría
+    setSearch('');
     if (cat) newParams.set('categoria', cat);
     setSearchParams(newParams);
-    applyFilters({ search, categoria: cat });
   };
 
   return (
@@ -56,7 +105,14 @@ export default function CatalogoPublico() {
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <section className="pt-28 pb-8 px-6 md:px-10 bg-surface-container-low">
         <div className="max-w-7xl mx-auto">
-          <h1 className="font-headline font-black text-4xl text-on-surface mb-3">
+          <h1 
+            className="font-headline font-black text-4xl text-on-surface mb-3 cursor-pointer hover:opacity-80 transition-opacity inline-block"
+            onClick={() => {
+              setSearch('');
+              const newParams = new URLSearchParams();
+              setSearchParams(newParams);
+            }}
+          >
             Catálogo de Disfraces
           </h1>
           <p className="text-on-surface-variant text-lg mb-6">
@@ -92,25 +148,58 @@ export default function CatalogoPublico() {
 
       {/* ── Inventory Ribbon ───────────────────────────────────────────────── */}
       <section className="border-b border-outline-variant/20 px-6 md:px-10">
-        <div className="max-w-7xl mx-auto py-4 flex gap-3 overflow-x-auto scrollbar-none">
-          {loadingCat ? (
-            Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-9 w-24 rounded-full bg-surface-container animate-pulse" />
-            ))
-          ) : (
-            categorias.map(({ value, label }) => (
-              <button
-                key={value}
-                onClick={() => handleCat(value)}
-                className={`px-4 py-2 rounded-full font-label text-sm font-semibold whitespace-nowrap transition-all ${selectedCat === value
-                  ? 'editorial-gradient text-white shadow-md'
-                  : 'bg-surface-container text-on-surface-variant hover:bg-primary-container hover:text-primary-on-container'
-                  }`}
-              >
-                {label}
-              </button>
-            ))
-          )}
+        <div className="max-w-7xl mx-auto py-4 flex items-center gap-3">
+          {/* Flecha Izquierda */}
+          <button
+            onClick={scrollLeftBtn}
+            disabled={!showLeftArrow}
+            className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${showLeftArrow
+              ? 'bg-surface-container-high text-on-surface hover:bg-primary hover:text-white shadow-sm hover:shadow-md hover:scale-105'
+              : 'opacity-0 pointer-events-none'
+              } hidden md:flex`}
+            aria-label="Página anterior de categorías"
+          >
+            <span className="material-symbols-outlined text-sm font-bold">arrow_back_ios_new</span>
+          </button>
+
+          {/* Contenedor scrolleable */}
+          <div
+            ref={scrollContainerRef}
+            onScroll={handleScroll}
+            className="flex-1 flex gap-3 overflow-x-auto snap-x snap-mandatory scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] px-1 py-1"
+          >
+            {loadingCat ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex-shrink-0 h-9 w-24 rounded-full bg-surface-container animate-pulse snap-start" />
+              ))
+            ) : (
+              categorias.map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => handleCat(value)}
+                  className={`snap-start flex-shrink-0 px-5 py-2 rounded-full font-label text-sm font-bold whitespace-nowrap transition-all outline-none [-webkit-tap-highlight-color:transparent] transform active:scale-95 border-2 ${selectedCat === value
+                    ? 'editorial-gradient text-white border-[#fafaeb] dark:border-[#131410]'
+                    : 'bg-surface-container text-on-surface border-transparent hover:bg-[#efefe0] dark:hover:bg-[#292a24]'
+                    }`}
+                >
+                  {label}
+                </button>
+              ))
+            )}
+          </div>
+
+          {/* Flecha Derecha */}
+          <button
+            onClick={scrollRightBtn}
+            disabled={!showRightArrow}
+            className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${showRightArrow && !loadingCat && categorias.length > 0
+              ? 'bg-surface-container-high text-on-surface hover:bg-primary hover:text-white shadow-sm hover:shadow-md hover:scale-105'
+              : 'opacity-0 pointer-events-none'
+              } hidden md:flex`}
+            aria-label="Página siguiente de categorías"
+          >
+            <span className="material-symbols-outlined text-sm font-bold">arrow_forward_ios</span>
+          </button>
         </div>
       </section>
 
@@ -121,7 +210,7 @@ export default function CatalogoPublico() {
             <span className="material-symbols-outlined text-5xl text-error mb-4 block">error_outline</span>
             <p className="text-on-surface-variant">{error}</p>
             <button
-              onClick={() => applyFilters({ search, categoria: selectedCat })}
+              onClick={() => applyFilters({ search: currentSearch, categoria: currentCat })}
               className="mt-4 editorial-gradient text-white px-6 py-3 rounded-xl font-label font-bold"
             >
               Reintentar
@@ -197,3 +286,4 @@ export default function CatalogoPublico() {
     </div>
   );
 }
+

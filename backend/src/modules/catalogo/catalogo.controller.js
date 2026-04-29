@@ -43,6 +43,9 @@ async function createDisfraz(req, res, next) {
 async function getDisfracesPúblico(req, res, next) {
   try { res.json(await svc.getDisfracesPúblico(req.query)); } catch (e) { next(e); }
 }
+async function getDisfracesPopularesPublico(req, res, next) {
+  try { res.json(await svc.getDisfracesPopularesPublico()); } catch (e) { next(e); }
+}
 async function getDisfrazByIdPublico(req, res, next) {
   try { res.json(await svc.getDisfrazByIdPublico(req.params.id)); } catch (e) { next(e); }
 }
@@ -54,5 +57,5 @@ module.exports = {
   getAllPiezas, getPiezaById, createPieza, updatePieza, deletePieza,
   getAllCategorias, createCategoria, updateCategoria, deleteCategoria,
   getAllDisfraces, createDisfraz,
-  getDisfracesPúblico, getDisfrazByIdPublico, getAllCategoriasPublico,
+  getDisfracesPúblico, getDisfrazByIdPublico, getAllCategoriasPublico, getDisfracesPopularesPublico,
 };

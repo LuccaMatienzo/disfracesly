@@ -260,6 +260,86 @@ async function getDisfracesPúblico(query) {
   return paginatedResponse(enriched, total, page, limit);
 }
 
+let popularesCache = null;
+let popularesCacheExpiry = 0;
+const CACHE_TTL_MS = 1000 * 60 * 60; // 1 hora de caché
+
+async function getDisfracesPopularesPublico() {
+  const now = Date.now();
+  if (popularesCache && now < popularesCacheExpiry) {
+    return popularesCache;
+  }
+
+  // Query to find top 4 most rented disfraces based on operacion_detalle
+  const topRaw = await prisma.$queryRaw`
+    SELECT dp.id_disfraz, COUNT(od.id_operacion_detalle) as ops_count
+    FROM operacion_detalle od
+    JOIN pieza_stock ps ON od.id_pieza_stock = ps.id_pieza_stock
+    JOIN disfraz_pieza dp ON ps.id_pieza = dp.id_pieza
+    GROUP BY dp.id_disfraz
+    ORDER BY ops_count DESC
+    LIMIT 4
+  `;
+
+  let ids = topRaw.map(r => r.id_disfraz);
+
+  // Fallback to random/latest if not enough operations
+  if (ids.length < 4) {
+    const fallback = await prisma.disfraz.findMany({
+      where: withNotDeleted({ id_disfraz: { notIn: ids } }),
+      take: 4 - ids.length,
+      orderBy: { id_disfraz: 'desc' }
+    });
+    ids = [...ids, ...fallback.map(f => f.id_disfraz)];
+  }
+
+  const data = await prisma.disfraz.findMany({
+    where: withNotDeleted({ id_disfraz: { in: ids } }),
+    include: {
+      imagenes: {
+        where: { es_principal: true },
+        include: { imagen: true },
+        take: 1,
+      },
+      piezas: {
+        include: {
+          pieza: {
+            include: {
+              categorias: { include: { categoriaMotivo: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  // Maintain order
+  const orderedData = ids.map(id => data.find(d => String(d.id_disfraz) === String(id))).filter(Boolean);
+
+  const enriched = orderedData.map((d) => {
+    const imagenPrincipal = d.imagenes[0]?.imagen?.url ?? null;
+    const categorias = d.piezas
+      .flatMap((dp) => dp.pieza.categorias.map((pc) => ({
+        id: pc.categoriaMotivo.id_categoria_motivo,
+        nombre: pc.categoriaMotivo.nombre
+      })))
+      .filter((v, i, arr) => arr.findIndex(t => t.id === v.id) === i);
+
+    return {
+      id_disfraz: d.id_disfraz,
+      nombre: d.nombre,
+      descripcion: d.descripcion,
+      imagenPrincipal,
+      categorias,
+    };
+  });
+
+  popularesCache = enriched;
+  popularesCacheExpiry = now + CACHE_TTL_MS;
+
+  return enriched;
+}
+
 async function getDisfrazByIdPublico(id) {
   const disfraz = await prisma.disfraz.findFirst({
     where: withNotDeleted({ id_disfraz: BigInt(id) }),
@@ -340,5 +420,5 @@ module.exports = {
   getAllPiezas, getPiezaById, createPieza, updatePieza, deletePieza,
   getAllCategorias, createCategoria, updateCategoria, deleteCategoria,
   getAllDisfraces, createDisfraz,
-  getDisfracesPúblico, getDisfrazByIdPublico,
+  getDisfracesPúblico, getDisfrazByIdPublico, getDisfracesPopularesPublico,
 };

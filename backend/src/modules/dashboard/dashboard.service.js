@@ -259,7 +259,7 @@ async function getCashFlowToday() {
       deleted_at: null,
       OR: [
         { alquiler: { etapa: { in: ['RESERVADO', 'LISTO_PARA_RETIRO', 'RETIRADO'] } } },
-        { venta: { etapa: { in: ['RESERVADO', 'LISTO_PARA_ENTREGA', 'ENTREGADO'] } } },
+        { venta: { etapa: { in: ['RESERVADO', 'LISTO_PARA_ENTREGA'] } } },
       ],
     },
     include: {

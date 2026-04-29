@@ -93,8 +93,8 @@ export default function DetalleDisfraz() {
           <span className="material-symbols-outlined text-xs">chevron_right</span>
           {disfraz.categorias?.[0] && (
             <>
-              <Link 
-                to={`/catalogo?categoria=${disfraz.categorias[0].id}`} 
+              <Link
+                to={`/catalogo?categoria=${disfraz.categorias[0].id}`}
                 className="hover:text-primary transition-colors"
               >
                 {disfraz.categorias[0].nombre}
@@ -123,9 +123,8 @@ export default function DetalleDisfraz() {
               <button
                 key={i}
                 onClick={() => setActiveImg(i)}
-                className={`col-span-3 rounded-xl overflow-hidden transition-all hover:scale-105 ${
-                  activeImg === i ? 'ring-2 ring-primary' : 'opacity-70 hover:opacity-100'
-                }`}
+                className={`col-span-3 rounded-xl overflow-hidden transition-all hover:scale-105 ${activeImg === i ? 'ring-2 ring-primary' : 'opacity-70 hover:opacity-100'
+                  }`}
               >
                 <img
                   src={img}
@@ -142,7 +141,7 @@ export default function DetalleDisfraz() {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 {disfraz.categorias?.[0] && (
-                  <Link 
+                  <Link
                     to={`/catalogo?categoria=${disfraz.categorias[0].id}`}
                     className="text-tertiary font-label text-xs uppercase tracking-widest hover:text-primary transition-colors"
                   >
@@ -171,11 +170,10 @@ export default function DetalleDisfraz() {
                     <button
                       key={t}
                       onClick={() => setTalleSeleccionado(t)}
-                      className={`w-14 h-14 flex items-center justify-center rounded-xl font-label font-bold text-sm transition-all ${
-                        talleSeleccionado === t
-                          ? 'editorial-gradient text-white shadow-md scale-105'
-                          : 'bg-surface-container-low text-tertiary hover:bg-primary-container hover:text-primary-on-container'
-                      }`}
+                      className={`w-14 h-14 flex items-center justify-center rounded-xl font-label font-bold text-sm transition-all ${talleSeleccionado === t
+                        ? 'editorial-gradient text-white shadow-md scale-105'
+                        : 'bg-surface-container-low text-tertiary hover:bg-primary-container hover:text-primary-on-container'
+                        }`}
                     >
                       {t}
                     </button>
@@ -228,7 +226,7 @@ export default function DetalleDisfraz() {
                 Solicitar por WhatsApp
               </button>
               <p className="text-center text-[11px] text-tertiary mt-4 uppercase tracking-widest">
-                Sujeto a confirmación · Respuesta en minutos
+                Sujeto a confirmación por parte de la tienda.
               </p>
             </div>
 
@@ -253,19 +251,6 @@ export default function DetalleDisfraz() {
                 </div>
               </div>
             )}
-
-            {/* Trust badges */}
-            <div className="flex items-center gap-8 py-2 opacity-60 hover:opacity-100 transition-opacity">
-              {[
-                { icon: 'verified', label: 'Calidad Verificada' },
-                { icon: 'sanitizer', label: 'Deep Cleaned' },
-              ].map(({ icon, label }) => (
-                <div key={label} className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-xl">{icon}</span>
-                  <span className="text-[10px] font-bold uppercase tracking-tight">{label}</span>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </main>

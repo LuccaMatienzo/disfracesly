@@ -37,7 +37,6 @@ enum EtapaAlquiler {
 enum EtapaVenta {
   RESERVADO
   LISTO_PARA_ENTREGA
-  ENTREGADO
   VENDIDO
   CANCELADO
 }

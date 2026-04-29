@@ -5,23 +5,22 @@
 
 const config = {
   // Estado pieza_stock
-  DISPONIBLE:         { label: 'Disponible',          cls: 'bg-primary-container text-primary-on-container' },
-  RESERVADA:          { label: 'Reservada',           cls: 'bg-secondary-container/30 text-secondary' },
-  ALQUILADA:          { label: 'Alquilada',           cls: 'bg-secondary-container text-secondary-on-container' },
-  VENDIDA:            { label: 'Vendida',             cls: 'bg-on-surface/10 text-on-surface-variant' },
-  FUERA_DE_SERVICIO:  { label: 'Fuera de servicio',  cls: 'bg-tertiary-container text-tertiary-on-container' },
+  DISPONIBLE: { label: 'Disponible', cls: 'bg-primary-container text-primary-on-container' },
+  RESERVADA: { label: 'Reservada', cls: 'bg-secondary-container/30 text-secondary' },
+  ALQUILADA: { label: 'Alquilada', cls: 'bg-secondary-container text-secondary-on-container' },
+  VENDIDA: { label: 'Vendida', cls: 'bg-on-surface/10 text-on-surface-variant' },
+  FUERA_DE_SERVICIO: { label: 'Fuera de servicio', cls: 'bg-tertiary-container text-tertiary-on-container' },
 
   // Etapa alquiler
-  RESERVADO:          { label: 'Reservado',           cls: 'bg-secondary-container/30 text-secondary' },
-  LISTO_PARA_RETIRO:  { label: 'Listo para retiro',  cls: 'bg-primary/10 text-primary' },
-  RETIRADO:           { label: 'Retirado',            cls: 'bg-secondary-container text-secondary-on-container' },
-  DEVUELTO:           { label: 'Devuelto',            cls: 'bg-primary-container text-primary-on-container' },
-  CANCELADO:          { label: 'Cancelado',           cls: 'bg-error-container text-error-on-container' },
+  RESERVADO: { label: 'Reservado', cls: 'bg-secondary-container/30 text-secondary' },
+  LISTO_PARA_RETIRO: { label: 'Listo para retiro', cls: 'bg-primary/10 text-primary' },
+  RETIRADO: { label: 'Retirado', cls: 'bg-secondary-container text-secondary-on-container' },
+  DEVUELTO: { label: 'Devuelto', cls: 'bg-primary-container text-primary-on-container' },
+  CANCELADO: { label: 'Cancelado', cls: 'bg-error-container text-error-on-container' },
 
   // Etapa venta
   LISTO_PARA_ENTREGA: { label: 'Listo para entrega', cls: 'bg-primary/10 text-primary' },
-  ENTREGADO:          { label: 'Entregado',           cls: 'bg-primary-container text-primary-on-container' },
-  VENDIDO:            { label: 'Vendido',             cls: 'bg-on-surface/10 text-on-surface-variant' },
+  VENDIDO: { label: 'Vendido', cls: 'bg-on-surface/10 text-on-surface-variant' },
 };
 
 export default function Badge({ value, className = '' }) {

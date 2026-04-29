@@ -7,7 +7,7 @@ import ToastContainer from '@/components/ui/Toast';
 const NAV_ITEMS = [
   { to: '/admin', label: 'Panel General', icon: 'grid_view', end: true },
   { to: '/admin/catalogo', label: 'Catálogo', icon: 'apparel', end: false },
-  { to: '/admin/operaciones', label: 'Alquileres', icon: 'calendar_today', end: false },
+  { to: '/admin/operaciones', label: 'Operaciones', icon: 'calendar_today', end: false },
   { to: '/admin/clientes', label: 'Clientes', icon: 'people', end: false },
   { to: '/admin/stock', label: 'Stock', icon: 'inventory_2', end: false },
 ];
@@ -47,7 +47,7 @@ export default function PageWrapper() {
           className={`flex items-center border-b border-outline-variant/20 shrink-0 transition-all duration-300 ${sidebarOpen ? 'gap-3 px-5 py-5 justify-between' : 'flex-col gap-2 px-3 py-4 justify-center'
             }`}
         >
-          <div 
+          <div
             className="flex items-center gap-2.5 min-w-0 cursor-pointer hover:opacity-80 transition-opacity"
             onClick={() => navigate('/admin')}
             title="Ir al Panel General"
