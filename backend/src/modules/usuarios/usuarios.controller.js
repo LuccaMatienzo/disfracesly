@@ -23,4 +23,14 @@ async function remove(req, res, next) {
   } catch (e) { next(e); }
 }
 
-module.exports = { getAll, getById, create, update, remove };
+async function updateProfile(req, res, next) {
+  try {
+    const result = await svc.updateProfile(req.user.id_usuario, req.body);
+    res.json(result);
+  } catch (e) {
+    next(e);
+  }
+}
+
+module.exports = { getAll, getById, create, update, remove, updateProfile };
+

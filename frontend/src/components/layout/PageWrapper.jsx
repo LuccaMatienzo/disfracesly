@@ -3,6 +3,9 @@ import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import ToastContainer from '@/components/ui/Toast';
+import ProfileDropdown from './ProfileDropdown';
+import SettingsModal from './SettingsModal';
+import AccountModal from './AccountModal';
 
 const NAV_ITEMS = [
   { to: '/admin', label: 'Panel General', icon: 'grid_view', end: true },
@@ -17,7 +20,8 @@ export default function PageWrapper() {
   const navigate = useNavigate();
   const toast = useToast();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [searchValue, setSearchValue] = useState('');
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -93,7 +97,7 @@ export default function PageWrapper() {
               }`}
           >
             <span className="material-symbols-outlined text-xl">add</span>
-            {sidebarOpen && 'Nuevo Alquiler'}
+            {sidebarOpen && 'Nueva Operación'}
           </button>
         </div>
 
@@ -163,18 +167,6 @@ export default function PageWrapper() {
       >
         {/* Top header */}
         <header className="sticky top-0 z-20 bg-card-panel/90 backdrop-blur-md border-b border-outline-variant/20 px-6 py-3 flex items-center gap-4">
-          {/* Search */}
-          <div className="relative flex-1 max-w-sm">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-tertiary text-lg pointer-events-none">
-              search
-            </span>
-            <input
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              placeholder="Buscar en el sistema..."
-              className="w-full pl-9 pr-4 py-2 rounded-xl bg-surface-container-low border border-transparent text-sm text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
-            />
-          </div>
 
           <div className="ml-auto flex items-center gap-3">
             {/* Fecha */}
@@ -188,10 +180,11 @@ export default function PageWrapper() {
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-secondary-container rounded-full" />
             </button>
 
-            {/* Avatar */}
-            <button className="w-9 h-9 rounded-xl gradient-secondary flex items-center justify-center text-white font-headline font-bold text-sm shadow-sm" aria-label="Perfil">
-              {initials}
-            </button>
+            {/* Avatar Profile Dropdown */}
+            <ProfileDropdown 
+              onOpenSettings={() => setIsSettingsOpen(true)}
+              onOpenAccount={() => setIsAccountOpen(true)}
+            />
           </div>
         </header>
 
@@ -202,6 +195,15 @@ export default function PageWrapper() {
       </main>
 
       <ToastContainer toasts={toast.toasts} onRemove={toast.remove} />
+
+      <SettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)} 
+      />
+      <AccountModal 
+        isOpen={isAccountOpen} 
+        onClose={() => setIsAccountOpen(false)} 
+      />
     </div>
   );
 }

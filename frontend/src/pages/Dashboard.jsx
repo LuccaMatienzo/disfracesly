@@ -1,6 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import api from '@/api/axios.instance';
 import { useAuth } from '@/context/AuthContext';
+import { MdOutlinePendingActions } from 'react-icons/md';
+import { LuPackageOpen } from 'react-icons/lu';
+import { BsBagCheck } from 'react-icons/bs';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -108,20 +111,20 @@ function KpiActiveRentals({ data }) {
   return (
     <div className="bg-card-panel rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
       <div className="absolute top-8 right-6 pointer-events-none opacity-20 text-tertiary">
-        <span className="material-symbols-outlined" style={{ fontSize: '50px' }}>checkroom</span>
+        <MdOutlinePendingActions size={50} />
       </div>
       <div className="relative z-10 flex flex-col w-full">
         <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">Operaciones Activas</p>
         <p className="text-4xl font-headline font-black text-on-surface">{data.totalItems}</p>
       </div>
-      {/* <div className="flex gap-4 mt-2 text-xs">
+      <div className="flex gap-4 mt-2 text-xs">
         {data.overdue > 0 && (
           <span className="text-error font-semibold">Atrasados ({data.overdue})</span>
         )}
         {data.dueToday > 0 && (
           <span className="text-primary font-semibold">Vencen Hoy ({data.dueToday})</span>
         )}
-      </div> */}
+      </div>
     </div>
   );
 }
@@ -130,24 +133,13 @@ function KpiPreparation({ data }) {
   return (
     <div className="bg-card-panel rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
       <div className="absolute top-8 right-6 pointer-events-none opacity-20 text-tertiary">
-        <span className="material-symbols-outlined" style={{ fontSize: '50px' }}>inventory_2</span>
+        <LuPackageOpen size={50} />
       </div>
       <div className="relative z-10 flex flex-col w-full">
         <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">En Preparación</p>
         <p className="text-4xl font-headline font-black text-on-surface">{data.total}</p>
       </div>
-      <div className="mt-3 w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
-        <div
-          className="h-full rounded-full"
-          style={{
-            width: data.total > 0 ? `${Math.min(100, (data.urgentTomorrow / data.total) * 100)}%` : '0%',
-            background: 'linear-gradient(90deg, #84cc16, #facc15)',
-          }}
-        />
-      </div>
-      {data.urgentTomorrow > 0 && (
-        <p className="text-xs text-on-surface-variant mt-1.5">{data.urgentTomorrow} Urgentes para mañana</p>
-      )}
+
     </div>
   );
 }
@@ -156,7 +148,7 @@ function KpiReadyForPickup({ data }) {
   return (
     <div className="bg-card-panel rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
       <div className="absolute top-8 right-6 pointer-events-none opacity-20 text-tertiary">
-        <span className="material-symbols-outlined" style={{ fontSize: '50px' }}>package_2</span>
+        <BsBagCheck size={50} />
       </div>
       <div className="relative z-10 flex flex-col w-full">
         <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">Listos para Retiro</p>

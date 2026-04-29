@@ -6,6 +6,11 @@ const { validate } = require('../../middleware/validate.middleware');
 const { createUsuarioSchema, updateUsuarioSchema } = require('./usuarios.service');
 
 router.use(authenticate);
+
+// Perfil de usuario (cualquier rol autenticado)
+router.patch('/profile', ctrl.updateProfile);
+
+// Resto de rutas requieren rol ADMIN
 router.use(requireRol('ADMIN'));
 
 router.get('/', ctrl.getAll);

@@ -30,6 +30,12 @@ const updateUsuarioSchema = z.object({
     .optional(),
 });
 
+const updateProfileSchema = z.object({
+  nombre:   z.string().min(1).max(100).optional(),
+  foto_url: z.string().url().optional().nullable(),
+  password: z.string().min(8, 'La nueva contraseña debe tener al menos 8 caracteres').optional(),
+});
+
 // ─── Services ─────────────────────────────────────────────────────────────────
 
 async function getAllUsuarios(query) {
@@ -126,12 +132,54 @@ async function deleteUsuario(id) {
   });
 }
 
+/**
+ * Actualiza el perfil del usuario autenticado.
+ * Permite modificar nombre, foto y/o contraseña.
+ * Retorna el usuario actualizado sin la contraseña.
+ */
+async function updateProfile(id, { nombre, foto_url, password }) {
+  const dataUsuario = {};
+  const dataPersona = {};
+
+  if (foto_url !== undefined) dataUsuario.foto_url = foto_url;
+  if (password)               dataUsuario.contrasena = await hashPassword(password);
+  if (nombre  !== undefined)  dataPersona.nombre = nombre;
+
+  const updated = await prisma.usuario.update({
+    where: { id_usuario: id },
+    data: {
+      ...dataUsuario,
+      ...(Object.keys(dataPersona).length > 0 && { persona: { update: dataPersona } }),
+    },
+    select: {
+      id_usuario: true,
+      id_persona: true,
+      id_rol:     true,
+      correo:     true,
+      foto_url:   true,
+      persona:    { select: { nombre: true, apellido: true } },
+      rol:        { select: { nombre: true } },
+    },
+  });
+
+  return {
+    id_usuario: updated.id_usuario,
+    id_persona: updated.id_persona,
+    correo:     updated.correo,
+    foto_url:   updated.foto_url,
+    rol:        updated.rol.nombre,
+    persona:    updated.persona,
+  };
+}
+
 module.exports = {
   createUsuarioSchema,
   updateUsuarioSchema,
+  updateProfileSchema,
   getAllUsuarios,
   getUsuarioById,
   createUsuario,
   updateUsuario,
   deleteUsuario,
+  updateProfile,
 };

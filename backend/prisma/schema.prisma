@@ -203,6 +203,7 @@ model Usuario {
   id_rol     BigInt
   correo     String    @unique @db.VarChar(100)
   contrasena String
+  foto_url   String?
   deleted_at DateTime?
 
   persona       Persona                @relation(fields: [id_persona], references: [id_persona])

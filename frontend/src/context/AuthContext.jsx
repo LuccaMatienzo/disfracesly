@@ -13,7 +13,12 @@ export function AuthProvider({ children }) {
     const stored = localStorage.getItem('user');
     if (token && stored) {
       try {
-        setUser(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        if (parsed?.rol && typeof parsed.rol === 'object') {
+          parsed.rol = parsed.rol.nombre;
+          localStorage.setItem('user', JSON.stringify(parsed));
+        }
+        setUser(parsed);
       } catch {
         localStorage.clear();
       }
@@ -38,6 +43,17 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
+  const updateLocalUser = useCallback((updatedData) => {
+    setUser(prev => {
+      const newUser = { ...prev, ...updatedData };
+      if (updatedData.persona && prev?.persona) {
+        newUser.persona = { ...prev.persona, ...updatedData.persona };
+      }
+      localStorage.setItem('user', JSON.stringify(newUser));
+      return newUser;
+    });
+  }, []);
+
   const hasPermiso = useCallback(
     (permiso) => user?.permisos?.includes(permiso) ?? false,
     [user]
@@ -56,6 +72,7 @@ export function AuthProvider({ children }) {
         isLoading,
         login,
         logout,
+        updateLocalUser,
         hasPermiso,
         hasRol,
       }}

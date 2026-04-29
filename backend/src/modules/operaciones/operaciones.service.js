@@ -53,7 +53,7 @@ const INCLUDE_OPERACION_FULL = {
   },
   alquiler: true,
   venta: true,
-  pagos: { where: { deleted_at: null }, orderBy: { fecha: 'desc' } },
+  pagos: { where: { deleted_at: null }, orderBy: { fecha: 'desc' }, include: { persona: { select: { nombre: true, apellido: true } } }, },
   interacciones: { where: { deleted_at: null }, include: { usuario: { include: { persona: true } } }, orderBy: { fecha_hora: 'desc' } },
 };
 

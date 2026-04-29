@@ -97,17 +97,22 @@ export default function AlquilerForm() {
     },
   });
 
-  // Selección manual de piezas
-  const [selectedIds, setSelectedIds] = useState([]);
+  // Mapa de piezas seleccionadas: id → objeto pieza completo
+  // Usar un Map garantiza que el nombre esté disponible aunque la pieza
+  // desaparezca de la lista al cambiar el filtro de búsqueda.
+  const [selectedPiezas, setSelectedPiezas] = useState(new Map());
 
-  const togglePieza = (id) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-    );
+  const togglePieza = (pieza) => {
+    const id = pieza.id_pieza_stock;
+    setSelectedPiezas((prev) => {
+      const next = new Map(prev);
+      next.has(id) ? next.delete(id) : next.set(id, pieza);
+      return next;
+    });
   };
 
   const onSubmit = async (data) => {
-    if (selectedIds.length === 0) {
+    if (selectedPiezas.size === 0) {
       toast.error('Seleccioná al menos una pieza antes de continuar.');
       return;
     }
@@ -124,7 +129,7 @@ export default function AlquilerForm() {
     try {
       await createAlquiler.mutateAsync({
         id_cliente: Number(data.id_cliente),
-        pieza_stock_ids: selectedIds.map(Number),   // BigInt → string en JSON, forzar a number
+        pieza_stock_ids: [...selectedPiezas.keys()].map(Number),
         deposito_monto: Number(data.deposito_monto),
         monto_total: Number(data.monto_total),
         fecha_devolucion: fechaISO,
@@ -186,22 +191,20 @@ export default function AlquilerForm() {
               onChange={(e) => setStockSearch(e.target.value)}
               className="mb-4"
             />
-            {selectedIds.length > 0 && (
+            {selectedPiezas.size > 0 && (
               <div className="mb-3 flex gap-2 flex-wrap">
                 <span className="text-label-lg text-on-surface-variant">Seleccionadas:</span>
-                {selectedIds.map((id) => {
-                  const item = stockItems.find((s) => s.id_pieza_stock === id);
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => togglePieza(id)}
-                      className="bg-primary/10 text-primary text-label-lg rounded-pill px-3 py-1 hover:bg-error/10 hover:text-error transition-colors"
-                    >
-                      {item?.pieza?.nombre ?? `#${id}`} ✕
-                    </button>
-                  );
-                })}
+                {[...selectedPiezas.values()].map((pieza) => (
+                  <button
+                    key={pieza.id_pieza_stock}
+                    type="button"
+                    onClick={() => togglePieza(pieza)}
+                    className="bg-primary/10 text-primary text-label-lg rounded-pill px-3 py-1 hover:bg-error/10 hover:text-error transition-colors"
+                  >
+                    {pieza.pieza?.nombre ?? `#${pieza.id_pieza_stock}`}
+                    {pieza.talle ? ` (${pieza.talle})` : ''} ✕
+                  </button>
+                ))}
               </div>
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-64 overflow-y-auto">
@@ -209,10 +212,10 @@ export default function AlquilerForm() {
                 <button
                   key={s.id_pieza_stock}
                   type="button"
-                  onClick={() => togglePieza(s.id_pieza_stock)}
+                  onClick={() => togglePieza(s)}
                   className={`
                     flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all
-                    ${selectedIds.includes(s.id_pieza_stock)
+                    ${selectedPiezas.has(s.id_pieza_stock)
                       ? 'border-primary bg-primary/5'
                       : 'border-outline-variant/20 hover:border-primary/30'
                     }
@@ -226,7 +229,7 @@ export default function AlquilerForm() {
                 </button>
               ))}
             </div>
-            {selectedIds.length === 0 && (
+            {selectedPiezas.size === 0 && (
               <p className="text-label-lg text-error mt-2">Seleccioná al menos una pieza</p>
             )}
           </div>
@@ -267,7 +270,7 @@ export default function AlquilerForm() {
 
           <div className="flex gap-3 justify-end">
             <Button type="button" variant="secondary" onClick={() => navigate(-1)}>Cancelar</Button>
-            <Button type="submit" loading={isSubmitting} disabled={selectedIds.length === 0 || isSubmitting}>
+            <Button type="submit" loading={isSubmitting} disabled={selectedPiezas.size === 0 || isSubmitting}>
               Crear alquiler
             </Button>
           </div>
