@@ -7,7 +7,7 @@ const { parsePagination, paginatedResponse } = require('../../utils/pagination')
 // ─── Schemas ──────────────────────────────────────────────────────────────────
 
 const ETAPAS_ALQUILER = ['RESERVADO', 'LISTO_PARA_RETIRO', 'RETIRADO', 'DEVUELTO', 'CANCELADO'];
-const ETAPAS_VENTA = ['RESERVADO', 'LISTO_PARA_ENTREGA', 'ENTREGADO', 'VENDIDO', 'CANCELADO'];
+const ETAPAS_VENTA = ['RESERVADO', 'LISTO_PARA_ENTREGA', 'VENDIDO', 'CANCELADO'];
 
 const createAlquilerSchema = z.object({
   id_cliente: z.number().int().positive(),
@@ -40,8 +40,15 @@ const avanzarEtapaVentaSchema = z.object({
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
+const PERSONA_SAFE_SELECT = {
+  id_persona: true,
+  documento: true,
+  nombre: true,
+  apellido: true,
+};
+
 const INCLUDE_OPERACION_FULL = {
-  cliente: { include: { persona: true } },
+  cliente: { select: { id_cliente: true, telefono: true, domicilio: true, persona: { select: PERSONA_SAFE_SELECT } } },
   detalles: {
     include: {
       piezaStock: {
@@ -53,8 +60,8 @@ const INCLUDE_OPERACION_FULL = {
   },
   alquiler: true,
   venta: true,
-  pagos: { where: { deleted_at: null }, orderBy: { fecha: 'desc' }, include: { persona: { select: { nombre: true, apellido: true } } }, },
-  interacciones: { where: { deleted_at: null }, include: { usuario: { include: { persona: true } } }, orderBy: { fecha_hora: 'desc' } },
+  pagos: { where: { deleted_at: null }, orderBy: { fecha: 'desc' }, include: { persona: { select: { nombre: true, apellido: true } } } },
+  interacciones: { where: { deleted_at: null }, include: { usuario: { select: { id_usuario: true, correo: true, persona: { select: PERSONA_SAFE_SELECT } } } }, orderBy: { fecha_hora: 'desc' } },
 };
 
 /**
@@ -96,7 +103,7 @@ async function getAllOperaciones(query) {
       skip,
       take,
       include: {
-        cliente: { include: { persona: true } },
+        cliente: { select: { id_cliente: true, telefono: true, domicilio: true, persona: { select: PERSONA_SAFE_SELECT } } },
         alquiler: true,
         venta: true,
         detalles: { include: { piezaStock: { include: { pieza: true } } } },
@@ -219,12 +226,23 @@ async function avanzarEtapaAlquiler(id, data) {
   return prisma.$transaction(async (tx) => {
     const { etapa, deposito_devuelto_monto, deposito_motivo_retencion } = data;
 
-    // Transición de estado de piezas según etapa
-    let nuevoEstadoPieza = null;
-    if (etapa === 'RETIRADO') nuevoEstadoPieza = 'ALQUILADA';
-    if (etapa === 'DEVUELTO' || etapa === 'CANCELADO') nuevoEstadoPieza = 'DISPONIBLE';
+    // Transición de estado de piezas según etapa (Mapeo Estricto)
+    let nuevoEstadoPieza;
+    switch (etapa) {
+      case 'RESERVADO':
+      case 'LISTO_PARA_RETIRO':
+        nuevoEstadoPieza = 'RESERVADA';
+        break;
+      case 'RETIRADO':
+        nuevoEstadoPieza = 'ALQUILADA';
+        break;
+      case 'DEVUELTO':
+      case 'CANCELADO':
+        nuevoEstadoPieza = 'DISPONIBLE';
+        break;
+    }
 
-    if (nuevoEstadoPieza) {
+    if (nuevoEstadoPieza && piezaIds.length > 0) {
       await tx.piezaStock.updateMany({
         where: { id_pieza_stock: { in: piezaIds } },
         data: { estado_pieza_stock: nuevoEstadoPieza },
@@ -256,11 +274,22 @@ async function avanzarEtapaVenta(id, data) {
   return prisma.$transaction(async (tx) => {
     const { etapa } = data;
 
-    let nuevoEstadoPieza = null;
-    if (etapa === 'ENTREGADO' || etapa === 'VENDIDO') nuevoEstadoPieza = 'VENDIDA';
-    if (etapa === 'CANCELADO') nuevoEstadoPieza = 'DISPONIBLE';
+    // Transición de estado de piezas según etapa (Mapeo Estricto)
+    let nuevoEstadoPieza;
+    switch (etapa) {
+      case 'RESERVADO':
+      case 'LISTO_PARA_ENTREGA':
+        nuevoEstadoPieza = 'RESERVADA';
+        break;
+      case 'VENDIDO':
+        nuevoEstadoPieza = 'VENDIDA';
+        break;
+      case 'CANCELADO':
+        nuevoEstadoPieza = 'DISPONIBLE';
+        break;
+    }
 
-    if (nuevoEstadoPieza) {
+    if (nuevoEstadoPieza && piezaIds.length > 0) {
       await tx.piezaStock.updateMany({
         where: { id_pieza_stock: { in: piezaIds } },
         data: { estado_pieza_stock: nuevoEstadoPieza },
@@ -270,6 +299,7 @@ async function avanzarEtapaVenta(id, data) {
     return tx.venta.update({
       where: { id_venta: operacion.venta.id_venta },
       data: { etapa },
+      include: { operacion: { include: INCLUDE_OPERACION_FULL } },
     });
   });
 }

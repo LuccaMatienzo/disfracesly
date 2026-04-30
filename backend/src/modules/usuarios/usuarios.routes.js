@@ -3,12 +3,12 @@ const ctrl = require('./usuarios.controller');
 const { authenticate } = require('../../middleware/auth.middleware');
 const { requireRol } = require('../../middleware/rbac.middleware');
 const { validate } = require('../../middleware/validate.middleware');
-const { createUsuarioSchema, updateUsuarioSchema } = require('./usuarios.service');
+const { createUsuarioSchema, updateUsuarioSchema, updateProfileSchema } = require('./usuarios.service');
 
 router.use(authenticate);
 
 // Perfil de usuario (cualquier rol autenticado)
-router.patch('/profile', ctrl.updateProfile);
+router.patch('/profile', validate(updateProfileSchema), ctrl.updateProfile);
 
 // Resto de rutas requieren rol ADMIN
 router.use(requireRol('ADMIN'));

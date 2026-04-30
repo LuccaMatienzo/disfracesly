@@ -1,5 +1,6 @@
 const { z } = require('zod');
 const { prisma } = require('../../config/database');
+const { Prisma } = require('@prisma/client');
 const { ApiError } = require('../../utils/ApiError');
 const { withNotDeleted } = require('../../utils/softDelete');
 const { parsePagination, paginatedResponse } = require('../../utils/pagination');
@@ -184,86 +185,37 @@ async function deleteDisfraz(id) {
 async function getDisfracesPúblico(query) {
   const { skip, take, page, limit } = parsePagination(query);
   const search = query.search ?? '';
-  const categoriaId = query.categoria ? BigInt(query.categoria) : undefined;
+  const categoriaId = query.categoria ? parseInt(query.categoria, 10) : undefined;
 
-  const where = withNotDeleted({
-    nombre: { contains: search, mode: 'insensitive' },
-    ...(categoriaId && {
-      piezas: {
-        some: {
-          pieza: {
-            categorias: { some: { id_categoria_motivo: categoriaId } },
-          },
-        },
-      },
-    }),
-  });
+  let whereClausula = Prisma.sql`WHERE d.deleted_at IS NULL AND d.nombre ILIKE ${'%' + search + '%'}`;
+  
+  if (categoriaId) {
+    whereClausula = Prisma.sql`${whereClausula} AND d.categorias @> ${`[{"id": ${categoriaId}}]`}::jsonb`;
+  }
 
-  const [data, total] = await prisma.$transaction([
-    prisma.disfraz.findMany({
-      where, skip, take,
-      include: {
-        imagenes: {
-          where: { es_principal: true },
-          include: { imagen: true },
-          take: 1,
-        },
-        piezas: {
-          include: {
-            pieza: {
-              include: {
-                categorias: { include: { categoriaMotivo: true } },
-                stocks: {
-                  where: { deleted_at: null },
-                  select: { estado_pieza_stock: true, talle: true },
-                },
-              },
-            },
-          },
-        },
-      },
-      orderBy: { nombre: 'asc' },
-    }),
-    prisma.disfraz.count({ where }),
+  const [data, totalRaw] = await prisma.$transaction([
+    prisma.$queryRaw`
+      SELECT 
+        id_disfraz, nombre, descripcion, imagen_principal AS "imagenPrincipal", 
+        disponibilidad, talles, categorias
+      FROM gestion.v_disfraz_publico d
+      ${whereClausula}
+      ORDER BY d.nombre ASC
+      LIMIT ${take} OFFSET ${skip}
+    `,
+    prisma.$queryRaw`
+      SELECT COUNT(*)::int AS total
+      FROM gestion.v_disfraz_publico d
+      ${whereClausula}
+    `
   ]);
 
-  // Enriquecer con disponibilidad calculada
-  const enriched = data.map((d) => {
-    const allStocks = d.piezas.flatMap((dp) => dp.pieza.stocks);
-    const disponibilidad = allStocks.some((s) => s.estado_pieza_stock === 'DISPONIBLE')
-      ? 'DISPONIBLE'
-      : allStocks.some((s) => s.estado_pieza_stock === 'RESERVADA')
-      ? 'RESERVADA'
-      : allStocks.some((s) => s.estado_pieza_stock === 'ALQUILADA')
-      ? 'ALQUILADA'
-      : 'SIN_STOCK';
+  const enriched = data.map(d => ({
+    ...d,
+    id_disfraz: Number(d.id_disfraz),
+  }));
 
-    const talles = [...new Set(
-      allStocks
-        .filter((s) => s.estado_pieza_stock === 'DISPONIBLE' && s.talle)
-        .map((s) => s.talle)
-    )];
-
-    const imagenPrincipal = d.imagenes[0]?.imagen?.url ?? null;
-    const categorias = d.piezas
-      .flatMap((dp) => dp.pieza.categorias.map((pc) => ({
-        id: pc.categoriaMotivo.id_categoria_motivo,
-        nombre: pc.categoriaMotivo.nombre
-      })))
-      .filter((v, i, arr) => arr.findIndex(t => t.id === v.id) === i);
-
-    return {
-      id_disfraz: d.id_disfraz,
-      nombre: d.nombre,
-      descripcion: d.descripcion,
-      imagenPrincipal,
-      disponibilidad,
-      talles,
-      categorias,
-    };
-  });
-
-  return paginatedResponse(enriched, total, page, limit);
+  return paginatedResponse(enriched, totalRaw[0].total, page, limit);
 }
 
 let popularesCache = null;
@@ -276,74 +228,34 @@ async function getDisfracesPopularesPublico() {
     return popularesCache;
   }
 
-  // Query to find top 4 most rented disfraces based on operacion_detalle
-  const topRaw = await prisma.$queryRaw`
-    SELECT dp.id_disfraz, COUNT(od.id_operacion_detalle) as ops_count
-    FROM operacion_detalle od
-    JOIN pieza_stock ps ON od.id_pieza_stock = ps.id_pieza_stock
-    JOIN disfraz_pieza dp ON ps.id_pieza = dp.id_pieza
-    GROUP BY dp.id_disfraz
-    ORDER BY ops_count DESC
-    LIMIT 4
+  const data = await prisma.$queryRaw`
+    SELECT 
+      vp.id_disfraz, vp.nombre, vp.descripcion, 
+      vp.imagen_principal AS "imagenPrincipal", vp.categorias
+    FROM gestion.mv_disfraces_populares mp
+    JOIN gestion.v_disfraz_publico vp ON mp.id_disfraz = vp.id_disfraz
+    ORDER BY mp.ops_count DESC
   `;
 
-  let ids = topRaw.map(r => r.id_disfraz);
-
-  // Fallback to random/latest if not enough operations
-  if (ids.length < 4) {
-    const fallback = await prisma.disfraz.findMany({
-      where: withNotDeleted({ id_disfraz: { notIn: ids } }),
-      take: 4 - ids.length,
-      orderBy: { id_disfraz: 'desc' }
-    });
-    ids = [...ids, ...fallback.map(f => f.id_disfraz)];
+  let results = data.map(d => ({ ...d, id_disfraz: Number(d.id_disfraz) }));
+  
+  if (results.length < 4) {
+    const ids = results.map(r => r.id_disfraz);
+    const extraData = await prisma.$queryRaw`
+      SELECT 
+        id_disfraz, nombre, descripcion, imagen_principal AS "imagenPrincipal", categorias
+      FROM gestion.v_disfraz_publico
+      WHERE deleted_at IS NULL AND id_disfraz NOT IN (${ids.length ? Prisma.join(ids) : -1})
+      ORDER BY id_disfraz DESC
+      LIMIT ${4 - results.length}
+    `;
+    results = [...results, ...extraData.map(d => ({ ...d, id_disfraz: Number(d.id_disfraz) }))];
   }
 
-  const data = await prisma.disfraz.findMany({
-    where: withNotDeleted({ id_disfraz: { in: ids } }),
-    include: {
-      imagenes: {
-        where: { es_principal: true },
-        include: { imagen: true },
-        take: 1,
-      },
-      piezas: {
-        include: {
-          pieza: {
-            include: {
-              categorias: { include: { categoriaMotivo: true } },
-            },
-          },
-        },
-      },
-    },
-  });
-
-  // Maintain order
-  const orderedData = ids.map(id => data.find(d => String(d.id_disfraz) === String(id))).filter(Boolean);
-
-  const enriched = orderedData.map((d) => {
-    const imagenPrincipal = d.imagenes[0]?.imagen?.url ?? null;
-    const categorias = d.piezas
-      .flatMap((dp) => dp.pieza.categorias.map((pc) => ({
-        id: pc.categoriaMotivo.id_categoria_motivo,
-        nombre: pc.categoriaMotivo.nombre
-      })))
-      .filter((v, i, arr) => arr.findIndex(t => t.id === v.id) === i);
-
-    return {
-      id_disfraz: d.id_disfraz,
-      nombre: d.nombre,
-      descripcion: d.descripcion,
-      imagenPrincipal,
-      categorias,
-    };
-  });
-
-  popularesCache = enriched;
+  popularesCache = results;
   popularesCacheExpiry = now + CACHE_TTL_MS;
 
-  return enriched;
+  return results;
 }
 
 async function getDisfrazByIdPublico(id) {

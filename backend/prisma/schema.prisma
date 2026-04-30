@@ -6,7 +6,8 @@
 // ============================================================
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["views"]
 }
 
 datasource db {
@@ -403,4 +404,28 @@ model CategoriaMotivoImagen {
 
   @@unique([id_categoria_motivo, id_imagen])
   @@map("categoria_motivo_imagen")
+}
+
+// ============================================================
+// VISTAS OPTIMIZADAS (READ-ONLY)
+// ============================================================
+
+view v_disfraz_publico {
+  id_disfraz       BigInt    @id
+  nombre           String
+  descripcion      String?
+  imagen_principal String?
+  categorias       Json
+  talles           Json
+  disponibilidad   String
+  deleted_at       DateTime?
+
+  @@map("v_disfraz_publico")
+}
+
+view mv_disfraces_populares {
+  id_disfraz BigInt @id
+  ops_count  BigInt
+
+  @@map("mv_disfraces_populares")
 }

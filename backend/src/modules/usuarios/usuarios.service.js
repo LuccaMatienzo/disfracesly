@@ -1,4 +1,5 @@
 const { z } = require('zod');
+const bcrypt = require('bcryptjs');
 const { prisma } = require('../../config/database');
 const { ApiError } = require('../../utils/ApiError');
 const { hashPassword } = require('../auth/auth.service');
@@ -31,9 +32,11 @@ const updateUsuarioSchema = z.object({
 });
 
 const updateProfileSchema = z.object({
-  nombre:   z.string().min(1).max(100).optional(),
+  nombre:   z.string().trim().min(1, 'El nombre no puede estar vacío').max(100).optional(),
+  apellido: z.string().trim().min(1, 'El apellido no puede estar vacío').max(100).optional(),
   foto_url: z.string().url().optional().nullable(),
-  password: z.string().min(8, 'La nueva contraseña debe tener al menos 8 caracteres').optional(),
+  currentPassword: z.string().optional().or(z.literal('')),
+  password: z.string().min(8, 'La nueva contraseña debe tener al menos 8 caracteres').optional().or(z.literal('')),
 });
 
 // ─── Services ─────────────────────────────────────────────────────────────────
@@ -137,20 +140,44 @@ async function deleteUsuario(id) {
  * Permite modificar nombre, foto y/o contraseña.
  * Retorna el usuario actualizado sin la contraseña.
  */
-async function updateProfile(id, { nombre, foto_url, password }) {
+async function updateProfile(id, { nombre, apellido, foto_url, password, currentPassword }) {
   const dataUsuario = {};
   const dataPersona = {};
 
-  if (foto_url !== undefined) dataUsuario.foto_url = foto_url;
-  if (password)               dataUsuario.contrasena = await hashPassword(password);
-  if (nombre  !== undefined)  dataPersona.nombre = nombre;
+  if (foto_url !== undefined && foto_url !== null) dataUsuario.foto_url = foto_url;
+  
+  if (password && password.trim() !== '') {
+    if (!currentPassword) {
+      throw ApiError.unauthorized('Debe proveer la contraseña actual para cambiarla');
+    }
+    const userDb = await prisma.usuario.findUnique({ where: { id_usuario: id } });
+    if (!userDb) throw ApiError.notFound('Usuario no encontrado');
+    
+    const valid = await bcrypt.compare(currentPassword, userDb.contrasena);
+    if (!valid) throw ApiError.unauthorized('La contraseña actual es incorrecta');
+
+    dataUsuario.contrasena = await hashPassword(password);
+  }
+  
+  if (nombre !== undefined && nombre !== null) {
+    if (nombre.trim() === '') throw ApiError.badRequest('El nombre no puede estar vacío');
+    dataPersona.nombre = nombre.trim();
+  }
+  
+  if (apellido !== undefined && apellido !== null) {
+    if (apellido.trim() === '') throw ApiError.badRequest('El apellido no puede estar vacío');
+    dataPersona.apellido = apellido.trim();
+  }
+
+  const updateData = { ...dataUsuario };
+  
+  if (Object.keys(dataPersona).length > 0) {
+    updateData.persona = { update: dataPersona };
+  }
 
   const updated = await prisma.usuario.update({
     where: { id_usuario: id },
-    data: {
-      ...dataUsuario,
-      ...(Object.keys(dataPersona).length > 0 && { persona: { update: dataPersona } }),
-    },
+    data: updateData,
     select: {
       id_usuario: true,
       id_persona: true,

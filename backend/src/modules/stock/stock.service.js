@@ -19,7 +19,9 @@ const createStockSchema = z.object({
 const updateStockSchema = createStockSchema.partial();
 
 const cambiarEstadoSchema = z.object({
-  estado_pieza_stock: z.enum(ESTADOS),
+  estado_pieza_stock: z.enum(['DISPONIBLE', 'FUERA_DE_SERVICIO'], {
+    errorMap: () => ({ message: 'Solo se puede cambiar manualmente a DISPONIBLE o FUERA_DE_SERVICIO' })
+  }),
   motivo: z.string().optional(),
 });
 
