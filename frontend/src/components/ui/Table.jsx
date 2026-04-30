@@ -11,7 +11,9 @@ export default function Table({ columns, data, loading, emptyMessage = 'Sin resu
             {columns.map((col) => (
               <th
                 key={col.key}
-                className="px-4 py-3 text-left text-label-lg font-label font-medium uppercase tracking-wide text-on-surface-variant"
+                className={`px-4 py-3 text-label-lg font-label font-medium uppercase tracking-wide text-on-surface-variant ${
+                  col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'
+                }`}
                 style={{ width: col.width }}
               >
                 {col.label}
@@ -48,7 +50,12 @@ export default function Table({ columns, data, loading, emptyMessage = 'Sin resu
                 `}
               >
                 {columns.map((col) => (
-                  <td key={col.key} className="px-4 py-3.5 text-on-surface">
+                  <td
+                    key={col.key}
+                    className={`px-4 py-3.5 text-on-surface ${
+                      col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : ''
+                    }`}
+                  >
                     {col.render ? col.render(row[col.key], row) : row[col.key]}
                   </td>
                 ))}

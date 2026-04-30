@@ -173,6 +173,12 @@ async function createDisfraz(data) {
   });
 }
 
+async function deleteDisfraz(id) {
+  const disfraz = await prisma.disfraz.findFirst({ where: withNotDeleted({ id_disfraz: BigInt(id) }) });
+  if (!disfraz) throw ApiError.notFound('Disfraz no encontrado');
+  await prisma.disfraz.update({ where: { id_disfraz: BigInt(id) }, data: { deleted_at: new Date() } });
+}
+
 // ─── Público (sin autenticación) ─────────────────────────────────────────────
 
 async function getDisfracesPúblico(query) {
@@ -419,6 +425,6 @@ module.exports = {
   categoriaSchema,
   getAllPiezas, getPiezaById, createPieza, updatePieza, deletePieza,
   getAllCategorias, createCategoria, updateCategoria, deleteCategoria,
-  getAllDisfraces, createDisfraz,
+  getAllDisfraces, createDisfraz, deleteDisfraz,
   getDisfracesPúblico, getDisfrazByIdPublico, getDisfracesPopularesPublico,
 };

@@ -1,18 +1,46 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '@/api/axios.instance';
 import { useOperaciones } from '@/hooks/useOperaciones';
 import { usePagination } from '@/hooks/usePagination';
+import { useToast } from '@/hooks/useToast';
 import Table, { Pagination } from '@/components/ui/Table';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import { Select } from '@/components/ui/Input';
+import ActionButtons from '@/components/ui/ActionButtons';
+import ConfirmDeleteModal from '@/components/ui/ConfirmDeleteModal';
+import OperacionViewModal from '@/components/ui/OperacionViewModal';
+import ToastContainer from '@/components/ui/Toast';
 
 export default function OperacionesList() {
+  const queryClient = useQueryClient();
   const { page, limit, goToPage, reset } = usePagination();
   const [tipo, setTipo] = useState('');
+  const { toasts, success, error, remove } = useToast();
 
+  const [deleteTarget, setDeleteTarget] = useState(null); // { id, label }
+  const [viewId, setViewId] = useState(null);             // id de operación en modal Ver
+
+  // ─── Query ────────────────────────────────────────────────────────────────
   const { data, isLoading } = useOperaciones({ page, limit, tipo: tipo || undefined });
 
+  // ─── Mutación: soft-delete ────────────────────────────────────────────────
+  const deleteMutation = useMutation({
+    mutationFn: (id) => api.delete(`/operaciones/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['operaciones'] });
+      success('Operación eliminada correctamente');
+      setDeleteTarget(null);
+    },
+    onError: (err) => {
+      error(err?.response?.data?.message ?? 'Error al eliminar la operación');
+      setDeleteTarget(null);
+    },
+  });
+
+  // ─── Columnas ─────────────────────────────────────────────────────────────
   const columns = [
     { key: 'id_operacion', label: '#', width: '60px' },
     {
@@ -45,28 +73,39 @@ export default function OperacionesList() {
     {
       key: 'fecha_constitucion',
       label: 'Fecha',
-      render: (v) => new Date(v).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: '2-digit' }),
+      render: (v) =>
+        new Date(v).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: '2-digit' }),
     },
     {
       key: 'acciones',
-      label: '',
-      width: '80px',
-      render: (_, r) => (
-        <Link to={`/admin/operaciones/${r.id_operacion}`}>
-          <Button variant="ghost" size="sm">Ver</Button>
-        </Link>
-      ),
+      label: 'Acciones',
+      width: '120px',
+      align: 'center',
+      render: (_, r) => {
+        const tipoLabel = r.alquiler ? 'alquiler' : 'venta';
+        const clienteNombre = `${r.cliente?.persona?.nombre ?? ''} ${r.cliente?.persona?.apellido ?? ''}`.trim();
+        return (
+          <ActionButtons
+            onView={() => setViewId(r.id_operacion)}
+            onDelete={() =>
+              setDeleteTarget({
+                id: r.id_operacion,
+                label: `${tipoLabel} de ${clienteNombre}`,
+              })
+            }
+          />
+        );
+      },
     },
   ];
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-headline-md font-bold text-on-surface">Operaciones</h1>
-          <p className="text-body-md text-on-surface-variant mt-0.5">
-            Alquileres y ventas del sistema
-          </p>
+          <p className="text-body-md text-on-surface-variant mt-0.5">Alquileres y ventas del sistema</p>
         </div>
         <div className="flex gap-3">
           <Link to="/admin/operaciones/alquiler/nuevo">
@@ -94,6 +133,25 @@ export default function OperacionesList() {
           <Pagination meta={data?.meta} page={page} onPageChange={goToPage} />
         </div>
       </div>
+
+      {/* Modal Ver */}
+      <OperacionViewModal
+        id={viewId}
+        open={!!viewId}
+        onClose={() => setViewId(null)}
+      />
+
+      {/* Modal de confirmación */}
+      <ConfirmDeleteModal
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => deleteMutation.mutate(deleteTarget.id)}
+        entityName={`operación (${deleteTarget?.label ?? ''})`}
+        loading={deleteMutation.isPending}
+      />
+
+      {/* Toasts */}
+      <ToastContainer toasts={toasts} onRemove={remove} />
     </div>
   );
 }

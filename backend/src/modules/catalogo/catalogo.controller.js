@@ -38,6 +38,9 @@ async function getAllDisfraces(req, res, next) {
 async function createDisfraz(req, res, next) {
   try { res.status(201).json(await svc.createDisfraz(req.body)); } catch (e) { next(e); }
 }
+async function deleteDisfraz(req, res, next) {
+  try { await svc.deleteDisfraz(req.params.id); res.json({ message: 'Disfraz eliminado' }); } catch (e) { next(e); }
+}
 
 // ─── Públicos (sin autenticación) ─────────────────────────────────────────────
 async function getDisfracesPúblico(req, res, next) {
@@ -56,6 +59,6 @@ async function getAllCategoriasPublico(req, res, next) {
 module.exports = {
   getAllPiezas, getPiezaById, createPieza, updatePieza, deletePieza,
   getAllCategorias, createCategoria, updateCategoria, deleteCategoria,
-  getAllDisfraces, createDisfraz,
+  getAllDisfraces, createDisfraz, deleteDisfraz,
   getDisfracesPúblico, getDisfrazByIdPublico, getAllCategoriasPublico, getDisfracesPopularesPublico,
 };
