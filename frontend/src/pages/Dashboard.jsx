@@ -270,7 +270,7 @@ function RecentMovements({ movements }) {
 function CashFlow({ data }) {
   const items = [
     { label: 'INGRESOS TOTALES', value: data.totalIncome, icon: 'account_balance_wallet', bg: 'bg-primary-container', iconColor: 'text-primary' },
-    { label: 'SEÑAS EN CUSTODIA', value: data.depositsInCustody, icon: 'lock', bg: 'bg-secondary-fixed', iconColor: 'text-secondary' },
+    { label: 'DEPÓSITOS EN CUSTODIA', value: data.depositsInCustody, icon: 'lock', bg: 'bg-secondary-fixed', iconColor: 'text-secondary' },
     { label: 'SALDO PENDIENTE', value: data.pendingBalance, icon: 'credit_score', bg: 'bg-error-container', iconColor: 'text-error' },
   ];
 

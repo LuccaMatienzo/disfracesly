@@ -10,6 +10,12 @@ const createPagoSchema = z.object({
   monto: z.number().refine((v) => v !== 0, { message: 'El monto no puede ser cero' }),
 });
 
+const updatePagoSchema = z.object({
+  tipo: z.enum(['SENA', 'DEPOSITO', 'SALDO', 'DEVOLUCION_DEPOSITO', 'AJUSTE']).optional(),
+  metodo: z.enum(['EFECTIVO', 'TRANSFERENCIA']).optional(),
+  monto: z.number().refine((v) => v !== 0, { message: 'El monto no puede ser cero' }).optional(),
+});
+
 async function getPagosByOperacion(id_operacion) {
   return prisma.pagoOperacion.findMany({
     where: withNotDeleted({ id_operacion: BigInt(id_operacion) }),
@@ -31,10 +37,21 @@ async function createPago(data, req_user) {
   });
 }
 
+async function updatePago(id, data) {
+  const pago = await prisma.pagoOperacion.findFirst({ where: withNotDeleted({ id_pago_operacion: BigInt(id) }) });
+  if (!pago) throw ApiError.notFound('Pago no encontrado');
+
+  return prisma.pagoOperacion.update({
+    where: { id_pago_operacion: BigInt(id) },
+    data,
+    include: { persona: true },
+  });
+}
+
 async function deletePago(id) {
   const pago = await prisma.pagoOperacion.findFirst({ where: withNotDeleted({ id_pago_operacion: BigInt(id) }) });
   if (!pago) throw ApiError.notFound('Pago no encontrado');
   await prisma.pagoOperacion.update({ where: { id_pago_operacion: BigInt(id) }, data: { deleted_at: new Date() } });
 }
 
-module.exports = { createPagoSchema, getPagosByOperacion, createPago, deletePago };
+module.exports = { createPagoSchema, updatePagoSchema, getPagosByOperacion, createPago, updatePago, deletePago };

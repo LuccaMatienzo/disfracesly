@@ -8,7 +8,7 @@
  *  - size     : 'sm' | 'md' (default 'sm')
  */
 
-import { FiEye, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { FiEye, FiEdit2, FiTrash2, FiArrowRight } from 'react-icons/fi';
 
 const baseBtn =
   'inline-flex items-center justify-center rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 disabled:opacity-40 disabled:pointer-events-none';
@@ -18,7 +18,7 @@ const sizeMap = {
   md: 'w-9 h-9 text-lg',
 };
 
-export default function ActionButtons({ onView, onEdit, onDelete, size = 'sm' }) {
+export default function ActionButtons({ onView, onEdit, onDelete, onDetail, size = 'sm' }) {
   const sz = sizeMap[size] ?? sizeMap.sm;
 
   return (
@@ -31,6 +31,17 @@ export default function ActionButtons({ onView, onEdit, onDelete, size = 'sm' })
           className={`${baseBtn} ${sz} text-on-surface-variant hover:bg-primary/10 hover:text-primary`}
         >
           <FiEye />
+        </button>
+      )}
+
+      {onDetail && (
+        <button
+          type="button"
+          onClick={onDetail}
+          title="Ir a la operación"
+          className={`${baseBtn} ${sz} text-on-surface-variant hover:bg-primary/10 hover:text-primary`}
+        >
+          <FiArrowRight />
         </button>
       )}
 

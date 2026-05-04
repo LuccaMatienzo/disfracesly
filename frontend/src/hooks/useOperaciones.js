@@ -63,3 +63,14 @@ export function useAvanzarEtapaVenta() {
     },
   });
 }
+
+export function useCreateInteraccion(id_operacion) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) =>
+      api.post(`/operaciones/${id_operacion}/interacciones`, data).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [...OPS_KEY, id_operacion] });
+    },
+  });
+}

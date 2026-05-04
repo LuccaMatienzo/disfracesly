@@ -7,6 +7,7 @@ const {
   createVentaSchema,
   avanzarEtapaAlquilerSchema,
   avanzarEtapaVentaSchema,
+  createInteraccionSchema,
 } = require('./operaciones.service');
 
 router.use(authenticate);
@@ -22,6 +23,9 @@ router.post('/ventas', validate(createVentaSchema), ctrl.newVenta);
 // Avance de etapa (gestiona estado_pieza_stock automáticamente)
 router.patch('/:id/alquiler/etapa', validate(avanzarEtapaAlquilerSchema), ctrl.avanzarAlquiler);
 router.patch('/:id/venta/etapa', validate(avanzarEtapaVentaSchema), ctrl.avanzarVenta);
+
+// Interacciones
+router.post('/:id/interacciones', validate(createInteraccionSchema), ctrl.newInteraccion);
 
 // Soft delete
 router.delete('/:id', ctrl.remove);

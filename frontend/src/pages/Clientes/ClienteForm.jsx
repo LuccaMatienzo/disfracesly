@@ -56,13 +56,28 @@ export default function ClienteForm() {
           <h2 className="font-headline text-title-md text-on-surface">Datos personales</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="DNI / Documento" error={errors.persona?.documento?.message}
-              {...register('persona.documento', { required: 'Documento requerido' })} />
-            <Input label="Nombre" {...register('persona.nombre', { required: true })} />
-            <Input label="Apellido" {...register('persona.apellido', { required: true })} className="sm:col-span-2" />
+              {...register('persona.documento', { 
+                required: 'Documento requerido',
+                pattern: { value: /^\d{8}$/, message: 'Debe contener exactamente 8 números' }
+              })} />
+            <Input label="Nombre" error={errors.persona?.nombre?.message}
+              {...register('persona.nombre', { 
+                required: 'Nombre requerido',
+                pattern: { value: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s']+$/, message: 'Solo letras y espacios' }
+              })} />
+            <Input label="Apellido" error={errors.persona?.apellido?.message}
+              {...register('persona.apellido', { 
+                required: 'Apellido requerido',
+                pattern: { value: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s']+$/, message: 'Solo letras y espacios' }
+              })} className="sm:col-span-2" />
           </div>
           <h2 className="font-headline text-title-md text-on-surface mt-2">Contacto</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input label="Teléfono" placeholder="Ej: 11-1234-5678" {...register('telefono', { required: true })} />
+            <Input label="Teléfono" placeholder="Ej: 3812345678" error={errors.telefono?.message}
+              {...register('telefono', { 
+                required: 'Teléfono requerido',
+                pattern: { value: /^\d{10}$/, message: 'Debe contener exactamente 10 números' }
+              })} />
             <Input label="Domicilio" placeholder="Dirección..." {...register('domicilio')} />
           </div>
           <div className="flex gap-3 justify-end mt-2">

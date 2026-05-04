@@ -7,15 +7,27 @@ const { parsePagination, paginatedResponse } = require('../../utils/pagination')
 // ─── Schemas ──────────────────────────────────────────────────────────────────
 
 const personaSchema = z.object({
-  documento: z.string().min(1).max(20),
-  nombre: z.string().min(1).max(100),
-  apellido: z.string().min(1).max(100),
+  documento: z.string()
+    .min(1, "Requerido")
+    .max(20)
+    .regex(/^\d{8}$/, "El documento debe contener exactamente 8 números"),
+  nombre: z.string()
+    .min(1, "Requerido")
+    .max(100)
+    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s']+$/, "El nombre solo puede contener letras y espacios"),
+  apellido: z.string()
+    .min(1, "Requerido")
+    .max(100)
+    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s']+$/, "El apellido solo puede contener letras y espacios"),
 });
 
 const createClienteSchema = z.object({
   persona: personaSchema,
   domicilio: z.string().max(255).optional(),
-  telefono: z.string().min(1).max(50),
+  telefono: z.string()
+    .min(1, "Requerido")
+    .max(50)
+    .regex(/^\d{10}$/, "El teléfono debe contener exactamente 10 números"),
 });
 
 const updateClienteSchema = z.object({

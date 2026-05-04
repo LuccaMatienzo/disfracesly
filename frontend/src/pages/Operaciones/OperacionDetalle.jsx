@@ -1,9 +1,16 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { useOperacion, useAvanzarEtapaAlquiler, useAvanzarEtapaVenta } from '@/hooks/useOperaciones';
+import { useOperacion, useAvanzarEtapaAlquiler, useAvanzarEtapaVenta, useCreateInteraccion } from '@/hooks/useOperaciones';
+import { usePagos } from '@/hooks/usePagos';
+import { useToast } from '@/hooks/useToast';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
+import ActionButtons from '@/components/ui/ActionButtons';
+import ConfirmDeleteModal from '@/components/ui/ConfirmDeleteModal';
+import PagoFormModal from '@/components/ui/PagoFormModal';
+import ToastContainer from '@/components/ui/Toast';
+import InteraccionModal from '@/components/ui/InteraccionModal';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -65,8 +72,7 @@ const ALQUILER_TRANSITIONS = {
 
 const VENTA_TRANSITIONS = {
   RESERVADO: { next: 'LISTO_PARA_ENTREGA', label: 'Marcar listo para entrega', icon: 'inventory_2' },
-  LISTO_PARA_ENTREGA: { next: 'ENTREGADO', label: 'Confirmar entrega', icon: 'local_shipping' },
-  ENTREGADO: { next: 'VENDIDO', label: 'Marcar como vendido', icon: 'sell' },
+  LISTO_PARA_ENTREGA: { next: 'VENDIDO', label: 'Confirmar entrega', icon: 'sell' },
 };
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
@@ -112,45 +118,46 @@ function EtapaStepper({ etapa, etapas }) {
   const currentIdx = etapas.indexOf(etapa);
 
   return (
-    <div className="flex items-center w-full">
+    <div className="flex items-start w-full justify-between">
       {etapas.map((step, i) => {
         const isComplete = i < currentIdx;
         const isCurrent = i === currentIdx;
         const isCancelled = etapa === 'CANCELADO';
 
         return (
-          <div key={step} className="flex items-center flex-1 last:flex-grow-0">
-            {/* Dot */}
-            <div className="flex flex-col items-center">
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                  isCancelled && isCurrent
-                    ? 'bg-error text-white'
-                    : isComplete
-                      ? 'bg-primary text-white'
-                      : isCurrent
-                        ? 'bg-primary text-white ring-4 ring-primary/20'
-                        : 'bg-surface-container text-on-surface-variant'
-                }`}
-              >
-                {isComplete ? (
-                  <span className="material-symbols-outlined text-sm">check</span>
-                ) : (
-                  i + 1
-                )}
-              </div>
-              <span className={`text-[9px] font-label uppercase tracking-wider mt-1.5 whitespace-nowrap ${
-                isCurrent ? 'text-primary font-bold' : 'text-on-surface-variant'
-              }`}>
-                {step.replace(/_/g, ' ')}
-              </span>
-            </div>
-            {/* Line */}
+          <div key={step} className="flex flex-col items-center flex-1 relative">
+            {/* Line to next step */}
             {i < etapas.length - 1 && (
-              <div className="flex-1 mx-1.5">
+              <div className="absolute top-4 left-1/2 w-full px-4">
                 <div className={`h-0.5 rounded-full ${i < currentIdx ? 'bg-primary' : 'bg-outline-variant/30'}`} />
               </div>
             )}
+
+            {/* Dot */}
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all relative z-10 ${
+                isCancelled && isCurrent
+                  ? 'bg-error text-white'
+                  : isComplete
+                    ? 'bg-primary text-white'
+                    : isCurrent
+                      ? 'bg-primary text-white ring-4 ring-primary/20'
+                      : 'bg-surface-container text-on-surface-variant'
+              }`}
+            >
+              {isComplete ? (
+                <span className="material-symbols-outlined text-sm">check</span>
+              ) : (
+                i + 1
+              )}
+            </div>
+
+            {/* Text */}
+            <span className={`text-[9px] font-label uppercase tracking-wider mt-1.5 whitespace-nowrap text-center ${
+              isCurrent ? 'text-primary font-bold' : 'text-on-surface-variant'
+            }`}>
+              {step.replace(/_/g, ' ')}
+            </span>
           </div>
         );
       })}
@@ -164,11 +171,20 @@ export default function OperacionDetalle() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: op, isLoading, isError } = useOperacion(id);
+  const { createPago, updatePago, deletePago } = usePagos(id);
+  const { toasts, success, error, remove } = useToast();
+
   const avanzarAlquiler = useAvanzarEtapaAlquiler();
   const avanzarVenta = useAvanzarEtapaVenta();
+  const createInteraccion = useCreateInteraccion(id);
 
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [advanceLoading, setAdvanceLoading] = useState(false);
+  const [interaccionModal, setInteraccionModal] = useState({ open: false, tipo: null });
+
+  // Pago Modals state
+  const [pagoModal, setPagoModal] = useState({ open: false, data: null });
+  const [pagoDeleteTarget, setPagoDeleteTarget] = useState(null);
 
   if (isLoading) return <Skeleton />;
 
@@ -195,30 +211,39 @@ export default function OperacionDetalle() {
   const clienteDom = op.cliente?.domicilio ?? '—';
 
   const etapasAlquiler = ['RESERVADO', 'LISTO_PARA_RETIRO', 'RETIRADO', 'DEVUELTO'];
-  const etapasVenta = ['RESERVADO', 'LISTO_PARA_ENTREGA', 'ENTREGADO', 'VENDIDO'];
+  const etapasVenta = ['RESERVADO', 'LISTO_PARA_ENTREGA', 'VENDIDO'];
   const etapas = isAlquiler ? etapasAlquiler : etapasVenta;
 
   const transition = isAlquiler ? ALQUILER_TRANSITIONS[etapa] : VENTA_TRANSITIONS[etapa];
   const isTerminal = etapa === 'DEVUELTO' || etapa === 'VENDIDO' || etapa === 'CANCELADO';
 
   // Financial computations
-  const montoTotal = parseFloat(op.monto_total ?? 0);
   const pagos = op.pagos ?? [];
-  const totalPagado = pagos
-    .filter(p => ['SENA', 'SALDO', 'DEPOSITO'].includes(p.tipo))
-    .reduce((s, p) => s + parseFloat(p.monto), 0);
-  const saldoPendiente = Math.max(0, montoTotal - totalPagado);
+  const montoTotal = op.estado_financiero?.monto_total ?? parseFloat(op.monto_total ?? 0);
+  const totalPagado = op.estado_financiero?.total_pagado ?? 0;
+  const saldoPendiente = op.estado_financiero?.saldo_pendiente ?? 0;
 
   // Alquiler specific
-  const depositoMonto = isAlquiler ? parseFloat(op.alquiler.deposito_monto ?? 0) : 0;
-  const depositoDevuelto = isAlquiler ? parseFloat(op.alquiler.deposito_devuelto_monto ?? 0) : 0;
-  const depositoRetenido = depositoMonto - depositoDevuelto;
+  const depositoMonto = isAlquiler ? (op.estado_financiero?.deposito_garantia ?? parseFloat(op.alquiler.deposito_monto ?? 0)) : 0;
+  const depositoDevuelto = isAlquiler ? (op.estado_financiero?.deposito_devuelto ?? parseFloat(op.alquiler.deposito_devuelto_monto ?? 0)) : 0;
+  const depositoRetenido = Math.max(0, depositoMonto - depositoDevuelto);
 
   // Venta specific
   const senaMonto = isVenta ? parseFloat(op.venta.sena_monto ?? 0) : 0;
 
   async function handleAdvance() {
     if (!transition) return;
+    
+    // Tanto Alquiler como Venta abren el modal de interacción para registrar quién retira/recibe
+    if (transition.next === 'RETIRADO' || transition.next === 'VENDIDO') {
+      setInteraccionModal({ open: true, tipo: 'RETIRO' });
+      return;
+    }
+    if (transition.next === 'DEVUELTO') {
+      setInteraccionModal({ open: true, tipo: 'DEVOLUCION' });
+      return;
+    }
+
     setAdvanceLoading(true);
     try {
       if (isAlquiler) {
@@ -230,6 +255,27 @@ export default function OperacionDetalle() {
       setAdvanceLoading(false);
     }
   }
+
+  const handleInteraccionSubmit = async (payload) => {
+    try {
+      await createInteraccion.mutateAsync(payload);
+      
+      if (isAlquiler) {
+        const nextEtapa = payload.tipo === 'RETIRO' ? 'RETIRADO' : 'DEVUELTO';
+        await avanzarAlquiler.mutateAsync({ id: op.id_operacion, etapa: nextEtapa });
+      } else {
+        // En ventas, el 'RETIRO' (que semánticamente es Entrega) avanza a 'VENDIDO'
+        const nextEtapa = payload.tipo === 'RETIRO' ? 'VENDIDO' : 'CANCELADO';
+        await avanzarVenta.mutateAsync({ id: op.id_operacion, etapa: nextEtapa });
+      }
+      
+      const textoAccion = payload.tipo === 'RETIRO' ? (isVenta ? 'la entrega' : 'el retiro') : 'la devolución';
+      success(`Se ha registrado ${textoAccion} correctamente`);
+      setInteraccionModal({ open: false, tipo: null });
+    } catch (err) {
+      error(err?.response?.data?.message ?? `Error al registrar la acción`);
+    }
+  };
 
   async function handleCancel() {
     setAdvanceLoading(true);
@@ -244,6 +290,32 @@ export default function OperacionDetalle() {
       setAdvanceLoading(false);
     }
   }
+
+  // Pago Handlers
+  const handlePagoSubmit = async (data) => {
+    try {
+      if (pagoModal.data) {
+        await updatePago.mutateAsync({ id: pagoModal.data.id_pago_operacion, ...data });
+        success('Pago actualizado correctamente');
+      } else {
+        await createPago.mutateAsync(data);
+        success('Pago registrado correctamente');
+      }
+      setPagoModal({ open: false, data: null });
+    } catch (err) {
+      error(err?.response?.data?.message ?? 'Error al procesar el pago');
+    }
+  };
+
+  const handlePagoDelete = async () => {
+    try {
+      await deletePago.mutateAsync(pagoDeleteTarget.id_pago_operacion);
+      success('Pago eliminado correctamente');
+      setPagoDeleteTarget(null);
+    } catch (err) {
+      error(err?.response?.data?.message ?? 'Error al eliminar el pago');
+    }
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -369,16 +441,22 @@ export default function OperacionDetalle() {
 
           {/* Pagos */}
           <div className="bg-surface-container-lowest rounded-2xl shadow-card p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center">
-                <span className="material-symbols-outlined text-xl text-primary">payments</span>
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center">
+                  <span className="material-symbols-outlined text-xl text-primary">payments</span>
+                </div>
+                <div>
+                  <h2 className="font-headline text-title-md text-on-surface">
+                    Pagos ({pagos.length})
+                  </h2>
+                  <p className="text-body-md text-on-surface-variant">Historial de pagos registrados</p>
+                </div>
               </div>
-              <div>
-                <h2 className="font-headline text-title-md text-on-surface">
-                  Pagos ({pagos.length})
-                </h2>
-                <p className="text-body-md text-on-surface-variant">Historial de pagos registrados</p>
-              </div>
+              <Button size="sm" onClick={() => setPagoModal({ open: true, data: null })}>
+                <span className="material-symbols-outlined text-base">add</span>
+                Nuevo Pago
+              </Button>
             </div>
 
             {pagos.length > 0 ? (
@@ -386,8 +464,8 @@ export default function OperacionDetalle() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-outline-variant/15">
-                      {['Tipo', 'Método', 'Monto', 'Fecha', 'Responsable'].map(h => (
-                        <th key={h} className="text-left px-3 py-2.5 text-[10px] font-label font-bold uppercase tracking-widest text-on-surface-variant">
+                      {['Tipo', 'Método', 'Monto', 'Fecha', 'Responsable', 'Acciones'].map(h => (
+                        <th key={h} className={`text-left px-3 py-2.5 text-[10px] font-label font-bold uppercase tracking-widest text-on-surface-variant ${h === 'Acciones' ? 'text-center' : ''}`}>
                           {h}
                         </th>
                       ))}
@@ -425,6 +503,12 @@ export default function OperacionDetalle() {
                             ? `${pago.persona.nombre} ${pago.persona.apellido}`
                             : '—'}
                         </td>
+                        <td className="px-3 py-2.5">
+                          <ActionButtons
+                            onEdit={() => setPagoModal({ open: true, data: pago })}
+                            onDelete={() => setPagoDeleteTarget(pago)}
+                          />
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -441,7 +525,7 @@ export default function OperacionDetalle() {
               <div className="w-10 h-10 rounded-xl bg-tertiary-container/40 flex items-center justify-center">
                 <span className="material-symbols-outlined text-xl text-tertiary">history</span>
               </div>
-              <h2 className="font-headline text-title-md text-on-surface">Historial</h2>
+              <h2 className="font-headline text-title-md text-on-surface">Interacciones</h2>
             </div>
 
             {(op.interacciones ?? []).length > 0 ? (
@@ -453,14 +537,19 @@ export default function OperacionDetalle() {
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <p className="text-sm font-medium text-on-surface">
-                          {TIPO_INTERACCION_LABELS[inter.tipo] ?? inter.tipo}
+                          {inter.tipo === 'RETIRO' ? (isVenta ? 'Entrega' : 'Retiro') : TIPO_INTERACCION_LABELS[inter.tipo] ?? inter.tipo}
+                        </p>
+                        <p className="text-[11px] font-medium text-on-surface mt-2">
+                          {inter.tipo === 'RETIRO' ? (isVenta ? 'Entregado a' : 'Retirado por') : inter.tipo === 'DEVOLUCION' ? 'Devuelto por' : 'Acción registrada por'}: <span className="text-primary">{inter.persona?.nombre} {inter.persona?.apellido}</span>
+                        </p>
+                        <p className="text-[10px] text-on-surface-variant mt-0.5">
+                          {inter.tipo === 'RETIRO' ? 'Entregado por' : inter.tipo === 'DEVOLUCION' ? 'Recibido por' : 'Usuario'}: {inter.usuario?.persona?.nombre} {inter.usuario?.persona?.apellido}
                         </p>
                         {inter.observaciones && (
-                          <p className="text-xs text-on-surface-variant mt-0.5">{inter.observaciones}</p>
+                          <p className="text-xs text-on-surface-variant mt-2 italic bg-surface-container-low/50 p-2 rounded-lg border border-outline-variant/10">
+                            <strong>Observaciones:</strong> {inter.observaciones}
+                          </p>
                         )}
-                        <p className="text-[11px] text-on-surface-variant mt-1">
-                          Por: {inter.usuario?.persona?.nombre} {inter.usuario?.persona?.apellido}
-                        </p>
                       </div>
                       <span className="text-[11px] text-on-surface-variant whitespace-nowrap">{timeAgo(inter.fecha_hora)}</span>
                     </div>
@@ -586,7 +675,27 @@ export default function OperacionDetalle() {
         </div>
       </div>
 
-      {/* ── Cancel Modal ──────────────────────────────────────────────── */}
+      {/* ── Modals ────────────────────────────────────────────────────── */}
+
+      {/* Pago Add/Edit */}
+      <PagoFormModal
+        open={pagoModal.open}
+        onClose={() => setPagoModal({ open: false, data: null })}
+        onSubmit={handlePagoSubmit}
+        loading={createPago.isPending || updatePago.isPending}
+        initialData={pagoModal.data}
+      />
+
+      {/* Pago Confirm Delete */}
+      <ConfirmDeleteModal
+        open={!!pagoDeleteTarget}
+        onClose={() => setPagoDeleteTarget(null)}
+        onConfirm={handlePagoDelete}
+        entityName={`pago de ${fmt(pagoDeleteTarget?.monto)}`}
+        loading={deletePago.isPending}
+      />
+
+      {/* Cancelación de operación */}
       <Modal
         open={showCancelModal}
         onClose={() => setShowCancelModal(false)}
@@ -612,6 +721,19 @@ export default function OperacionDetalle() {
           </p>
         </div>
       </Modal>
+
+      {/* Interacción (Retiro/Devolución) */}
+      <InteraccionModal
+        open={interaccionModal.open}
+        onClose={() => setInteraccionModal({ open: false, tipo: null })}
+        onSubmit={handleInteraccionSubmit}
+        loading={createInteraccion.isPending || avanzarAlquiler.isPending}
+        tipo={interaccionModal.tipo}
+        operacion={op}
+      />
+
+      {/* Toasts */}
+      <ToastContainer toasts={toasts} onRemove={remove} />
     </div>
   );
 }

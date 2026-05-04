@@ -21,5 +21,8 @@ async function avanzarVenta(req, res, next) {
 async function remove(req, res, next) {
   try { await svc.deleteOperacion(req.params.id); res.json({ message: 'Operación eliminada' }); } catch (e) { next(e); }
 }
+async function newInteraccion(req, res, next) {
+  try { res.status(201).json(await svc.createInteraccion(req.params.id, req.user.id_usuario, req.body)); } catch (e) { next(e); }
+}
 
-module.exports = { getAll, getById, newAlquiler, newVenta, avanzarAlquiler, avanzarVenta, remove };
+module.exports = { getAll, getById, newAlquiler, newVenta, avanzarAlquiler, avanzarVenta, remove, newInteraccion };

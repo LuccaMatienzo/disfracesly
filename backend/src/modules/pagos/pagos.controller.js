@@ -6,8 +6,11 @@ async function getByOperacion(req, res, next) {
 async function create(req, res, next) {
   try { res.status(201).json(await svc.createPago(req.body, req.user)); } catch (e) { next(e); }
 }
+async function update(req, res, next) {
+  try { res.json(await svc.updatePago(req.params.id, req.body)); } catch (e) { next(e); }
+}
 async function remove(req, res, next) {
   try { await svc.deletePago(req.params.id); res.json({ message: 'Pago anulado' }); } catch (e) { next(e); }
 }
 
-module.exports = { getByOperacion, create, remove };
+module.exports = { getByOperacion, create, update, remove };
