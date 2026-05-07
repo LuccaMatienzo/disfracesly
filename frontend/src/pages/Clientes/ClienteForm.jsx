@@ -44,7 +44,7 @@ export default function ClienteForm() {
   }, [cliente, isEditing, reset]);
 
   return (
-    <div className="max-w-2xl">
+    <div className="w-full">
       <div className="mb-6">
         <button onClick={() => navigate(-1)} className="text-body-md text-primary hover:underline font-label mb-2">← Volver</button>
         <h1 className="font-display text-headline-md font-bold text-on-surface">

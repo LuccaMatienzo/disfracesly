@@ -1,5 +1,5 @@
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import ToastContainer from '@/components/ui/Toast';
@@ -18,10 +18,17 @@ const NAV_ITEMS = [
 export default function PageWrapper() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const toast = useToast();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
 
   const handleLogout = async () => {
     await logout();
@@ -37,13 +44,27 @@ export default function PageWrapper() {
   return (
     <div className="flex min-h-screen bg-surface-container-low">
 
+      {/* ── Mobile backdrop ────────────────────────────────────────────────── */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-on-surface/30 backdrop-blur-sm md:hidden animate-fade-in"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
       {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
       <aside
         className={`
-          fixed top-0 left-0 h-full z-30
+          fixed top-0 left-0 h-full
           flex flex-col bg-card-panel border-r border-outline-variant/20
           shadow-glass transition-all duration-300
-          ${sidebarOpen ? 'w-64' : 'w-[4.5rem]'}
+          ${/* Mobile: slide in/out as overlay */''}
+          ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+          md:translate-x-0
+          z-50 md:z-30
+          w-64
+          ${/* Desktop: collapse toggle */''}
+          ${!sidebarOpen ? 'md:w-[4.5rem]' : 'md:w-64'}
         `}
       >
         {/* Logo + toggle */}
@@ -79,7 +100,7 @@ export default function PageWrapper() {
           </div>
           <button
             onClick={() => setSidebarOpen((p) => !p)}
-            className={`flex items-center justify-center rounded-lg text-tertiary hover:text-primary hover:bg-primary/8 transition-all shrink-0 ${sidebarOpen ? 'w-7 h-7' : 'w-8 h-8 mt-1'
+            className={`hidden md:flex items-center justify-center rounded-lg text-tertiary hover:text-primary hover:bg-primary/8 transition-all shrink-0 ${sidebarOpen ? 'w-7 h-7' : 'w-8 h-8 mt-1'
               }`}
             aria-label={sidebarOpen ? 'Colapsar menú' : 'Expandir menú'}
           >
@@ -163,10 +184,19 @@ export default function PageWrapper() {
 
       {/* ── Main content ─────────────────────────────────────────────────────── */}
       <main
-        className={`flex-1 flex flex-col transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-[4.5rem]'}`}
+        className={`flex-1 flex flex-col transition-all duration-300 ml-0 ${sidebarOpen ? 'md:ml-64' : 'md:ml-[4.5rem]'}`}
       >
         {/* Top header */}
-        <header className="sticky top-0 z-20 bg-card-panel/90 backdrop-blur-md border-b border-outline-variant/20 px-6 py-3 flex items-center gap-4">
+        <header className="sticky top-0 z-20 bg-card-panel/90 backdrop-blur-md border-b border-outline-variant/20 px-3 md:px-6 py-3 flex items-center gap-3 md:gap-4">
+
+          {/* Hamburger — mobile only */}
+          <button
+            onClick={() => setMobileMenuOpen((p) => !p)}
+            className="md:hidden w-10 h-10 min-h-[44px] flex items-center justify-center rounded-xl hover:bg-surface-container text-on-surface-variant transition-colors"
+            aria-label="Abrir menú"
+          >
+            <span className="material-symbols-outlined text-2xl">menu</span>
+          </button>
 
           <div className="ml-auto flex items-center gap-3">
             {/* Fecha */}
@@ -189,7 +219,7 @@ export default function PageWrapper() {
         </header>
 
         {/* Page content */}
-        <div className="flex-1 p-6 animate-fade-in">
+        <div className="flex-1 p-3 md:p-6 animate-fade-in">
           <Outlet />
         </div>
       </main>

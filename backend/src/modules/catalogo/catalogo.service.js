@@ -34,6 +34,10 @@ async function getAllPiezas(query) {
     nombre: { contains: search, mode: 'insensitive' },
   });
 
+  if (query.categoria) {
+    where.categorias = { some: { id_categoria_motivo: BigInt(query.categoria) } };
+  }
+
   const [data, total] = await prisma.$transaction([
     prisma.pieza.findMany({
       where,
@@ -152,15 +156,58 @@ async function deleteCategoria(id) {
 async function getAllDisfraces(query) {
   const { skip, take, page, limit } = parsePagination(query);
   const where = withNotDeleted({ nombre: { contains: query.search ?? '', mode: 'insensitive' } });
+
+  if (query.categoria) {
+    where.piezas = {
+      some: {
+        pieza: {
+          categorias: {
+            some: { id_categoria_motivo: BigInt(query.categoria) },
+          },
+        },
+      },
+    };
+  }
+
   const [data, total] = await prisma.$transaction([
     prisma.disfraz.findMany({
       where, skip, take,
-      include: { piezas: { include: { pieza: true } }, imagenes: { where: { es_principal: true }, include: { imagen: true }, take: 1 } },
+      include: { 
+        piezas: { 
+          include: { 
+            pieza: { 
+              include: { 
+                categorias: { include: { categoriaMotivo: true } } 
+              } 
+            } 
+          } 
+        }, 
+        imagenes: { where: { es_principal: true }, include: { imagen: true }, take: 1 } 
+      },
       orderBy: { nombre: 'asc' },
     }),
     prisma.disfraz.count({ where }),
   ]);
-  return paginatedResponse(data, total, page, limit);
+  const formattedData = data.map(disfraz => {
+    const cats = disfraz.piezas
+      .flatMap(dp => dp.pieza?.categorias?.map(c => c.categoriaMotivo?.nombre) || [])
+      .filter(Boolean);
+    
+    const uniqueCats = [...new Set(cats)];
+
+    const piezasLimpio = disfraz.piezas.map(dp => {
+      const { categorias, ...piezaSinCategorias } = dp.pieza;
+      return { ...dp, pieza: piezaSinCategorias };
+    });
+
+    return {
+      ...disfraz,
+      piezas: piezasLimpio,
+      categorias_derivadas: uniqueCats
+    };
+  });
+
+  return paginatedResponse(formattedData, total, page, limit);
 }
 
 async function createDisfraz(data) {
@@ -171,6 +218,57 @@ async function createDisfraz(data) {
       await tx.disfrazPieza.createMany({ data: pieza_ids.map((pid) => ({ id_disfraz: d.id_disfraz, id_pieza: BigInt(pid) })) });
     }
     return tx.disfraz.findUnique({ where: { id_disfraz: d.id_disfraz }, include: { piezas: { include: { pieza: true } } } });
+  });
+}
+
+async function getDisfrazById(id) {
+  const disfraz = await prisma.disfraz.findFirst({
+    where: withNotDeleted({ id_disfraz: BigInt(id) }),
+    include: {
+      piezas: { include: { pieza: { include: { categorias: { include: { categoriaMotivo: true } } } } } },
+      imagenes: { include: { imagen: true }, orderBy: { orden: 'asc' } }
+    }
+  });
+  if (!disfraz) throw ApiError.notFound('Disfraz no encontrado');
+  
+  const cats = disfraz.piezas
+    .flatMap(dp => dp.pieza?.categorias?.map(c => c.categoriaMotivo?.nombre) || [])
+    .filter(Boolean);
+  
+  const uniqueCats = [...new Set(cats)];
+
+  const piezasLimpio = disfraz.piezas.map(dp => {
+    const { categorias, ...piezaSinCategorias } = dp.pieza;
+    return { ...dp, pieza: piezaSinCategorias };
+  });
+
+  return {
+    ...disfraz,
+    piezas: piezasLimpio,
+    categorias_derivadas: uniqueCats
+  };
+}
+
+async function updateDisfraz(id, data) {
+  const disfraz = await prisma.disfraz.findFirst({ where: withNotDeleted({ id_disfraz: BigInt(id) }) });
+  if (!disfraz) throw ApiError.notFound('Disfraz no encontrado');
+
+  const { pieza_ids, ...disfrazData } = data;
+
+  return prisma.$transaction(async (tx) => {
+    if (pieza_ids !== undefined) {
+      await tx.disfrazPieza.deleteMany({ where: { id_disfraz: BigInt(id) } });
+      if (pieza_ids.length) {
+        await tx.disfrazPieza.createMany({
+          data: pieza_ids.map((pid) => ({ id_disfraz: BigInt(id), id_pieza: BigInt(pid) })),
+        });
+      }
+    }
+    return tx.disfraz.update({
+      where: { id_disfraz: BigInt(id) },
+      data: disfrazData,
+      include: { piezas: { include: { pieza: true } } },
+    });
   });
 }
 
@@ -337,6 +435,6 @@ module.exports = {
   categoriaSchema,
   getAllPiezas, getPiezaById, createPieza, updatePieza, deletePieza,
   getAllCategorias, createCategoria, updateCategoria, deleteCategoria,
-  getAllDisfraces, createDisfraz, deleteDisfraz,
+  getAllDisfraces, getDisfrazById, createDisfraz, updateDisfraz, deleteDisfraz,
   getDisfracesPúblico, getDisfrazByIdPublico, getDisfracesPopularesPublico,
 };

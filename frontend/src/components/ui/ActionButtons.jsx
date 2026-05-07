@@ -11,11 +11,11 @@
 import { FiEye, FiEdit2, FiTrash2, FiArrowRight } from 'react-icons/fi';
 
 const baseBtn =
-  'inline-flex items-center justify-center rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 disabled:opacity-40 disabled:pointer-events-none';
+  'inline-flex items-center justify-center rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 disabled:opacity-40 disabled:pointer-events-none min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0';
 
 const sizeMap = {
-  sm: 'w-8 h-8 text-base',
-  md: 'w-9 h-9 text-lg',
+  sm: 'w-10 h-10 md:w-8 md:h-8 text-lg md:text-base',
+  md: 'w-11 h-11 md:w-9 md:h-9 text-xl md:text-lg',
 };
 
 export default function ActionButtons({ onView, onEdit, onDelete, onDetail, size = 'sm' }) {

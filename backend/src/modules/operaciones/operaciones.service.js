@@ -12,6 +12,8 @@ const ETAPAS_VENTA = ['RESERVADO', 'LISTO_PARA_ENTREGA', 'VENDIDO', 'CANCELADO']
 const createAlquilerSchema = z.object({
   id_cliente: z.number().int().positive(),
   pieza_stock_ids: z.array(z.number().int().positive()).min(1, 'Se requiere al menos una pieza'),
+  fecha_constitucion: z.string().datetime({ offset: true }).optional(),
+  fecha_retiro: z.string().datetime({ offset: true }).optional(),
   fecha_devolucion: z.string().datetime({ offset: true }).optional(),
   deposito_monto: z.number().nonnegative().default(0),
   monto_total: z.number().nonnegative().default(0),
@@ -36,6 +38,16 @@ const avanzarEtapaAlquilerSchema = z.object({
 
 const avanzarEtapaVentaSchema = z.object({
   etapa: z.enum(ETAPAS_VENTA),
+});
+
+const updateMontosSchema = z.object({
+  monto_total: z.number().nonnegative().optional(),
+  sena_monto: z.number().nonnegative().optional(),
+  deposito_monto: z.number().nonnegative().optional(),
+});
+
+const updatePiezasSchema = z.object({
+  pieza_stock_ids: z.array(z.number().int().positive()).min(1),
 });
 
 const createInteraccionSchema = z.object({
@@ -227,6 +239,8 @@ async function createAlquiler(data) {
     const operacion = await tx.operacion.create({
       data: {
         id_cliente: BigInt(data.id_cliente),
+        ...(data.fecha_constitucion && { fecha_constitucion: new Date(data.fecha_constitucion) }),
+        ...(data.fecha_retiro && { fecha_retiro: new Date(data.fecha_retiro) }),
         monto_total: data.monto_total,
         observaciones: data.observaciones,
         detalles: {
@@ -434,6 +448,100 @@ async function createInteraccion(id_operacion, id_usuario, data) {
   });
 }
 
+async function updateOperacionMontos(id, data) {
+  const operacion = await prisma.operacion.findFirst({
+    where: withNotDeleted({ id_operacion: BigInt(id) }),
+    include: { alquiler: true, venta: true },
+  });
+  if (!operacion) throw ApiError.notFound('Operación no encontrada');
+
+  await prisma.$transaction(async (tx) => {
+    if (data.monto_total !== undefined) {
+      await tx.operacion.update({
+        where: { id_operacion: operacion.id_operacion },
+        data: { monto_total: data.monto_total },
+      });
+    }
+
+    if (operacion.alquiler && data.deposito_monto !== undefined) {
+      await tx.alquiler.update({
+        where: { id_alquiler: operacion.alquiler.id_alquiler },
+        data: { deposito_monto: data.deposito_monto },
+      });
+    }
+
+    if (operacion.venta && data.sena_monto !== undefined) {
+      await tx.venta.update({
+        where: { id_venta: operacion.venta.id_venta },
+        data: { sena_monto: data.sena_monto },
+      });
+    }
+  });
+
+  return getOperacionById(id);
+}
+
+async function updateOperacionPiezas(id, data) {
+  const operacion = await prisma.operacion.findFirst({
+    where: withNotDeleted({ id_operacion: BigInt(id) }),
+    include: { alquiler: true, venta: true, detalles: true },
+  });
+  if (!operacion) throw ApiError.notFound('Operación no encontrada');
+
+  const oldIds = operacion.detalles.map(d => d.id_pieza_stock);
+  const newIds = data.pieza_stock_ids.map(BigInt);
+
+  let estadoEsperado = 'RESERVADA';
+  if (operacion.alquiler) {
+    if (operacion.alquiler.etapa === 'RETIRADO') estadoEsperado = 'ALQUILADA';
+    else if (operacion.alquiler.etapa === 'DEVUELTO' || operacion.alquiler.etapa === 'CANCELADO') estadoEsperado = 'DISPONIBLE';
+  } else if (operacion.venta) {
+    if (operacion.venta.etapa === 'VENDIDO') estadoEsperado = 'VENDIDA';
+    else if (operacion.venta.etapa === 'CANCELADO') estadoEsperado = 'DISPONIBLE';
+  }
+
+  await prisma.$transaction(async (tx) => {
+    // 1. Liberar piezas antiguas que ya no están en las nuevas
+    const removedIds = oldIds.filter(id => !newIds.includes(id));
+    if (removedIds.length > 0) {
+      await tx.piezaStock.updateMany({
+        where: { id_pieza_stock: { in: removedIds } },
+        data: { estado_pieza_stock: 'DISPONIBLE' },
+      });
+    }
+
+    // 2. Verificar disponibilidad de las piezas nuevas (solo las que no estaban antes)
+    const addedIds = newIds.filter(id => !oldIds.find(oldId => oldId === id));
+    if (addedIds.length > 0) {
+      await verificarDisponibilidad(tx, addedIds);
+    }
+
+    // 3. Recrear detalles
+    await tx.operacionDetalle.deleteMany({
+      where: { id_operacion: operacion.id_operacion },
+    });
+
+    await tx.operacion.update({
+      where: { id_operacion: operacion.id_operacion },
+      data: {
+        detalles: {
+          create: newIds.map((id_pieza_stock) => ({ id_pieza_stock })),
+        },
+      },
+    });
+
+    // 4. Actualizar estado de TODAS las piezas actuales (newIds) al estado esperado
+    if (estadoEsperado !== 'DISPONIBLE') {
+      await tx.piezaStock.updateMany({
+        where: { id_pieza_stock: { in: newIds } },
+        data: { estado_pieza_stock: estadoEsperado },
+      });
+    }
+  });
+
+  return getOperacionById(id);
+}
+
 module.exports = {
   createAlquilerSchema,
   createVentaSchema,
@@ -448,4 +556,8 @@ module.exports = {
   deleteOperacion,
   createInteraccionSchema,
   createInteraccion,
+  updateMontosSchema,
+  updatePiezasSchema,
+  updateOperacionMontos,
+  updateOperacionPiezas,
 };

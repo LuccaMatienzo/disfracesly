@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { useOperacion, useAvanzarEtapaAlquiler, useAvanzarEtapaVenta, useCreateInteraccion } from '@/hooks/useOperaciones';
+import { useOperacion, useAvanzarEtapaAlquiler, useAvanzarEtapaVenta, useCreateInteraccion, useUpdateOperacionMontos, useUpdateOperacionPiezas } from '@/hooks/useOperaciones';
 import { usePagos } from '@/hooks/usePagos';
 import { useToast } from '@/hooks/useToast';
 import Badge from '@/components/ui/Badge';
@@ -11,6 +11,8 @@ import ConfirmDeleteModal from '@/components/ui/ConfirmDeleteModal';
 import PagoFormModal from '@/components/ui/PagoFormModal';
 import ToastContainer from '@/components/ui/Toast';
 import InteraccionModal from '@/components/ui/InteraccionModal';
+import MontosModal from '@/components/ui/MontosModal';
+import PiezasModal from '@/components/ui/PiezasModal';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -177,10 +179,14 @@ export default function OperacionDetalle() {
   const avanzarAlquiler = useAvanzarEtapaAlquiler();
   const avanzarVenta = useAvanzarEtapaVenta();
   const createInteraccion = useCreateInteraccion(id);
+  const updateMontos = useUpdateOperacionMontos(id);
+  const updatePiezas = useUpdateOperacionPiezas(id);
 
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [advanceLoading, setAdvanceLoading] = useState(false);
   const [interaccionModal, setInteraccionModal] = useState({ open: false, tipo: null });
+  const [montosModalOpen, setMontosModalOpen] = useState(false);
+  const [piezasModalOpen, setPiezasModalOpen] = useState(false);
 
   // Pago Modals state
   const [pagoModal, setPagoModal] = useState({ open: false, data: null });
@@ -230,6 +236,12 @@ export default function OperacionDetalle() {
 
   // Venta specific
   const senaMonto = isVenta ? parseFloat(op.venta.sena_monto ?? 0) : 0;
+
+  const currentMontos = {
+    monto_total: montoTotal,
+    deposito_monto: isAlquiler ? parseFloat(op.alquiler.deposito_monto ?? 0) : 0,
+    sena_monto: isVenta ? parseFloat(op.venta.sena_monto ?? 0) : 0,
+  };
 
   async function handleAdvance() {
     if (!transition) return;
@@ -317,6 +329,26 @@ export default function OperacionDetalle() {
     }
   };
 
+  const handleUpdateMontos = async (data) => {
+    try {
+      await updateMontos.mutateAsync(data);
+      success('Montos actualizados correctamente');
+      setMontosModalOpen(false);
+    } catch (err) {
+      error(err?.response?.data?.message ?? 'Error al actualizar los montos');
+    }
+  };
+
+  const handleUpdatePiezas = async (data) => {
+    try {
+      await updatePiezas.mutateAsync(data);
+      success('Piezas actualizadas correctamente');
+      setPiezasModalOpen(false);
+    } catch (err) {
+      error(err?.response?.data?.message ?? 'Error al actualizar las piezas');
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
 
@@ -383,19 +415,27 @@ export default function OperacionDetalle() {
           </div>
 
           {/* Piezas */}
-          <div className="bg-surface-container-lowest rounded-2xl shadow-card p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-secondary-container/40 flex items-center justify-center">
-                <span className="material-symbols-outlined text-xl text-secondary">checkroom</span>
-              </div>
-              <div>
-                <h2 className="font-headline text-title-md text-on-surface">
-                  Piezas ({op.detalles?.length ?? 0})
-                </h2>
-                <p className="text-body-md text-on-surface-variant">Items incluidos en la operación</p>
-              </div>
-            </div>
-            <div className="space-y-2">
+  <div className="bg-surface-container-lowest rounded-2xl shadow-card p-6">
+    <div className="flex items-center justify-between gap-3 mb-4">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-secondary-container/40 flex items-center justify-center">
+          <span className="material-symbols-outlined text-xl text-secondary">checkroom</span>
+        </div>
+        <div>
+          <h2 className="font-headline text-title-md text-on-surface">
+            Piezas ({op.detalles?.length ?? 0})
+          </h2>
+          <p className="text-body-md text-on-surface-variant">Items incluidos en la operación</p>
+        </div>
+      </div>
+      {!isTerminal && (
+        <Button size="sm" variant="secondary" onClick={() => setPiezasModalOpen(true)}>
+          <span className="material-symbols-outlined text-base">edit</span>
+          Editar Piezas
+        </Button>
+      )}
+    </div>
+    <div className="space-y-2">
               {(op.detalles ?? []).map((det) => {
                 const ps = det.piezaStock;
                 const pieza = ps?.pieza;
@@ -566,12 +606,20 @@ export default function OperacionDetalle() {
         <div className="space-y-6">
 
           {/* Resumen financiero */}
-          <div className="bg-surface-container-lowest rounded-2xl shadow-card p-6">
-            <h2 className="font-headline text-title-md text-on-surface mb-4 flex items-center gap-2">
-              <span className="material-symbols-outlined text-lg text-primary">receipt_long</span>
-              Resumen financiero
-            </h2>
-            <div className="space-y-3">
+  <div className="bg-surface-container-lowest rounded-2xl shadow-card p-6">
+    <div className="flex items-center justify-between mb-4">
+      <h2 className="font-headline text-title-md text-on-surface flex items-center gap-2">
+        <span className="material-symbols-outlined text-lg text-primary">receipt_long</span>
+        Resumen financiero
+      </h2>
+      {!isTerminal && (
+        <Button size="sm" variant="secondary" onClick={() => setMontosModalOpen(true)}>
+          <span className="material-symbols-outlined text-base">edit</span>
+          Editar
+        </Button>
+      )}
+    </div>
+    <div className="space-y-3">
               <div className="flex justify-between items-center py-2 border-b border-outline-variant/15">
                 <span className="text-sm text-on-surface-variant">Monto total</span>
                 <span className="text-lg font-headline font-black text-on-surface">{fmt(montoTotal)}</span>
@@ -730,6 +778,24 @@ export default function OperacionDetalle() {
         loading={createInteraccion.isPending || avanzarAlquiler.isPending}
         tipo={interaccionModal.tipo}
         operacion={op}
+      />
+
+      <MontosModal
+        open={montosModalOpen}
+        onClose={() => setMontosModalOpen(false)}
+        onSubmit={handleUpdateMontos}
+        isAlquiler={isAlquiler}
+        isVenta={isVenta}
+        currentData={currentMontos}
+        loading={updateMontos.isPending}
+      />
+
+      <PiezasModal
+        open={piezasModalOpen}
+        onClose={() => setPiezasModalOpen(false)}
+        onSubmit={handleUpdatePiezas}
+        currentDetalles={op.detalles}
+        loading={updatePiezas.isPending}
       />
 
       {/* Toasts */}

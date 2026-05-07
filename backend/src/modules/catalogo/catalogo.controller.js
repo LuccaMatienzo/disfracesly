@@ -35,8 +35,14 @@ async function deleteCategoria(req, res, next) {
 async function getAllDisfraces(req, res, next) {
   try { res.json(await svc.getAllDisfraces(req.query)); } catch (e) { next(e); }
 }
+async function getDisfrazById(req, res, next) {
+  try { res.json(await svc.getDisfrazById(req.params.id)); } catch (e) { next(e); }
+}
 async function createDisfraz(req, res, next) {
   try { res.status(201).json(await svc.createDisfraz(req.body)); } catch (e) { next(e); }
+}
+async function updateDisfraz(req, res, next) {
+  try { res.json(await svc.updateDisfraz(req.params.id, req.body)); } catch (e) { next(e); }
 }
 async function deleteDisfraz(req, res, next) {
   try { await svc.deleteDisfraz(req.params.id); res.json({ message: 'Disfraz eliminado' }); } catch (e) { next(e); }
@@ -59,6 +65,6 @@ async function getAllCategoriasPublico(req, res, next) {
 module.exports = {
   getAllPiezas, getPiezaById, createPieza, updatePieza, deletePieza,
   getAllCategorias, createCategoria, updateCategoria, deleteCategoria,
-  getAllDisfraces, createDisfraz, deleteDisfraz,
+  getAllDisfraces, getDisfrazById, createDisfraz, updateDisfraz, deleteDisfraz,
   getDisfracesPúblico, getDisfrazByIdPublico, getAllCategoriasPublico, getDisfracesPopularesPublico,
 };

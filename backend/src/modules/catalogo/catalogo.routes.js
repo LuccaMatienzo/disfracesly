@@ -28,7 +28,9 @@ router.delete('/categorias/:id', ctrl.deleteCategoria);
 
 // Disfraces (admin)
 router.get('/disfraces', ctrl.getAllDisfraces);
+router.get('/disfraces/:id', ctrl.getDisfrazById);
 router.post('/disfraces', validate(disfrazSchema), ctrl.createDisfraz);
+router.put('/disfraces/:id', validate(disfrazSchema.partial()), ctrl.updateDisfraz);
 router.delete('/disfraces/:id', ctrl.deleteDisfraz);
 
 module.exports = router;

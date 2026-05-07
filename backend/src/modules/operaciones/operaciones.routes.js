@@ -8,6 +8,8 @@ const {
   avanzarEtapaAlquilerSchema,
   avanzarEtapaVentaSchema,
   createInteraccionSchema,
+  updateMontosSchema,
+  updatePiezasSchema,
 } = require('./operaciones.service');
 
 router.use(authenticate);
@@ -26,6 +28,10 @@ router.patch('/:id/venta/etapa', validate(avanzarEtapaVentaSchema), ctrl.avanzar
 
 // Interacciones
 router.post('/:id/interacciones', validate(createInteraccionSchema), ctrl.newInteraccion);
+
+// Modificaciones
+router.patch('/:id/montos', validate(updateMontosSchema), ctrl.updateMontos);
+router.patch('/:id/piezas', validate(updatePiezasSchema), ctrl.updatePiezas);
 
 // Soft delete
 router.delete('/:id', ctrl.remove);

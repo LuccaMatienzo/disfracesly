@@ -24,5 +24,11 @@ async function remove(req, res, next) {
 async function newInteraccion(req, res, next) {
   try { res.status(201).json(await svc.createInteraccion(req.params.id, req.user.id_usuario, req.body)); } catch (e) { next(e); }
 }
+async function updateMontos(req, res, next) {
+  try { res.json(await svc.updateOperacionMontos(req.params.id, req.body)); } catch (e) { next(e); }
+}
+async function updatePiezas(req, res, next) {
+  try { res.json(await svc.updateOperacionPiezas(req.params.id, req.body)); } catch (e) { next(e); }
+}
 
-module.exports = { getAll, getById, newAlquiler, newVenta, avanzarAlquiler, avanzarVenta, remove, newInteraccion };
+module.exports = { getAll, getById, newAlquiler, newVenta, avanzarAlquiler, avanzarVenta, remove, newInteraccion, updateMontos, updatePiezas };

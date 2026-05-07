@@ -89,12 +89,12 @@ async function getMonthlyRevenue() {
 }
 
 /**
- * Cash flow hoy — reemplaza getCashFlowToday() (3 queries + reduce en JS)
+ * Cash flow semanal — reemplaza getCashFlowToday()
  * Retorna: totalIncome, depositsInCustody, pendingBalance
  */
-async function getCashFlowToday() {
+async function getCashFlowWeekly() {
   const [row] = await prisma.$queryRaw`
-    SELECT * FROM gestion.fn_cash_flow_today()
+    SELECT * FROM gestion.fn_cash_flow_weekly()
   `;
   return {
     totalIncome:       Number(row.total_income),
@@ -152,7 +152,7 @@ async function getDashboardData() {
     activeRentals,
     monthlyRevenue,
     recentMovements,
-    cashFlowToday,
+    cashFlowWeekly,
     stockStatus,
     upcomingReturns,
   ] = await Promise.all([
@@ -161,7 +161,7 @@ async function getDashboardData() {
     getActiveRentals(),
     getMonthlyRevenue(),
     getRecentMovements(),
-    getCashFlowToday(),
+    getCashFlowWeekly(),
     getStockStatus(),
     getUpcomingReturns(),
   ]);
@@ -172,7 +172,7 @@ async function getDashboardData() {
     activeRentals,
     monthlyRevenue,
     recentMovements,
-    cashFlowToday,
+    cashFlowWeekly,
     stockStatus,
     upcomingReturns,
   };

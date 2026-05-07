@@ -20,11 +20,12 @@ function timeAgo(dateStr) {
   return `${diffDays} día${diffDays > 1 ? 's' : ''} atrás`;
 }
 
-function formatCurrency(amount) {
+function formatCurrency(amount, fractionDigits = 2) {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
-    minimumFractionDigits: 2,
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
   }).format(amount);
 }
 
@@ -109,15 +110,16 @@ function DonutChart({ data }) {
 
 function KpiActiveRentals({ data }) {
   return (
-    <div className="bg-card-panel rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
-      <div className="absolute top-8 right-6 pointer-events-none opacity-20 text-tertiary">
-        <MdOutlinePendingActions size={50} />
+    <div className="bg-card-panel rounded-2xl shadow-card p-4 md:p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
+      <div className="absolute top-6 right-4 md:top-8 md:right-6 pointer-events-none opacity-20 text-tertiary">
+        <MdOutlinePendingActions size={40} className="md:hidden" />
+        <MdOutlinePendingActions size={50} className="hidden md:block" />
       </div>
       <div className="relative z-10 flex flex-col w-full">
-        <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">Operaciones Activas</p>
-        <p className="text-4xl font-headline font-black text-on-surface">{data.totalItems}</p>
+        <p className="text-[10px] md:text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">Operaciones Activas</p>
+        <p className="text-3xl md:text-4xl font-headline font-black text-on-surface">{data.totalItems}</p>
       </div>
-      <div className="flex gap-4 mt-2 text-xs">
+      <div className="flex flex-wrap gap-2 md:gap-4 mt-2 text-[10px] md:text-xs">
         {data.overdue > 0 && (
           <span className="text-error font-semibold">Atrasados ({data.overdue})</span>
         )}
@@ -131,28 +133,29 @@ function KpiActiveRentals({ data }) {
 
 function KpiPreparation({ data }) {
   return (
-    <div className="bg-card-panel rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
-      <div className="absolute top-8 right-6 pointer-events-none opacity-20 text-tertiary">
-        <LuPackageOpen size={50} />
+    <div className="bg-card-panel rounded-2xl shadow-card p-4 md:p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
+      <div className="absolute top-6 right-4 md:top-8 md:right-6 pointer-events-none opacity-20 text-tertiary">
+        <LuPackageOpen size={40} className="md:hidden" />
+        <LuPackageOpen size={50} className="hidden md:block" />
       </div>
       <div className="relative z-10 flex flex-col w-full">
-        <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">En Preparación</p>
-        <p className="text-4xl font-headline font-black text-on-surface">{data.total}</p>
+        <p className="text-[10px] md:text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">En Preparación</p>
+        <p className="text-3xl md:text-4xl font-headline font-black text-on-surface">{data.total}</p>
       </div>
-
     </div>
   );
 }
 
 function KpiReadyForPickup({ data }) {
   return (
-    <div className="bg-card-panel rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
-      <div className="absolute top-8 right-6 pointer-events-none opacity-20 text-tertiary">
-        <BsBagCheck size={50} />
+    <div className="bg-card-panel rounded-2xl shadow-card p-4 md:p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
+      <div className="absolute top-6 right-4 md:top-8 md:right-6 pointer-events-none opacity-20 text-tertiary">
+        <BsBagCheck size={40} className="md:hidden" />
+        <BsBagCheck size={50} className="hidden md:block" />
       </div>
       <div className="relative z-10 flex flex-col w-full">
-        <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">Listos para Retiro</p>
-        <p className="text-4xl font-headline font-black text-on-surface">{data.totalPackages}</p>
+        <p className="text-[10px] md:text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">Listos para Retiro</p>
+        <p className="text-3xl md:text-4xl font-headline font-black text-on-surface">{data.totalPackages}</p>
       </div>
     </div>
   );
@@ -162,19 +165,19 @@ function KpiReadyForPickup({ data }) {
 function KpiMonthlyRevenue({ data }) {
   const isPositive = data.percentChange >= 0;
   return (
-    <div className="bg-card-panel rounded-2xl shadow-card p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
-      <div className="absolute top-8 right-6 pointer-events-none opacity-20 text-tertiary">
-        <span className="material-symbols-outlined" style={{ fontSize: '50px' }}>payments</span>
+    <div className="bg-card-panel rounded-2xl shadow-card p-4 md:p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
+      <div className="absolute top-6 right-4 md:top-8 md:right-6 pointer-events-none opacity-20 text-tertiary">
+        <span className="material-symbols-outlined" style={{ fontSize: '40px' }}>payments</span>
       </div>
       <div className="relative z-10 flex flex-col w-full">
-        <p className="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">Ingresos del Mes</p>
-        <p className="text-3xl font-headline font-black text-on-surface">{formatCurrency(data.current)}</p>
+        <p className="text-[10px] md:text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">Ingresos del Mes</p>
+        <p className="text-2xl md:text-3xl font-headline font-black text-on-surface">{formatCurrency(data.current, 0)}</p>
       </div>
       <div className="flex items-center gap-1 mt-2">
         <span className={`material-symbols-outlined text-base ${isPositive ? 'text-primary' : 'text-error'}`}>
           {isPositive ? 'trending_up' : 'trending_down'}
         </span>
-        <span className={`text-xs font-semibold ${isPositive ? 'text-primary' : 'text-error'}`}>
+        <span className={`text-[10px] md:text-xs font-semibold ${isPositive ? 'text-primary' : 'text-error'}`}>
           {isPositive ? '+' : ''}{data.percentChange}% vs mes anterior
         </span>
       </div>
@@ -187,8 +190,8 @@ function KpiMonthlyRevenue({ data }) {
 function RecentMovements({ movements }) {
   if (!movements || movements.length === 0) {
     return (
-      <div className="bg-card-panel rounded-2xl shadow-card p-6">
-        <h2 className="font-headline font-bold text-on-surface text-lg mb-4">Movimientos Recientes</h2>
+      <div className="bg-card-panel rounded-2xl shadow-card p-4 md:p-6">
+        <h2 className="font-headline font-bold text-on-surface text-base md:text-lg mb-4">Movimientos Recientes</h2>
         <p className="text-on-surface-variant text-sm">No hay movimientos recientes</p>
       </div>
     );
@@ -196,13 +199,52 @@ function RecentMovements({ movements }) {
 
   return (
     <div className="bg-card-panel rounded-2xl shadow-card overflow-hidden">
-      <div className="px-6 py-4 border-b border-outline-variant/20 flex items-center justify-between">
-        <h2 className="font-headline font-bold text-on-surface text-lg">Movimientos Recientes</h2>
-        <a href="/admin/operaciones" className="text-sm text-on-surface-variant font-label font-semibold hover:underline">
+      <div className="px-4 md:px-6 py-3 md:py-4 border-b border-outline-variant/20 flex items-center justify-between">
+        <h2 className="font-headline font-bold text-on-surface text-base md:text-lg">Movimientos Recientes</h2>
+        <a href="/admin/operaciones" className="text-xs md:text-sm text-on-surface-variant font-label font-semibold hover:underline">
           Ver Todos
         </a>
       </div>
-      <div className="overflow-x-auto">
+
+      {/* Mobile: stacked cards */}
+      <div className="md:hidden divide-y divide-outline-variant/10">
+        {movements.map((mov) => {
+          const cfg = STATUS_CONFIG[mov.status] ?? STATUS_CONFIG.Otra;
+          return (
+            <div key={mov.id} className="p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-1.5">
+                  {cfg.isSale ? (
+                    <span className="material-symbols-outlined text-sm" style={{ color: cfg.color }}>sell</span>
+                  ) : (
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: cfg.dotColor }} />
+                  )}
+                  <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: cfg.color }}>
+                    {cfg.label}
+                  </span>
+                </span>
+                <span className="text-[11px] text-on-surface-variant">{timeAgo(mov.timeAgo)}</span>
+              </div>
+              <p className="text-sm font-medium text-on-surface">
+                {mov.itemName} {mov.itemSize ? `(${mov.itemSize})` : ''}
+                <span className="text-[10px] text-on-surface-variant ml-1">#{mov.itemId}</span>
+              </p>
+              <div className="flex items-center justify-between text-xs text-on-surface-variant">
+                <span>{mov.customerName}</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-5 h-5 rounded-full bg-surface-container-low flex items-center justify-center text-[9px] font-bold text-on-surface-variant uppercase">
+                    {mov.employeeInitials}
+                  </span>
+                  {mov.employeeName.split(' ')[0]}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Desktop: table */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-outline-variant/10">
@@ -275,17 +317,17 @@ function CashFlow({ data }) {
   ];
 
   return (
-    <div className="bg-card-panel rounded-2xl shadow-card p-6">
-      <h2 className="font-headline font-bold text-on-surface text-lg mb-4">Flujo de Caja (Hoy)</h2>
-      <div className="space-y-4">
+    <div className="bg-card-panel rounded-2xl shadow-card p-4 md:p-6">
+      <h2 className="font-headline font-bold text-on-surface text-base md:text-lg mb-3 md:mb-4">Flujo de Caja Semanal</h2>
+      <div className="space-y-3 md:space-y-4">
         {items.map((item) => (
-          <div key={item.label} className={`flex items-center gap-4 p-3 rounded-xl ${item.bg}/30`}>
-            <div className={`w-10 h-10 rounded-xl ${item.bg} flex items-center justify-center`}>
-              <span className={`material-symbols-outlined text-xl ${item.iconColor}`}>{item.icon}</span>
+          <div key={item.label} className={`flex items-center gap-3 md:gap-4 p-2.5 md:p-3 rounded-xl ${item.bg}/30`}>
+            <div className={`w-9 h-9 md:w-10 md:h-10 rounded-xl ${item.bg} flex items-center justify-center shrink-0`}>
+              <span className={`material-symbols-outlined text-lg md:text-xl ${item.iconColor}`}>{item.icon}</span>
             </div>
             <div>
               <p className="text-[10px] font-label font-bold uppercase tracking-widest text-on-surface-variant">{item.label}</p>
-              <p className="text-xl font-headline font-black text-on-surface">{formatCurrency(item.value)}</p>
+              <p className="text-lg md:text-xl font-headline font-black text-on-surface">{formatCurrency(item.value, 0)}</p>
             </div>
           </div>
         ))}
@@ -305,10 +347,10 @@ function StockStatusCard({ data }) {
   ];
 
   return (
-    <div className="bg-card-panel rounded-2xl shadow-card p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="font-headline font-bold text-on-surface text-lg">Estado del Stock</h2>
-        <a href="/admin/stock" className="text-xs text-on-surface-variant font-label font-semibold bg-surface-container-low px-3 py-1 rounded-full hover:bg-surface-container transition-colors">
+    <div className="bg-card-panel rounded-2xl shadow-card p-4 md:p-6">
+      <div className="flex items-center justify-between mb-3 md:mb-4">
+        <h2 className="font-headline font-bold text-on-surface text-base md:text-lg">Estado del Stock</h2>
+        <a href="/admin/stock" className="text-[10px] md:text-xs text-on-surface-variant font-label font-semibold bg-surface-container-low px-2.5 md:px-3 py-1 rounded-full hover:bg-surface-container transition-colors">
           Reporte por Categoría
         </a>
       </div>
@@ -322,8 +364,8 @@ function StockStatusCard({ data }) {
 function UpcomingReturns({ returns: list }) {
   if (!list || list.length === 0) {
     return (
-      <div className="bg-card-panel rounded-2xl shadow-card p-6">
-        <h2 className="font-headline font-bold text-on-surface text-lg mb-4">
+      <div className="bg-card-panel rounded-2xl shadow-card p-4 md:p-6">
+        <h2 className="font-headline font-bold text-on-surface text-base md:text-lg mb-4">
           Próximos alquileres a vencer
         </h2>
         <p className="text-on-surface-variant text-sm">No hay alquileres próximos a vencer</p>
@@ -333,18 +375,42 @@ function UpcomingReturns({ returns: list }) {
 
   return (
     <div className="bg-card-panel rounded-2xl shadow-card overflow-hidden">
-      <div className="px-6 py-4 border-b border-outline-variant/20 flex items-center justify-between">
-        <h2 className="font-headline font-bold text-on-surface text-lg">
+      <div className="px-4 md:px-6 py-3 md:py-4 border-b border-outline-variant/20 flex items-center justify-between">
+        <h2 className="font-headline font-bold text-on-surface text-base md:text-lg">
           Próximos alquileres a vencer
         </h2>
         <a
           href="/admin/operaciones"
-          className="text-sm text-primary font-label font-semibold hover:underline"
+          className="text-xs md:text-sm text-primary font-label font-semibold hover:underline"
         >
           Ver todos →
         </a>
       </div>
-      <div className="overflow-x-auto">
+
+      {/* Mobile: stacked cards */}
+      <div className="md:hidden divide-y divide-outline-variant/10">
+        {list.map((op) => {
+          const badge = BADGE_ETAPA[op.etapa] ?? BADGE_ETAPA.Pendiente;
+          return (
+            <div key={op.id} className="p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-on-surface">{op.cliente}</p>
+                <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${badge.cls}`}>
+                  {op.etapa}
+                </span>
+              </div>
+              <p className="text-xs text-on-surface-variant">{op.disfraz}</p>
+              <div className="flex items-center gap-4 text-[11px] text-on-surface-variant">
+                <span>Retiro: {op.retiro}</span>
+                <span>Dev: {op.devolucion}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Desktop: table */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-outline-variant/10">
@@ -427,14 +493,14 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="space-y-8 animate-fade-in">
+      <div className="space-y-5 md:space-y-8 animate-fade-in">
         <div>
-          <h1 className="font-headline font-black text-3xl text-on-surface">
+          <h1 className="font-headline font-black text-xl md:text-3xl text-on-surface">
             {saludo}, {user?.persona?.nombre ?? 'Admin'}
           </h1>
-          <p className="text-on-surface-variant mt-1">Cargando datos del dashboard...</p>
+          <p className="text-on-surface-variant text-sm md:text-base mt-1">Cargando datos del dashboard...</p>
         </div>
-        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
           {[1, 2, 3, 4].map((i) => <SkeletonCard key={i} />)}
         </div>
       </div>
@@ -458,23 +524,23 @@ export default function Dashboard() {
     );
   }
 
-  const { inPreparation, readyForPickup, activeRentals, monthlyRevenue, recentMovements, cashFlowToday, stockStatus, upcomingReturns } = dashboard;
+  const { inPreparation, readyForPickup, activeRentals, monthlyRevenue, recentMovements, cashFlowWeekly, stockStatus, upcomingReturns } = dashboard;
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-5 md:space-y-8 animate-fade-in">
 
       {/* ── Greeting ──────────────────────────────────────────────────────── */}
       <div>
-        <h1 className="font-headline font-black text-3xl text-on-surface">
+        <h1 className="font-headline font-black text-xl md:text-3xl text-on-surface">
           {saludo}, {user?.persona?.nombre ?? 'Admin'}
         </h1>
-        <p className="text-on-surface-variant mt-1">
+        <p className="text-on-surface-variant text-sm md:text-base mt-1">
           Resumen de operaciones de la tienda
         </p>
       </div>
 
       {/* ── KPI Cards ─────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
         <KpiActiveRentals data={activeRentals} />
         <KpiPreparation data={inPreparation} />
         <KpiReadyForPickup data={readyForPickup} />
@@ -482,12 +548,12 @@ export default function Dashboard() {
       </div>
 
       {/* ── Bento: Movements + Cash/Stock ─────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         <div className="lg:col-span-2">
           <RecentMovements movements={recentMovements} />
         </div>
-        <div className="flex flex-col gap-6">
-          <CashFlow data={cashFlowToday} />
+        <div className="flex flex-col gap-4 md:gap-6">
+          <CashFlow data={cashFlowWeekly} />
           <StockStatusCard data={stockStatus} />
         </div>
       </div>

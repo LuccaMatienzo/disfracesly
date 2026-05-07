@@ -6,13 +6,13 @@ import api from '@/api/axios.instance';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 
-/* ── Chip individual de categoría ──────────────────────────────────────── */
-function CatChip({ cat, isSelected, onToggle }) {
+/* ── Chip individual de pieza ──────────────────────────────────────── */
+function PiezaChip({ pieza, isSelected, onToggle }) {
   return (
     <button
       type="button"
       className="hover:-translate-y-0.5 active:scale-95"
-      onClick={() => onToggle(cat.id_categoria_motivo)}
+      onClick={() => onToggle(pieza.id_pieza)}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -48,109 +48,129 @@ function CatChip({ cat, isSelected, onToggle }) {
           </svg>
         )}
       </span>
-      {cat.nombre}
+      {pieza.nombre}
     </button>
   );
 }
 
 /* ── Componente principal ──────────────────────────────────────────────── */
-export default function PiezaForm() {
+export default function DisfrazForm() {
   const { id } = useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const isEditing = !!id;
 
-  const { data: pieza } = useQuery({
-    queryKey: ['piezas', id],
-    queryFn: () => api.get(`/catalogo/piezas/${id}`).then((r) => r.data),
+  // Si quisiéramos modo editar después, esto ya queda preparado
+  const { data: disfraz } = useQuery({
+    queryKey: ['disfraces', id],
+    queryFn: () => api.get(`/catalogo/disfraces/${id}`).then((r) => r.data),
     enabled: isEditing,
   });
 
-  const { data: categoriasData } = useQuery({
-    queryKey: ['categorias-all'],
-    queryFn: () => api.get('/catalogo/categorias', { params: { limit: 100 } }).then((r) => r.data),
+  const { data: piezasData } = useQuery({
+    queryKey: ['piezas-all'],
+    queryFn: () => api.get('/catalogo/piezas', { params: { limit: 500 } }).then((r) => r.data),
   });
 
   const mutation = useMutation({
     mutationFn: (data) =>
       isEditing
-        ? api.put(`/catalogo/piezas/${id}`, data).then((r) => r.data)
-        : api.post('/catalogo/piezas', data).then((r) => r.data),
+        ? api.put(`/catalogo/disfraces/${id}`, data).then((r) => r.data)
+        : api.post('/catalogo/disfraces', data).then((r) => r.data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['piezas'] });
+      qc.invalidateQueries({ queryKey: ['disfraces'] });
       navigate('/admin/catalogo');
     },
   });
 
   const { register, handleSubmit, reset, setValue, getValues, control, formState: { isSubmitting } } = useForm({
-    defaultValues: { nombre: '', descripcion: '', categoria_ids: [] },
+    defaultValues: { nombre: '', descripcion: '', pieza_ids: [] },
   });
 
   // Observar selección en tiempo real para re-render del contador y chips
-  const selectedIds = useWatch({ control, name: 'categoria_ids' }) ?? [];
+  const selectedIds = useWatch({ control, name: 'pieza_ids' }) ?? [];
   const selectedSet = useMemo(() => new Set(selectedIds.map(Number)), [selectedIds]);
 
   useEffect(() => {
-    if (isEditing && pieza) {
+    if (isEditing && disfraz) {
       reset({
-        nombre: pieza.nombre,
-        descripcion: pieza.descripcion ?? '',
-        categoria_ids: pieza.categorias?.map((c) => c.id_categoria_motivo) ?? [],
+        nombre: disfraz.nombre,
+        descripcion: disfraz.descripcion ?? '',
+        pieza_ids: disfraz.piezas?.map((p) => p.id_pieza) ?? [],
       });
     }
-  }, [pieza, isEditing, reset]);
+  }, [disfraz, isEditing, reset]);
 
-  const categorias = categoriasData?.data ?? [];
+  const piezas = piezasData?.data ?? [];
 
   // Agrupar por letra inicial
   const grouped = useMemo(() => {
     const map = {};
-    for (const cat of categorias) {
-      const letter = cat.nombre[0].toUpperCase();
+    for (const pieza of piezas) {
+      const letter = pieza.nombre[0].toUpperCase();
       if (!map[letter]) map[letter] = [];
-      map[letter].push(cat);
+      map[letter].push(pieza);
     }
     return Object.entries(map).sort(([a], [b]) => a.localeCompare(b));
-  }, [categorias]);
+  }, [piezas]);
 
-  const toggleCategory = (catId) => {
-    const current = (getValues('categoria_ids') ?? []).map(Number);
-    const numId = Number(catId);
+  // Calcular categorías derivadas
+  const derivedCategories = useMemo(() => {
+    const categoriesMap = new Map();
+    for (const piezaId of selectedIds) {
+      const numId = Number(piezaId);
+      const piezaInfo = piezas.find(p => p.id_pieza === numId);
+      if (piezaInfo && piezaInfo.categorias) {
+        for (const cat of piezaInfo.categorias) {
+          if (cat.categoriaMotivo) {
+            categoriesMap.set(cat.categoriaMotivo.id_categoria_motivo, cat.categoriaMotivo.nombre);
+          }
+        }
+      }
+    }
+    return Array.from(categoriesMap.entries())
+      .map(([id, nombre]) => ({ id, nombre }))
+      .sort((a, b) => a.nombre.localeCompare(b.nombre));
+  }, [selectedIds, piezas]);
+
+  const togglePieza = (piezaId) => {
+    const current = (getValues('pieza_ids') ?? []).map(Number);
+    const numId = Number(piezaId);
     const next = current.includes(numId) ? current.filter((x) => x !== numId) : [...current, numId];
-    setValue('categoria_ids', next, { shouldDirty: true });
+    setValue('pieza_ids', next, { shouldDirty: true });
   };
 
-  const clearAll = () => setValue('categoria_ids', [], { shouldDirty: true });
+  const clearAll = () => setValue('pieza_ids', [], { shouldDirty: true });
 
   return (
     <div className="w-full h-[calc(100vh-120px)] flex flex-col">
       <div className="mb-6 shrink-0">
         <button onClick={() => navigate(-1)} className="text-body-md text-primary hover:underline font-label mb-2">← Volver</button>
         <h1 className="font-display text-headline-md font-bold text-on-surface">
-          {isEditing ? 'Editar pieza' : 'Nueva pieza del catálogo'}
+          {isEditing ? 'Editar disfraz' : 'Nuevo disfraz del catálogo'}
         </h1>
       </div>
 
       <div className="bg-surface-container-lowest rounded-2xl shadow-card p-6 flex flex-col flex-1 min-h-0">
         <form
           onSubmit={handleSubmit((data) =>
-            mutation.mutate({ ...data, categoria_ids: (data.categoria_ids ?? []).map(Number) })
+            mutation.mutate({ ...data, pieza_ids: (data.pieza_ids ?? []).map(Number) })
           )}
           className="flex flex-col gap-6 flex-1 min-h-0"
         >
           <div className="flex flex-col gap-6 shrink-0">
-            <Input label="Nombre" placeholder="Nombre de la pieza..." {...register('nombre', { required: true })} />
+            <Input label="Nombre" placeholder="Nombre del disfraz..." {...register('nombre', { required: true })} />
             <Input label="Descripción" placeholder="Descripción opcional..." {...register('descripcion')} />
           </div>
 
-          {/* ── Sección de categorías ────────────────────────────────── */}
-          {categorias.length > 0 && (
+          {/* ── Sección de piezas ────────────────────────────────── */}
+          {piezas.length > 0 && (
             <div className="flex flex-col flex-1 min-h-0">
               {/* Encabezado con contador */}
               <div className="shrink-0" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                 <div>
                   <label className="text-label-lg font-label font-medium text-on-surface-variant uppercase tracking-wide block">
-                    Categorías / Motivos
+                    Piezas incluidas
                   </label>
                   <span style={{ fontSize: '0.78rem', color: 'var(--color-on-surface-variant)', marginTop: '2px', display: 'block' }}>
                     {selectedSet.size === 0
@@ -182,7 +202,7 @@ export default function PiezaForm() {
 
               {/* Grupos por letra */}
               <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {grouped.map(([letter, cats]) => (
+                {grouped.map(([letter, items]) => (
                   <div key={letter}>
                     {/* Separador de letra */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
@@ -201,12 +221,12 @@ export default function PiezaForm() {
 
                     {/* Chips de ese grupo */}
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', paddingLeft: '26px' }}>
-                      {cats.map((cat) => (
-                        <CatChip
-                          key={cat.id_categoria_motivo}
-                          cat={cat}
-                          isSelected={selectedSet.has(Number(cat.id_categoria_motivo))}
-                          onToggle={toggleCategory}
+                      {items.map((pieza) => (
+                        <PiezaChip
+                          key={pieza.id_pieza}
+                          pieza={pieza}
+                          isSelected={selectedSet.has(Number(pieza.id_pieza))}
+                          onToggle={togglePieza}
                         />
                       ))}
                     </div>
@@ -216,13 +236,44 @@ export default function PiezaForm() {
             </div>
           )}
 
-          {/* Campo oculto que react-hook-form necesita para categoria_ids */}
-          <input type="hidden" {...register('categoria_ids')} />
+          {/* ── Categorías derivadas ───────────────────────────────── */}
+          {derivedCategories.length > 0 && (
+            <div className="pt-2 shrink-0">
+              <label className="text-label-lg font-label font-medium text-on-surface-variant uppercase tracking-wide block mb-3">
+                Categorías / Motivos del Disfraz
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {derivedCategories.map(c => (
+                  <span
+                    key={c.id}
+                    style={{
+                      display: 'inline-flex',
+                      padding: '4px 12px',
+                      borderRadius: '8px',
+                      background: 'var(--color-surface-container-high)',
+                      color: 'var(--color-on-surface)',
+                      fontSize: '0.8rem',
+                      fontWeight: '500',
+                      border: '1px solid var(--color-outline-variant)'
+                    }}
+                  >
+                    {c.nombre}
+                  </span>
+                ))}
+              </div>
+              <p className="text-body-sm text-on-surface-variant mt-2 opacity-80">
+                Estas categorías se heredan automáticamente de las piezas seleccionadas y no son modificables desde aquí.
+              </p>
+            </div>
+          )}
+
+          {/* Campo oculto que react-hook-form necesita para pieza_ids */}
+          <input type="hidden" {...register('pieza_ids')} />
 
           <div className="flex gap-3 justify-end mt-2 shrink-0">
             <Button type="button" variant="secondary" onClick={() => navigate(-1)}>Cancelar</Button>
             <Button type="submit" loading={isSubmitting}>
-              {isEditing ? 'Guardar cambios' : 'Crear pieza'}
+              {isEditing ? 'Guardar cambios' : 'Crear disfraz'}
             </Button>
           </div>
         </form>

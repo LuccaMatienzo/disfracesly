@@ -6,35 +6,49 @@ import { usePagination } from '@/hooks/usePagination';
 import { useToast } from '@/hooks/useToast';
 import Table, { Pagination } from '@/components/ui/Table';
 import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
+import Input, { Select } from '@/components/ui/Input';
 import ActionButtons from '@/components/ui/ActionButtons';
 import ConfirmDeleteModal from '@/components/ui/ConfirmDeleteModal';
 import PiezaViewModal from '@/components/ui/PiezaViewModal';
+import DisfrazViewModal from '@/components/ui/DisfrazViewModal';
 import ToastContainer from '@/components/ui/Toast';
+import { FiSearch } from 'react-icons/fi';
+
 
 export default function CatalogoList() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { page, limit, goToPage, reset } = usePagination();
   const [search, setSearch] = useState('');
+  const [categoria, setCategoria] = useState('');
+  const [tempSearch, setTempSearch] = useState('');
+  const [tempCategoria, setTempCategoria] = useState('');
+  
   const [tab, setTab] = useState('piezas');
   const { toasts, success, error, remove } = useToast();
 
   const [deleteTarget, setDeleteTarget] = useState(null); // { id, nombre, tipo }
   const [viewId, setViewId] = useState(null);             // id de pieza en modal Ver
+  const [viewDisfrazId, setViewDisfrazId] = useState(null); // id de disfraz en modal Ver
 
   // ─── Queries ──────────────────────────────────────────────────────────────
+  const { data: categoriasData } = useQuery({
+    queryKey: ['categorias-list'],
+    queryFn: () => api.get('/catalogo/categorias', { params: { limit: 100 } }).then((r) => r.data),
+  });
+  const categorias = categoriasData?.data || [];
+
   const { data: piezas, isLoading: loadingPiezas } = useQuery({
-    queryKey: ['piezas', { page, limit, search }],
+    queryKey: ['piezas', { page, limit, search, categoria }],
     queryFn: () =>
-      api.get('/catalogo/piezas', { params: { page, limit, search: search || undefined } }).then((r) => r.data),
+      api.get('/catalogo/piezas', { params: { page, limit, search: search || undefined, categoria: categoria || undefined } }).then((r) => r.data),
     enabled: tab === 'piezas',
   });
 
   const { data: disfraces, isLoading: loadingDisfraces } = useQuery({
-    queryKey: ['disfraces', { page, limit, search }],
+    queryKey: ['disfraces', { page, limit, search, categoria }],
     queryFn: () =>
-      api.get('/catalogo/disfraces', { params: { page, limit, search: search || undefined } }).then((r) => r.data),
+      api.get('/catalogo/disfraces', { params: { page, limit, search: search || undefined, categoria: categoria || undefined } }).then((r) => r.data),
     enabled: tab === 'disfraces',
   });
 
@@ -105,6 +119,11 @@ export default function CatalogoList() {
     { key: 'nombre', label: 'Nombre' },
     { key: 'descripcion', label: 'Descripción', render: (v) => v ?? '—' },
     {
+      key: 'categorias',
+      label: 'Categorías',
+      render: (_, r) => r.categorias_derivadas?.length > 0 ? r.categorias_derivadas.join(', ') : '—',
+    },
+    {
       key: 'piezas',
       label: 'Piezas',
       width: '80px',
@@ -116,10 +135,12 @@ export default function CatalogoList() {
     {
       key: 'acciones',
       label: 'Acciones',
-      width: '120px',
+      width: '140px',
       align: 'center',
       render: (_, r) => (
         <ActionButtons
+          onView={() => setViewDisfrazId(r.id_disfraz)}
+          onEdit={() => navigate(`/admin/catalogo/disfraces/${r.id_disfraz}/editar`)}
           onDelete={() => setDeleteTarget({ id: r.id_disfraz, nombre: r.nombre, tipo: 'disfraz' })}
         />
       ),
@@ -138,11 +159,17 @@ export default function CatalogoList() {
           <h1 className="font-display text-headline-md font-bold text-on-surface">Catálogo</h1>
           <p className="text-body-md text-on-surface-variant mt-0.5">Piezas y disfraces del sistema</p>
         </div>
-        {tab === 'piezas' && (
-          <Link to="/admin/catalogo/piezas/nueva">
-            <Button>+ Nueva pieza</Button>
-          </Link>
-        )}
+        <div>
+          {tab === 'piezas' ? (
+            <Link to="/admin/catalogo/piezas/nueva">
+              <Button>+ Nueva pieza</Button>
+            </Link>
+          ) : (
+            <Link to="/admin/catalogo/disfraces/nuevo">
+              <Button>+ Nuevo disfraz</Button>
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Tabs */}
@@ -150,7 +177,16 @@ export default function CatalogoList() {
         {['piezas', 'disfraces'].map((t) => (
           <button
             key={t}
-            onClick={() => { setTab(t); reset(); setViewId(null); }}
+            onClick={() => { 
+              setTab(t); 
+              reset(); 
+              setViewId(null); 
+              setViewDisfrazId(null); 
+              setSearch('');
+              setTempSearch('');
+              setCategoria('');
+              setTempCategoria('');
+            }}
             className={`px-4 py-2.5 text-body-md font-label font-medium capitalize transition-all border-b-2 -mb-px ${
               tab === t
                 ? 'border-primary text-primary'
@@ -162,14 +198,48 @@ export default function CatalogoList() {
         ))}
       </div>
 
-      {/* Buscador */}
+      {/* Buscador y Filtros */}
       <div className="bg-surface-container-lowest rounded-2xl shadow-card p-5">
-        <Input
-          placeholder={`Buscar ${tab}...`}
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); reset(); }}
-          className="max-w-sm"
-        />
+        <div className="flex flex-col md:flex-row gap-4 items-end">
+          <div className="flex-1 w-full max-w-sm">
+            <Input
+              placeholder={`Buscar ${tab}...`}
+              value={tempSearch}
+              onChange={(e) => setTempSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  setSearch(tempSearch);
+                  setCategoria(tempCategoria);
+                  reset();
+                }
+              }}
+            />
+          </div>
+          <div className="flex-1 w-full md:max-w-[200px]">
+            <Select
+              value={tempCategoria}
+              onChange={(e) => setTempCategoria(e.target.value)}
+            >
+              <option value="">Todas las categorías</option>
+              {categorias.map((c) => (
+                <option key={c.id_categoria_motivo} value={c.id_categoria_motivo}>
+                  {c.nombre}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <Button
+            onClick={() => {
+              setSearch(tempSearch);
+              setCategoria(tempCategoria);
+              reset();
+            }}
+            className="h-[48px] px-6"
+          >
+            <FiSearch className="w-5 h-5 mr-2" />
+            Buscar
+          </Button>
+        </div>
       </div>
 
       {/* Tabla */}
@@ -190,6 +260,13 @@ export default function CatalogoList() {
         id={viewId}
         open={!!viewId}
         onClose={() => setViewId(null)}
+      />
+
+      {/* Modal Ver (disfraz) */}
+      <DisfrazViewModal
+        id={viewDisfrazId}
+        open={!!viewDisfrazId}
+        onClose={() => setViewDisfrazId(null)}
       />
 
       {/* Modal de confirmación */}

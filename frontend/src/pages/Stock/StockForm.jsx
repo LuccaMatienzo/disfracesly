@@ -48,7 +48,7 @@ export default function StockForm() {
   const piezas = piezasData?.data ?? [];
 
   return (
-    <div className="max-w-2xl">
+    <div className="w-full">
       <div className="mb-6">
         <button onClick={() => navigate(-1)} className="text-body-md text-primary hover:underline font-label mb-2">
           ← Volver
@@ -76,10 +76,12 @@ export default function StockForm() {
             <Input label="Medidas" placeholder="Ej: 90cm busto" {...register('medidas')} />
           </div>
 
-          <Select label="Estado" {...register('estado_pieza_stock')}>
-            <option value="DISPONIBLE">Disponible</option>
-            <option value="FUERA_DE_SERVICIO">Fuera de servicio</option>
-          </Select>
+          {isEditing && (
+            <Select label="Estado" {...register('estado_pieza_stock')}>
+              <option value="DISPONIBLE">Disponible</option>
+              <option value="FUERA_DE_SERVICIO">Fuera de servicio</option>
+            </Select>
+          )}
 
           <Input
             label="Descripción"

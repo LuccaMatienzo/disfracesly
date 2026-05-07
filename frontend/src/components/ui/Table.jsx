@@ -75,22 +75,22 @@ export function Pagination({ meta, page, onPageChange }) {
   if (!meta || meta.totalPages <= 1) return null;
 
   return (
-    <div className="flex items-center justify-between text-body-md text-on-surface-variant mt-4">
-      <span>
+    <div className="flex flex-col sm:flex-row items-center justify-between text-body-md text-on-surface-variant mt-4 gap-3">
+      <span className="text-xs md:text-sm">
         Mostrando {(page - 1) * meta.limit + 1}–{Math.min(page * meta.limit, meta.total)} de {meta.total}
       </span>
       <div className="flex gap-2">
         <button
           onClick={() => onPageChange(page - 1)}
           disabled={!meta.hasPrevPage}
-          className="px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest disabled:opacity-40 transition-colors"
+          className="px-3 py-2 min-h-[44px] rounded-lg bg-surface-container-high hover:bg-surface-container-highest disabled:opacity-40 transition-colors text-sm"
         >
           ← Anterior
         </button>
         <button
           onClick={() => onPageChange(page + 1)}
           disabled={!meta.hasNextPage}
-          className="px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest disabled:opacity-40 transition-colors"
+          className="px-3 py-2 min-h-[44px] rounded-lg bg-surface-container-high hover:bg-surface-container-highest disabled:opacity-40 transition-colors text-sm"
         >
           Siguiente →
         </button>

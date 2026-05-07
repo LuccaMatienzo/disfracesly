@@ -33,22 +33,22 @@ export default function Modal({ open, onClose, title, children, size = 'md', foo
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center p-4 w-screen h-screen bg-on-surface/20 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[200] flex items-end md:items-center justify-center p-0 md:p-4 w-screen h-screen bg-on-surface/20 backdrop-blur-sm animate-fade-in"
       onClick={(e) => e.target === e.currentTarget && onClose?.()}
     >
       <div
         className={`
-          glass border border-outline-variant/20 rounded-2xl shadow-float
+          glass border border-outline-variant/20 rounded-t-2xl md:rounded-2xl shadow-float
           w-full ${sizes[size]} animate-scale-in
-          flex flex-col max-h-[90vh]
+          flex flex-col max-h-[95vh] md:max-h-[90vh]
         `}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-outline-variant/20 shrink-0">
-          <h2 className="font-headline text-headline-md text-on-surface">{title}</h2>
+        <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-outline-variant/20 shrink-0">
+          <h2 className="font-headline text-title-lg md:text-headline-md text-on-surface">{title}</h2>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container text-on-surface-variant transition-colors"
+            className="w-9 h-9 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-surface-container text-on-surface-variant transition-colors"
             aria-label="Cerrar"
           >
             ✕
@@ -56,13 +56,13 @@ export default function Modal({ open, onClose, title, children, size = 'md', foo
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">
+        <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 md:py-5">
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-outline-variant/20 shrink-0">
+          <div className="flex items-center justify-end gap-3 px-4 md:px-6 py-3 md:py-4 border-t border-outline-variant/20 shrink-0">
             {footer}
           </div>
         )}

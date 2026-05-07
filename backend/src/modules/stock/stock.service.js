@@ -123,7 +123,13 @@ async function deleteStock(id) {
   const enUso = await prisma.operacionDetalle.findFirst({
     where: {
       id_pieza_stock: BigInt(id),
-      operacion: { deleted_at: null },
+      operacion: {
+        deleted_at: null,
+        OR: [
+          { alquiler: { etapa: { in: ['RESERVADO', 'LISTO_PARA_RETIRO', 'RETIRADO'] } } },
+          { venta: { etapa: { in: ['RESERVADO', 'LISTO_PARA_ENTREGA'] } } }
+        ]
+      },
     },
   });
   if (enUso) throw ApiError.conflict('No se puede eliminar: la pieza está en una operación activa');

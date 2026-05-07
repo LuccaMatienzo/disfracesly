@@ -22,6 +22,7 @@ const ClientesList    = lazy(() => import('@/pages/Clientes/ClientesList'));
 const ClienteForm     = lazy(() => import('@/pages/Clientes/ClienteForm'));
 const CatalogoList    = lazy(() => import('@/pages/Catalogo/CatalogoList'));
 const PiezaForm       = lazy(() => import('@/pages/Catalogo/PiezaForm'));
+const DisfrazForm     = lazy(() => import('@/pages/Catalogo/DisfrazForm'));
 
 // ─── Loading fallback ─────────────────────────────────────────────────────────
 function PageLoading() {
@@ -113,6 +114,8 @@ export default function App() {
           <Route path="catalogo" element={<CatalogoList />} />
           <Route path="catalogo/piezas/nueva" element={<PiezaForm />} />
           <Route path="catalogo/piezas/:id/editar" element={<PiezaForm />} />
+          <Route path="catalogo/disfraces/nuevo" element={<DisfrazForm />} />
+          <Route path="catalogo/disfraces/:id/editar" element={<DisfrazForm />} />
         </Route>
 
         {/* ── Compatibilidad hacia atrás: /login → /acceso ──────────────── */}

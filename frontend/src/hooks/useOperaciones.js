@@ -74,3 +74,26 @@ export function useCreateInteraccion(id_operacion) {
     },
   });
 }
+
+export function useUpdateOperacionMontos(id_operacion) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) =>
+      api.patch(`/operaciones/${id_operacion}/montos`, data).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [...OPS_KEY, id_operacion] });
+    },
+  });
+}
+
+export function useUpdateOperacionPiezas(id_operacion) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data) =>
+      api.patch(`/operaciones/${id_operacion}/piezas`, data).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [...OPS_KEY, id_operacion] });
+      qc.invalidateQueries({ queryKey: ['stock'] });
+    },
+  });
+}

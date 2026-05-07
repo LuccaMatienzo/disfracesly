@@ -9,7 +9,21 @@ import Input from '@/components/ui/Input';
 import { Select } from '@/components/ui/Input';
 import Badge from '@/components/ui/Badge';
 import ToastContainer from '@/components/ui/Toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+// Formato datetime-local: YYYY-MM-DDThh:mm
+const getLocalDatetimeStr = (date) => {
+  if (!date) return '';
+  const tzOffset = date.getTimezoneOffset() * 60000;
+  return new Date(date - tzOffset).toISOString().slice(0, 16);
+};
+
+const getMinConstitucion = () => {
+  const d = new Date();
+  d.setDate(d.getDate() - 3);
+  return getLocalDatetimeStr(d);
+};
+
 
 /* ─── Modal de éxito ────────────────────────────────────────────────── */
 function SuccessModal({ open }) {
@@ -83,19 +97,38 @@ export default function AlquilerForm() {
       api.get('/stock', { params: { estado: 'DISPONIBLE', search: stockSearch, limit: 30 } }).then((r) => r.data),
   });
 
+  const nowLocal = getLocalDatetimeStr(new Date());
+
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
       id_cliente: '',
       deposito_monto: 0,
       monto_total: 0,
+      fecha_constitucion: nowLocal,
+      fecha_retiro: nowLocal,
       fecha_devolucion: '',
       observaciones: '',
     },
   });
+
+  const fechaConstitucion = watch('fecha_constitucion');
+  const fechaRetiro = watch('fecha_retiro');
+
+  // Si se cambia la fecha de constitución y es mayor a la de retiro, igualamos retiro
+  useEffect(() => {
+    if (fechaConstitucion && fechaRetiro) {
+      if (new Date(fechaConstitucion) > new Date(fechaRetiro)) {
+        setValue('fecha_retiro', fechaConstitucion);
+      }
+    }
+  }, [fechaConstitucion, fechaRetiro, setValue]);
+
 
   // Mapa de piezas seleccionadas: id → objeto pieza completo
   // Usar un Map garantiza que el nombre esté disponible aunque la pieza
@@ -118,13 +151,11 @@ export default function AlquilerForm() {
     }
 
     // Convertir datetime-local a ISO 8601 con timezone (lo que exige el backend)
-    let fechaISO = undefined;
-    if (data.fecha_devolucion) {
-      const d = new Date(data.fecha_devolucion);
-      if (!isNaN(d.getTime())) {
-        fechaISO = d.toISOString(); // → "2026-04-30T16:39:00.000Z"
-      }
-    }
+    const toISO = (dateStr) => {
+      if (!dateStr) return undefined;
+      const d = new Date(dateStr);
+      return !isNaN(d.getTime()) ? d.toISOString() : undefined;
+    };
 
     try {
       await createAlquiler.mutateAsync({
@@ -132,7 +163,9 @@ export default function AlquilerForm() {
         pieza_stock_ids: [...selectedPiezas.keys()].map(Number),
         deposito_monto: Number(data.deposito_monto),
         monto_total: Number(data.monto_total),
-        fecha_devolucion: fechaISO,
+        fecha_constitucion: toISO(data.fecha_constitucion),
+        fecha_retiro: toISO(data.fecha_retiro),
+        fecha_devolucion: toISO(data.fecha_devolucion),
         observaciones: data.observaciones || undefined,
       });
 
@@ -237,6 +270,27 @@ export default function AlquilerForm() {
           {/* Montos y fechas */}
           <div className="bg-surface-container-lowest rounded-2xl shadow-card p-5">
             <h2 className="font-headline text-title-md text-on-surface mb-4">Detalles del alquiler</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+              <Input
+                label="Fecha de constitución"
+                type="datetime-local"
+                min={getMinConstitucion()}
+                {...register('fecha_constitucion')}
+              />
+              <Input
+                label="Fecha de retiro"
+                type="datetime-local"
+                min={fechaConstitucion || getMinConstitucion()}
+                {...register('fecha_retiro')}
+              />
+              <Input
+                label="Fecha de devolución"
+                type="datetime-local"
+                min={fechaRetiro || fechaConstitucion || getMinConstitucion()}
+                disabled={!fechaRetiro}
+                {...register('fecha_devolucion')}
+              />
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
                 label="Monto total ($)"
@@ -251,12 +305,6 @@ export default function AlquilerForm() {
                 min="0"
                 step="0.01"
                 {...register('deposito_monto')}
-              />
-              <Input
-                label="Fecha de devolución"
-                type="datetime-local"
-                {...register('fecha_devolucion')}
-                className="col-span-2 sm:col-span-1"
               />
             </div>
             <div className="mt-4">
