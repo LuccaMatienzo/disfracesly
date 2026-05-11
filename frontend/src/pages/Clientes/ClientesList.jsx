@@ -81,7 +81,7 @@ export default function ClientesList() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-headline-md font-bold text-on-surface">Clientes</h1>
+          <h1 className="font-display text-headline-md font-semibold text-on-surface">Clientes</h1>
           <p className="text-body-md text-on-surface-variant mt-0.5">Registro de clientes activos</p>
         </div>
         <Link to="/admin/clientes/nuevo">
@@ -92,7 +92,7 @@ export default function ClientesList() {
       {/* Buscador */}
       <div className="bg-surface-container-lowest rounded-2xl shadow-card p-5">
         <Input
-          placeholder="Buscar por nombre o documento..."
+          placeholder="Buscar por nombre o documento…"
           value={search}
           onChange={(e) => { setSearch(e.target.value); reset(); }}
           className="max-w-sm"

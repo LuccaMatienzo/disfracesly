@@ -29,8 +29,8 @@ function PageLoading() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
       <div className="flex flex-col items-center gap-4">
-        <div className="w-10 h-10 border-4 border-primary-container border-t-primary rounded-full animate-spin" />
-        <p className="text-sm text-on-surface-variant font-label tracking-wider uppercase">Cargando...</p>
+        <div className="size-10 border-4 border-primary-container border-t-primary rounded-full animate-spin" />
+        <p className="text-sm text-on-surface-variant font-label tracking-wider uppercase">Cargando…</p>
       </div>
     </div>
   );

@@ -53,7 +53,7 @@ export default function StockForm() {
         <button onClick={() => navigate(-1)} className="text-body-md text-primary hover:underline font-label mb-2">
           ← Volver
         </button>
-        <h1 className="font-display text-headline-md font-bold text-on-surface">
+        <h1 className="font-display text-headline-md font-semibold text-on-surface">
           {isEditing ? 'Editar pieza de stock' : 'Nueva pieza de stock'}
         </h1>
       </div>
@@ -65,14 +65,14 @@ export default function StockForm() {
             error={errors.id_pieza?.message}
             {...register('id_pieza', { required: 'Seleccioná una pieza' })}
           >
-            <option value="">Seleccionar pieza...</option>
+            <option value="">Seleccionar pieza…</option>
             {piezas.map((p) => (
               <option key={p.id_pieza} value={p.id_pieza}>{p.nombre}</option>
             ))}
           </Select>
 
           <div className="grid grid-cols-2 gap-4">
-            <Input label="Talle" placeholder="XS, S, M, L, XL..." {...register('talle')} />
+            <Input label="Talle" placeholder="XS, S, M, L, XL…" {...register('talle')} />
             <Input label="Medidas" placeholder="Ej: 90cm busto" {...register('medidas')} />
           </div>
 
@@ -85,7 +85,7 @@ export default function StockForm() {
 
           <Input
             label="Descripción"
-            placeholder="Detalles adicionales sobre esta pieza..."
+            placeholder="Detalles adicionales sobre esta pieza…"
             {...register('descripcion')}
           />
 

@@ -118,7 +118,7 @@ export default function AccountModal({ isOpen, onClose }) {
         <div className="relative bg-card-panel border border-outline-variant/20 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in flex flex-col max-h-[90vh]">
           {/* Header */}
           <div className="flex items-center justify-between p-5 border-b border-outline-variant/20 shrink-0">
-            <h2 className="text-xl font-headline font-bold text-on-surface">Administrar cuenta</h2>
+            <h2 className="text-xl font-headline font-semibold text-on-surface">Administrar cuenta</h2>
             <button 
               onClick={onClose}
               className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container p-2 rounded-xl transition-colors"
@@ -137,7 +137,7 @@ export default function AccountModal({ isOpen, onClose }) {
               </div>
               
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full gradient-secondary flex items-center justify-center text-white font-headline font-bold text-2xl shadow-sm shrink-0">
+                <div className="size-16 rounded-full gradient-secondary flex items-center justify-center text-white font-headline font-bold text-2xl shadow-sm shrink-0">
                   {initials}
                 </div>
                 <button className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
@@ -171,6 +171,7 @@ export default function AccountModal({ isOpen, onClose }) {
                   <input 
                     type="email" 
                     value={user?.correo || user?.email || ''}
+                    readOnly
                     disabled
                     className="w-full bg-surface-container border border-outline-variant/30 text-on-surface rounded-xl px-4 py-2 opacity-60 cursor-not-allowed" 
                   />
@@ -260,7 +261,7 @@ export default function AccountModal({ isOpen, onClose }) {
         <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: 70 }}>
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !isLoading && setShowConfirm(false)} />
           <div className="relative bg-card-panel border border-outline-variant/20 rounded-2xl shadow-2xl w-full max-w-sm p-6 animate-fade-in">
-            <h3 className="text-lg font-headline font-bold text-on-surface mb-2">¿Guardar cambios?</h3>
+            <h3 className="text-lg font-headline font-semibold text-on-surface mb-2">¿Guardar cambios?</h3>
             <p className="text-sm text-on-surface-variant mb-6">
               ¿Estás seguro que deseas aplicar estas modificaciones a tu cuenta?
             </p>
@@ -277,7 +278,7 @@ export default function AccountModal({ isOpen, onClose }) {
                 disabled={isLoading}
                 className="px-4 py-2 rounded-xl font-medium text-white bg-primary hover:bg-primary/90 shadow-sm transition-colors disabled:opacity-50"
               >
-                {isLoading ? 'Guardando...' : 'Sí, confirmar'}
+                {isLoading ? 'Guardando…' : 'Sí, confirmar'}
               </button>
             </div>
           </div>
@@ -293,19 +294,19 @@ export default function AccountModal({ isOpen, onClose }) {
           }} />
           <div className="relative bg-card-panel border border-outline-variant/20 rounded-2xl shadow-2xl w-full max-w-sm p-6 animate-fade-in text-center flex flex-col items-center">
             {statusModal.type === 'success' ? (
-              <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center text-green-500 mb-4">
-                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="size-16 rounded-full bg-green-500/10 flex items-center justify-center text-green-500 mb-4">
+                <svg className="size-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
             ) : (
-              <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 mb-4">
-                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="size-16 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 mb-4">
+                <svg className="size-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </div>
             )}
-            <h3 className="text-lg font-headline font-bold text-on-surface mb-2">
+            <h3 className="text-lg font-headline font-semibold text-on-surface mb-2">
               {statusModal.type === 'success' ? '¡Éxito!' : 'Error'}
             </h3>
             <p className="text-sm text-on-surface-variant mb-6">

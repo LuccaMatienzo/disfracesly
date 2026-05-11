@@ -25,11 +25,11 @@ export default function CostumeCard({ disfraz }) {
           <img
             src={imagenPrincipal}
             alt={nombre}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-surface-container">
+          <div className="size-full flex items-center justify-center bg-surface-container">
             <span className="material-symbols-outlined text-5xl text-outline-variant opacity-40">
               apparel
             </span>
@@ -45,7 +45,7 @@ export default function CostumeCard({ disfraz }) {
             {categorias.slice(0, 2).map(c => c.nombre).join(' · ')}
           </p>
         )}
-        <h3 className="font-headline font-bold text-on-surface text-lg leading-tight mb-2 line-clamp-2">
+        <h3 className="font-headline font-semibold text-on-surface text-lg leading-tight mb-2 line-clamp-2">
           {nombre}
         </h3>
         {descripcion && (

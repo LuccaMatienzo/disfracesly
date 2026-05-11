@@ -41,14 +41,14 @@ export default function ConfirmDeleteModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[200] flex items-end md:items-center justify-center p-0 md:p-4 w-screen h-screen bg-on-surface/20 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[200] flex items-end md:items-center justify-center p-0 md:p-4 size-screen bg-on-surface/20 backdrop-blur-sm animate-fade-in"
       onClick={(e) => e.target === e.currentTarget && !loading && onClose?.()}
     >
       <div className="glass border border-outline-variant/20 rounded-t-2xl md:rounded-2xl shadow-float w-full max-w-sm animate-scale-in flex flex-col">
 
         {/* Header — icono + título inline */}
         <div className="flex items-center gap-3 px-4 md:px-6 py-3 md:py-4 border-b border-outline-variant/20">
-          <span className="w-8 h-8 flex items-center justify-center rounded-full bg-error/10 text-error text-lg shrink-0">
+          <span className="size-8 flex items-center justify-center rounded-full bg-error/10 text-error text-lg shrink-0">
             <FiAlertTriangle />
           </span>
           <h2 className="font-headline text-headline-md text-on-surface">Confirmar eliminación</h2>

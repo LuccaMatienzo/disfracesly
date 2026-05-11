@@ -28,8 +28,8 @@ export default function Table({ columns, data, loading, emptyMessage = 'Sin resu
             <tr>
               <td colSpan={columns.length} className="py-12 text-center">
                 <div className="inline-flex items-center gap-2 text-on-surface-variant">
-                  <div className="w-5 h-5 border-2 border-primary-container border-t-primary rounded-full animate-spin" />
-                  <span>Cargando...</span>
+                  <div className="size-5 border-2 border-primary-container border-t-primary rounded-full animate-spin" />
+                  <span>Cargando…</span>
                 </div>
               </td>
             </tr>

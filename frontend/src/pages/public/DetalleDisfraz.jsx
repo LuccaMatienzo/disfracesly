@@ -149,7 +149,7 @@ export default function DetalleDisfraz() {
                   </Link>
                 )}
               </div>
-              <h1 className="font-headline text-4xl font-black text-on-surface leading-tight mb-4">
+              <h1 className="font-headline text-4xl font-semibold text-on-surface leading-tight mb-4">
                 {disfraz.nombre}
               </h1>
               {disfraz.descripcion && (
@@ -170,7 +170,7 @@ export default function DetalleDisfraz() {
                     <button
                       key={t}
                       onClick={() => setTalleSeleccionado(t)}
-                      className={`w-14 h-14 flex items-center justify-center rounded-xl font-label font-bold text-sm transition-all ${talleSeleccionado === t
+                      className={`size-14 flex items-center justify-center rounded-xl font-label font-bold text-sm transition-all ${talleSeleccionado === t
                         ? 'editorial-gradient text-white shadow-md scale-105'
                         : 'bg-surface-container-low text-tertiary hover:bg-primary-container hover:text-primary-on-container'
                         }`}
@@ -233,7 +233,7 @@ export default function DetalleDisfraz() {
             {/* Incluye */}
             {disfraz.piezas?.length > 0 && (
               <div className="bg-surface-container-low rounded-2xl p-6">
-                <h3 className="text-xs font-label uppercase tracking-widest text-on-surface font-bold border-b border-outline-variant/20 pb-3 mb-4">
+                <h3 className="text-xs font-label uppercase tracking-widest text-on-surface font-semibold border-b border-outline-variant/20 pb-3 mb-4">
                   Incluye
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

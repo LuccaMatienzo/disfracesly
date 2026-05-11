@@ -100,7 +100,6 @@ export default function PagoFormModal({ open, onClose, onSubmit, loading, initia
           value={formData.monto}
           onChange={(e) => setFormData({ ...formData, monto: e.target.value })}
           required
-          autoFocus
         />
       </form>
     </Modal>

@@ -47,7 +47,7 @@ export default function ClienteForm() {
     <div className="w-full">
       <div className="mb-6">
         <button onClick={() => navigate(-1)} className="text-body-md text-primary hover:underline font-label mb-2">← Volver</button>
-        <h1 className="font-display text-headline-md font-bold text-on-surface">
+        <h1 className="font-display text-headline-md font-semibold text-on-surface">
           {isEditing ? 'Editar cliente' : 'Nuevo cliente'}
         </h1>
       </div>
@@ -78,7 +78,7 @@ export default function ClienteForm() {
                 required: 'Teléfono requerido',
                 pattern: { value: /^\d{10}$/, message: 'Debe contener exactamente 10 números' }
               })} />
-            <Input label="Domicilio" placeholder="Dirección..." {...register('domicilio')} />
+            <Input label="Domicilio" placeholder="Dirección…" {...register('domicilio')} />
           </div>
           <div className="flex gap-3 justify-end mt-2">
             <Button type="button" variant="secondary" onClick={() => navigate(-1)}>Cancelar</Button>

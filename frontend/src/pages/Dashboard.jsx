@@ -20,13 +20,11 @@ function timeAgo(dateStr) {
   return `${diffDays} día${diffDays > 1 ? 's' : ''} atrás`;
 }
 
-function formatCurrency(amount, fractionDigits = 2) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: fractionDigits,
-    maximumFractionDigits: fractionDigits,
-  }).format(amount);
+// Hoisted al scope del módulo: ARS sin decimales (el peso argentino no los usa)
+const _currencyFmt = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+function formatCurrency(amount) {
+  return _currencyFmt.format(amount);
 }
 
 const BADGE_ETAPA = {
@@ -93,7 +91,7 @@ function DonutChart({ data }) {
         {data.map((item) => (
           <div key={item.label} className="flex items-center gap-1.5">
             <span
-              className="w-2.5 h-2.5 rounded-full inline-block"
+              className="size-2.5 rounded-full inline-block"
               style={{ backgroundColor: item.color }}
             />
             <span className="text-xs text-on-surface-variant">
@@ -191,7 +189,7 @@ function RecentMovements({ movements }) {
   if (!movements || movements.length === 0) {
     return (
       <div className="bg-card-panel rounded-2xl shadow-card p-4 md:p-6">
-        <h2 className="font-headline font-bold text-on-surface text-base md:text-lg mb-4">Movimientos Recientes</h2>
+        <h2 className="font-headline font-semibold text-on-surface text-base md:text-lg mb-4">Movimientos Recientes</h2>
         <p className="text-on-surface-variant text-sm">No hay movimientos recientes</p>
       </div>
     );
@@ -200,7 +198,7 @@ function RecentMovements({ movements }) {
   return (
     <div className="bg-card-panel rounded-2xl shadow-card overflow-hidden">
       <div className="px-4 md:px-6 py-3 md:py-4 border-b border-outline-variant/20 flex items-center justify-between">
-        <h2 className="font-headline font-bold text-on-surface text-base md:text-lg">Movimientos Recientes</h2>
+        <h2 className="font-headline font-semibold text-on-surface text-base md:text-lg">Movimientos Recientes</h2>
         <a href="/admin/operaciones" className="text-xs md:text-sm text-on-surface-variant font-label font-semibold hover:underline">
           Ver Todos
         </a>
@@ -217,7 +215,7 @@ function RecentMovements({ movements }) {
                   {cfg.isSale ? (
                     <span className="material-symbols-outlined text-sm" style={{ color: cfg.color }}>sell</span>
                   ) : (
-                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: cfg.dotColor }} />
+                    <span className="size-2 rounded-full" style={{ backgroundColor: cfg.dotColor }} />
                   )}
                   <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: cfg.color }}>
                     {cfg.label}
@@ -232,7 +230,7 @@ function RecentMovements({ movements }) {
               <div className="flex items-center justify-between text-xs text-on-surface-variant">
                 <span>{mov.customerName}</span>
                 <span className="inline-flex items-center gap-1.5">
-                  <span className="w-5 h-5 rounded-full bg-surface-container-low flex items-center justify-center text-[9px] font-bold text-on-surface-variant uppercase">
+                  <span className="size-5 rounded-full bg-surface-container-low flex items-center justify-center text-[9px] font-bold text-on-surface-variant uppercase">
                     {mov.employeeInitials}
                   </span>
                   {mov.employeeName.split(' ')[0]}
@@ -272,7 +270,7 @@ function RecentMovements({ movements }) {
                       {cfg.isSale ? (
                         <span className="material-symbols-outlined text-sm" style={{ color: cfg.color }}>sell</span>
                       ) : (
-                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: cfg.dotColor }} />
+                        <span className="size-2 rounded-full" style={{ backgroundColor: cfg.dotColor }} />
                       )}
                       <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: cfg.color }}>
                         {cfg.label}
@@ -288,7 +286,7 @@ function RecentMovements({ movements }) {
                   <td className="px-6 py-3.5 text-sm text-on-surface-variant">{mov.customerName}</td>
                   <td className="px-6 py-3.5">
                     <span className="inline-flex items-center gap-2">
-                      <span className="w-7 h-7 rounded-full bg-surface-container-low flex items-center justify-center text-[10px] font-bold text-on-surface-variant uppercase">
+                      <span className="size-7 rounded-full bg-surface-container-low flex items-center justify-center text-[10px] font-bold text-on-surface-variant uppercase">
                         {mov.employeeInitials}
                       </span>
                       <span className="text-sm text-on-surface-variant">{mov.employeeName.split(' ')[0]}</span>
@@ -318,11 +316,11 @@ function CashFlow({ data }) {
 
   return (
     <div className="bg-card-panel rounded-2xl shadow-card p-4 md:p-6">
-      <h2 className="font-headline font-bold text-on-surface text-base md:text-lg mb-3 md:mb-4">Flujo de Caja Semanal</h2>
+      <h2 className="font-headline font-semibold text-on-surface text-base md:text-lg mb-3 md:mb-4">Flujo de Caja Semanal</h2>
       <div className="space-y-3 md:space-y-4">
         {items.map((item) => (
           <div key={item.label} className={`flex items-center gap-3 md:gap-4 p-2.5 md:p-3 rounded-xl ${item.bg}/30`}>
-            <div className={`w-9 h-9 md:w-10 md:h-10 rounded-xl ${item.bg} flex items-center justify-center shrink-0`}>
+            <div className={`size-9 md:w-10 md:h-10 rounded-xl ${item.bg} flex items-center justify-center shrink-0`}>
               <span className={`material-symbols-outlined text-lg md:text-xl ${item.iconColor}`}>{item.icon}</span>
             </div>
             <div>
@@ -349,7 +347,7 @@ function StockStatusCard({ data }) {
   return (
     <div className="bg-card-panel rounded-2xl shadow-card p-4 md:p-6">
       <div className="flex items-center justify-between mb-3 md:mb-4">
-        <h2 className="font-headline font-bold text-on-surface text-base md:text-lg">Estado del Stock</h2>
+        <h2 className="font-headline font-semibold text-on-surface text-base md:text-lg">Estado del Stock</h2>
         <a href="/admin/stock" className="text-[10px] md:text-xs text-on-surface-variant font-label font-semibold bg-surface-container-low px-2.5 md:px-3 py-1 rounded-full hover:bg-surface-container transition-colors">
           Reporte por Categoría
         </a>
@@ -365,7 +363,7 @@ function UpcomingReturns({ returns: list }) {
   if (!list || list.length === 0) {
     return (
       <div className="bg-card-panel rounded-2xl shadow-card p-4 md:p-6">
-        <h2 className="font-headline font-bold text-on-surface text-base md:text-lg mb-4">
+        <h2 className="font-headline font-semibold text-on-surface text-base md:text-lg mb-4">
           Próximos alquileres a vencer
         </h2>
         <p className="text-on-surface-variant text-sm">No hay alquileres próximos a vencer</p>
@@ -376,7 +374,7 @@ function UpcomingReturns({ returns: list }) {
   return (
     <div className="bg-card-panel rounded-2xl shadow-card overflow-hidden">
       <div className="px-4 md:px-6 py-3 md:py-4 border-b border-outline-variant/20 flex items-center justify-between">
-        <h2 className="font-headline font-bold text-on-surface text-base md:text-lg">
+        <h2 className="font-headline font-semibold text-on-surface text-base md:text-lg">
           Próximos alquileres a vencer
         </h2>
         <a
@@ -495,10 +493,10 @@ export default function Dashboard() {
     return (
       <div className="space-y-5 md:space-y-8 animate-fade-in">
         <div>
-          <h1 className="font-headline font-black text-xl md:text-3xl text-on-surface">
+          <h1 className="font-headline font-semibold text-xl md:text-3xl text-on-surface">
             {saludo}, {user?.persona?.nombre ?? 'Admin'}
           </h1>
-          <p className="text-on-surface-variant text-sm md:text-base mt-1">Cargando datos del dashboard...</p>
+          <p className="text-on-surface-variant text-sm md:text-base mt-1">Cargando datos del dashboard…</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
           {[1, 2, 3, 4].map((i) => <SkeletonCard key={i} />)}
@@ -531,7 +529,7 @@ export default function Dashboard() {
 
       {/* ── Greeting ──────────────────────────────────────────────────────── */}
       <div>
-        <h1 className="font-headline font-black text-xl md:text-3xl text-on-surface">
+        <h1 className="font-headline font-semibold text-xl md:text-3xl text-on-surface">
           {saludo}, {user?.persona?.nombre ?? 'Admin'}
         </h1>
         <p className="text-on-surface-variant text-sm md:text-base mt-1">

@@ -137,7 +137,7 @@ function EtapaStepper({ etapa, etapas }) {
 
             {/* Dot */}
             <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all relative z-10 ${
+              className={`size-8 rounded-full flex items-center justify-center text-xs font-bold transition-all relative z-10 ${
                 isCancelled && isCurrent
                   ? 'bg-error text-white'
                   : isComplete
@@ -198,7 +198,7 @@ export default function OperacionDetalle() {
     return (
       <div className="text-center py-20">
         <span className="material-symbols-outlined text-5xl text-error mb-4 block">error</span>
-        <h2 className="text-xl font-headline font-bold text-on-surface">Operación no encontrada</h2>
+        <h2 className="text-xl font-headline font-semibold text-on-surface">Operación no encontrada</h2>
         <p className="text-on-surface-variant mt-1">No se pudo cargar la operación #{id}</p>
         <Button variant="secondary" className="mt-6" onClick={() => navigate('/admin/operaciones')}>
           Volver a operaciones
@@ -363,7 +363,7 @@ export default function OperacionDetalle() {
         </button>
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-3">
-            <h1 className="font-display text-headline-md font-bold text-on-surface">
+            <h1 className="font-display text-headline-md font-semibold text-on-surface">
               {tipo} #{op.id_operacion}
             </h1>
             <Badge value={etapa} />
@@ -399,7 +399,7 @@ export default function OperacionDetalle() {
           {/* Client info */}
           <div className="bg-surface-container-lowest rounded-2xl shadow-card p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center">
                 <span className="material-symbols-outlined text-xl text-primary">person</span>
               </div>
               <div>
@@ -418,7 +418,7 @@ export default function OperacionDetalle() {
   <div className="bg-surface-container-lowest rounded-2xl shadow-card p-6">
     <div className="flex items-center justify-between gap-3 mb-4">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-secondary-container/40 flex items-center justify-center">
+        <div className="size-10 rounded-xl bg-secondary-container/40 flex items-center justify-center">
           <span className="material-symbols-outlined text-xl text-secondary">checkroom</span>
         </div>
         <div>
@@ -446,12 +446,12 @@ export default function OperacionDetalle() {
                     className="flex items-center gap-4 p-3 rounded-xl border border-outline-variant/15 hover:bg-surface-container-low/40 transition-colors"
                   >
                     {/* Thumbnail */}
-                    <div className="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center shrink-0 overflow-hidden">
+                    <div className="size-12 rounded-lg bg-surface-container flex items-center justify-center shrink-0 overflow-hidden">
                       {img?.thumbnail_url || img?.url ? (
                         <img
                           src={img.thumbnail_url ?? img.url}
                           alt={pieza?.nombre ?? 'Pieza'}
-                          className="w-full h-full object-cover"
+                          className="size-full object-cover"
                         />
                       ) : (
                         <span className="material-symbols-outlined text-2xl text-on-surface-variant">
@@ -483,7 +483,7 @@ export default function OperacionDetalle() {
           <div className="bg-surface-container-lowest rounded-2xl shadow-card p-6">
             <div className="flex items-center justify-between gap-3 mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center">
+                <div className="size-10 rounded-xl bg-primary-container flex items-center justify-center">
                   <span className="material-symbols-outlined text-xl text-primary">payments</span>
                 </div>
                 <div>
@@ -562,7 +562,7 @@ export default function OperacionDetalle() {
           {/* Interacciones / Timeline */}
           <div className="bg-surface-container-lowest rounded-2xl shadow-card p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-tertiary-container/40 flex items-center justify-center">
+              <div className="size-10 rounded-xl bg-tertiary-container/40 flex items-center justify-center">
                 <span className="material-symbols-outlined text-xl text-tertiary">history</span>
               </div>
               <h2 className="font-headline text-title-md text-on-surface">Interacciones</h2>
@@ -573,7 +573,7 @@ export default function OperacionDetalle() {
                 {(op.interacciones ?? []).map((inter) => (
                   <div key={inter.id_interaccion_operacion} className="relative">
                     {/* Dot */}
-                    <div className="absolute -left-[25px] top-1 w-3 h-3 rounded-full bg-primary border-2 border-background" />
+                    <div className="absolute -left-[25px] top-1 size-3 rounded-full bg-primary border-2 border-background" />
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <p className="text-sm font-medium text-on-surface">

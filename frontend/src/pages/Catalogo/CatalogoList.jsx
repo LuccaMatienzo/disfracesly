@@ -156,7 +156,7 @@ export default function CatalogoList() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-headline-md font-bold text-on-surface">Catálogo</h1>
+          <h1 className="font-display text-headline-md font-semibold text-on-surface">Catálogo</h1>
           <p className="text-body-md text-on-surface-variant mt-0.5">Piezas y disfraces del sistema</p>
         </div>
         <div>
@@ -203,7 +203,7 @@ export default function CatalogoList() {
         <div className="flex flex-col md:flex-row gap-4 items-end">
           <div className="flex-1 w-full max-w-sm">
             <Input
-              placeholder={`Buscar ${tab}...`}
+              placeholder={`Buscar ${tab}…`}
               value={tempSearch}
               onChange={(e) => setTempSearch(e.target.value)}
               onKeyDown={(e) => {
@@ -236,7 +236,7 @@ export default function CatalogoList() {
             }}
             className="h-[48px] px-6"
           >
-            <FiSearch className="w-5 h-5 mr-2" />
+            <FiSearch className="size-5 mr-2" />
             Buscar
           </Button>
         </div>

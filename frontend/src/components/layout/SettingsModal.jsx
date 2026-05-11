@@ -15,7 +15,7 @@ export default function SettingsModal({ isOpen, onClose }) {
       <div className="relative bg-card-panel border border-outline-variant/20 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-outline-variant/20">
-          <h2 className="text-xl font-headline font-bold text-on-surface">Configuración de DisfracesLy</h2>
+          <h2 className="text-xl font-headline font-semibold text-on-surface">Configuración de DisfracesLy</h2>
           <button 
             onClick={onClose}
             className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container p-2 rounded-xl transition-colors"
@@ -48,11 +48,11 @@ export default function SettingsModal({ isOpen, onClose }) {
             <div className="space-y-2">
               <label className="flex items-center justify-between p-3 border border-outline-variant/20 rounded-xl hover:bg-surface-container/50 cursor-pointer transition-colors">
                 <span className="text-sm text-on-surface">Alertas del sistema</span>
-                <input type="checkbox" defaultChecked className="w-5 h-5 accent-primary rounded cursor-pointer" />
+                <input type="checkbox" defaultChecked className="size-5 accent-primary rounded cursor-pointer" />
               </label>
               <label className="flex items-center justify-between p-3 border border-outline-variant/20 rounded-xl hover:bg-surface-container/50 cursor-pointer transition-colors">
                 <span className="text-sm text-on-surface">Nuevas reservas</span>
-                <input type="checkbox" defaultChecked className="w-5 h-5 accent-primary rounded cursor-pointer" />
+                <input type="checkbox" defaultChecked className="size-5 accent-primary rounded cursor-pointer" />
               </label>
             </div>
           </section>

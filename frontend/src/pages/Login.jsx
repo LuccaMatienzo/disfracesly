@@ -28,9 +28,9 @@ export default function Login() {
     <div className="min-h-screen bg-background flex items-center justify-center relative overflow-hidden p-4">
 
       {/* ── Blobs decorativos ─────────────────────────────────────────────── */}
-      <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-primary/15 blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full bg-secondary/15 blur-3xl pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-primary/5 blur-3xl pointer-events-none" />
+      <div className="absolute -top-40 -right-40 size-[600px] rounded-full bg-primary/15 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-40 -left-40 size-[500px] rounded-full bg-secondary/15 blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-[800px] rounded-full bg-primary/5 blur-3xl pointer-events-none" />
 
       {/* ── Glass Panel ───────────────────────────────────────────────────── */}
       <div className="relative w-full max-w-md bg-card-panel/85 backdrop-blur-xl rounded-3xl shadow-editorial border border-outline-variant/30 p-10 animate-slide-up">
@@ -41,14 +41,14 @@ export default function Login() {
             <img
               src="/logo_svg_verdelima.svg"
               alt="Disfracesly"
-              className="w-[6.5rem] h-[6.5rem] sm:w-[7.5rem] sm:h-[7.5rem] object-contain drop-shadow-md"
+              className="size-[6.5rem] sm:w-[7.5rem] sm:h-[7.5rem] object-contain drop-shadow-md"
               onError={(e) => {
                 e.target.style.display = 'none';
                 e.target.parentElement.innerHTML = '<span class="text-primary text-4xl font-black">D</span>';
               }}
             />
           </div>
-          <h1 className="font-headline font-black text-2xl text-on-surface tracking-tight">
+          <h1 className="font-headline font-semibold text-2xl text-on-surface tracking-tight">
             DisfracesLy
           </h1>
           <p className="text-tertiary text-sm mt-1 font-label uppercase tracking-widest">
@@ -117,7 +117,7 @@ export default function Login() {
           <label className="flex items-center gap-3 cursor-pointer select-none">
             <input
               type="checkbox"
-              className="w-4 h-4 rounded accent-primary"
+              className="size-4 rounded accent-primary"
               id="remember"
             />
             <span className="text-sm text-on-surface-variant">
@@ -141,8 +141,8 @@ export default function Login() {
           >
             {loading ? (
               <>
-                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Verificando...
+                <span className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Verificando…
               </>
             ) : (
               <>

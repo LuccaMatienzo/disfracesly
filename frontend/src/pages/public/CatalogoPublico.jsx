@@ -106,7 +106,7 @@ export default function CatalogoPublico() {
       <section className="pt-28 pb-8 px-6 md:px-10 bg-surface-container-low">
         <div className="max-w-7xl mx-auto">
           <h1 
-            className="font-headline font-black text-4xl text-on-surface mb-3 cursor-pointer hover:opacity-80 transition-opacity inline-block"
+            className="font-headline font-semibold text-4xl text-on-surface mb-3 cursor-pointer hover:opacity-80 transition-opacity inline-block"
             onClick={() => {
               setSearch('');
               const newParams = new URLSearchParams();
@@ -117,7 +117,7 @@ export default function CatalogoPublico() {
           </h1>
           <p className="text-on-surface-variant text-lg mb-6">
             {isLoading
-              ? 'Cargando...'
+              ? 'Cargando…'
               : total > 0
                 ? total === 1 ? '1 disfraz disponible' : `${total} disfraces disponibles`
                 : 'No se encontraron resultados'}
@@ -132,7 +132,7 @@ export default function CatalogoPublico() {
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar disfraces..."
+                placeholder="Buscar disfraces…"
                 className="w-full pl-10 pr-4 py-3 rounded-xl bg-card-panel border border-outline-variant/40 text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
               />
             </div>
@@ -153,7 +153,7 @@ export default function CatalogoPublico() {
           <button
             onClick={scrollLeftBtn}
             disabled={!showLeftArrow}
-            className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${showLeftArrow
+            className={`flex-shrink-0 size-10 rounded-full flex items-center justify-center transition-all duration-300 ${showLeftArrow
               ? 'bg-surface-container-high text-on-surface hover:bg-primary hover:text-white shadow-sm hover:shadow-md hover:scale-105'
               : 'opacity-0 pointer-events-none'
               } hidden md:flex`}
@@ -192,7 +192,7 @@ export default function CatalogoPublico() {
           <button
             onClick={scrollRightBtn}
             disabled={!showRightArrow}
-            className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${showRightArrow && !loadingCat && categorias.length > 0
+            className={`flex-shrink-0 size-10 rounded-full flex items-center justify-center transition-all duration-300 ${showRightArrow && !loadingCat && categorias.length > 0
               ? 'bg-surface-container-high text-on-surface hover:bg-primary hover:text-white shadow-sm hover:shadow-md hover:scale-105'
               : 'opacity-0 pointer-events-none'
               } hidden md:flex`}
@@ -260,7 +260,7 @@ export default function CatalogoPublico() {
                   <button
                     key={p}
                     onClick={() => goToPage(p)}
-                    className={`w-10 h-10 rounded-xl font-label font-bold text-sm transition-all ${p === page
+                    className={`size-10 rounded-xl font-label font-bold text-sm transition-all ${p === page
                       ? 'editorial-gradient text-white shadow-md'
                       : 'bg-surface-container text-on-surface-variant hover:bg-primary-container hover:text-primary-on-container'
                       }`}

@@ -94,8 +94,8 @@ export default function LandingPage() {
       {/* ── Hero ────────────────────────────────────────────────────────────── */}
       <section className="relative pt-28 pb-20 px-6 md:px-10 overflow-hidden">
         {/* Decorative blobs */}
-        <div className="absolute -top-32 -right-32 w-[600px] h-[600px] rounded-full bg-primary/10 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-20 -left-32 w-[400px] h-[400px] rounded-full bg-secondary/10 blur-3xl pointer-events-none" />
+        <div className="absolute -top-32 -right-32 size-[600px] rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-32 size-[400px] rounded-full bg-secondary/10 blur-3xl pointer-events-none" />
 
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Text */}
@@ -103,19 +103,15 @@ export default function LandingPage() {
             <span className="inline-block px-4 py-1.5 rounded-full bg-primary-container text-primary-on-container font-label text-xs tracking-widest mb-6">
               Alquiler y Venta de Disfraces Confeccionados Artesanalmente
             </span>
-            <h1 className="font-headline text-[3.5rem] md:text-[4.5rem] font-black leading-[1.05] tracking-tight text-on-surface mb-6">
-              Dale vida a tu{' '}
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500">
-                imaginación
+            <h1 className="font-headline text-[3.5rem] md:text-[4.5rem] font-semibold leading-[1.05] tracking-tight text-on-surface mb-6">
+              Alquiler y Venta de Disfraces en{' '}
+              <span className="text-primary font-black">
+                Tucumán
               </span>
             </h1>
             <div className="mb-10 max-w-lg">
               <p className="font-body text-xl text-on-surface-variant leading-relaxed">
-                Detrás de cada disfraz hay un nombre, una historia, más de 15 años de trayectoria y dedicación.
-              </p>
-              <p className="font-body text-xl text-on-surface-variant leading-relaxed">
-                Liliana Elizabeth Sosa diseña y crea cada pieza a mano,
-                cuidando cada detalle para vestir tus mejores recuerdos.
+                Dale vida a tu imaginación. Encontrá el traje perfecto para actos escolares, fiestas y eventos.
               </p>
             </div>
 
@@ -133,7 +129,7 @@ export default function LandingPage() {
                 rel="noopener noreferrer"
                 className="px-8 py-4 rounded-xl border-2 border-outline-variant font-headline font-bold text-base text-on-surface hover:border-[#25d366] hover:text-[#25d366] transition-all flex items-center gap-2"
               >
-                <svg viewBox="0 0 24 24" className="w-5 h-5 fill-[#25d366]" aria-hidden="true">
+                <svg viewBox="0 0 24 24" className="size-5 fill-[#25d366]" aria-hidden="true">
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                 </svg>
                 Consultar por WhatsApp
@@ -161,18 +157,19 @@ export default function LandingPage() {
           <div className="relative flex justify-center">
             <div
               className="relative w-72 h-96 md:w-96 md:h-[32rem]"
+              // react-doctor-disable-next-line no-long-transition-duration -- intentional slow loop for hero float animation
               style={{ animation: 'float 6s ease-in-out infinite' }}
             >
               {heroDisfraz && heroDisfraz.imagenPrincipal ? (
-                <div className="w-full h-full rounded-3xl overflow-hidden shadow-editorial border border-outline-variant/30 relative">
-                  <img src={heroDisfraz.imagenPrincipal} alt={heroDisfraz.nombre} className="w-full h-full object-cover" />
+                <div className="size-full rounded-3xl overflow-hidden shadow-editorial border border-outline-variant/30 relative">
+                  <img src={heroDisfraz.imagenPrincipal} alt={heroDisfraz.nombre} className="size-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8">
                     <span className="text-white/80 font-label text-xs uppercase tracking-widest mb-1">{proximoEvento.nombre}</span>
-                    <h3 className="text-white font-headline font-black text-2xl leading-tight">{heroDisfraz.nombre}</h3>
+                    <h3 className="text-white font-headline font-semibold text-2xl leading-tight">{heroDisfraz.nombre}</h3>
                   </div>
                 </div>
               ) : (
-                <div className={`w-full h-full rounded-3xl bg-gradient-to-br ${proximoEvento.color} flex items-center justify-center shadow-editorial border border-primary/10 relative overflow-hidden`}>
+                <div className={`size-full rounded-3xl bg-gradient-to-br ${proximoEvento.color} flex items-center justify-center shadow-editorial border border-primary/10 relative overflow-hidden`}>
                   <div className="absolute inset-0 bg-black/10 mix-blend-overlay"></div>
                   <div className="text-center p-8 relative z-10">
                     <span className="text-8xl block mb-4 drop-shadow-md">{proximoEvento.emoji}</span>
@@ -201,7 +198,7 @@ export default function LandingPage() {
             <span className="font-label text-xs uppercase tracking-widest text-primary">
               Disfraces únicos
             </span>
-            <h2 className="font-headline text-4xl font-black text-on-surface mt-2">
+            <h2 className="font-headline text-4xl font-semibold text-on-surface mt-2">
               Hechos con dedicación y amor
             </h2>
           </div>
@@ -220,7 +217,7 @@ export default function LandingPage() {
                   <div className={`bg-gradient-to-br ${style.color} h-56 md:h-full min-h-48 flex flex-col justify-between p-8 relative`}>
                     {disfraz.imagenPrincipal && (
                       <div className="absolute inset-0 z-0">
-                        <img src={disfraz.imagenPrincipal} alt={disfraz.nombre} className="w-full h-full object-cover opacity-40 mix-blend-overlay group-hover:scale-105 transition-transform duration-700" />
+                        <img src={disfraz.imagenPrincipal} alt={disfraz.nombre} className="size-full object-cover opacity-40 mix-blend-overlay group-hover:scale-105 transition-transform duration-700" />
                       </div>
                     )}
                     <div className="relative z-10 flex flex-col justify-between h-full">
@@ -257,7 +254,7 @@ export default function LandingPage() {
             <span className="font-label text-xs uppercase tracking-widest text-primary">
               Cómo funciona
             </span>
-            <h2 className="font-headline text-4xl font-black text-on-surface mt-2">
+            <h2 className="font-headline text-4xl font-semibold text-on-surface mt-2">
               Descubrí tu disfraz ideal en 3 pasos
             </h2>
           </div>
@@ -269,11 +266,11 @@ export default function LandingPage() {
                 <div className="hidden md:block absolute top-8 left-full w-full h-px bg-outline-variant/40 z-0 w-1/2" />
 
                 <div className="relative z-10 flex flex-col items-start gap-4 p-8 rounded-2xl bg-card-panel border border-outline-variant/20 shadow-card hover:-translate-y-1 transition-transform">
-                  <div className="w-14 h-14 rounded-xl editorial-gradient flex items-center justify-center shadow-md">
+                  <div className="size-14 rounded-xl editorial-gradient flex items-center justify-center shadow-md">
                     <span className="material-symbols-outlined text-white text-2xl">{icon}</span>
                   </div>
                   <span className="font-label text-xs text-tertiary tracking-widest">{step}</span>
-                  <h3 className="font-headline font-bold text-xl text-on-surface">{title}</h3>
+                  <h3 className="font-headline font-semibold text-xl text-on-surface">{title}</h3>
                   <p className="text-on-surface-variant text-sm leading-relaxed">{desc}</p>
                 </div>
               </div>
@@ -285,17 +282,17 @@ export default function LandingPage() {
       {/* ── Call to Action ─────────────────────────────────────────────── */}
       <section className="py-24 px-6 md:px-10 relative overflow-hidden">
         {/* Background decorative blobs */}
-        <div className="absolute top-1/2 left-0 md:left-1/4 w-72 h-72 rounded-full bg-primary/10 blur-3xl -translate-y-1/2 pointer-events-none" />
-        <div className="absolute top-1/2 right-0 md:right-1/4 w-72 h-72 rounded-full bg-secondary/10 blur-3xl -translate-y-1/2 pointer-events-none" />
+        <div className="absolute top-1/2 left-0 md:left-1/4 size-72 rounded-full bg-primary/10 blur-3xl -translate-y-1/2 pointer-events-none" />
+        <div className="absolute top-1/2 right-0 md:right-1/4 size-72 rounded-full bg-secondary/10 blur-3xl -translate-y-1/2 pointer-events-none" />
 
         <div className="relative max-w-4xl mx-auto">
           {/* Floating Container with Glassmorphism */}
           <div className="rounded-xl shadow-sm border border-outline-variant/30 bg-[#FFFFF0]/90 dark:bg-[#1f201a]/90 backdrop-blur-md px-8 py-16 md:py-20 text-center flex flex-col items-center transition-colors duration-300">
 
-            <h2 className="font-headline font-black text-4xl md:text-5xl text-gray-800 dark:text-on-surface mb-6">
+            <h2 className="font-headline font-semibold text-4xl md:text-5xl text-gray-800 dark:text-on-surface mb-6">
               Encontrá el Disfraz
               <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500">
+              <span className="text-primary font-bold">
                 Perfecto para Vos
               </span>
             </h2>
@@ -321,7 +318,7 @@ export default function LandingPage() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl border-2 border-outline-variant font-headline font-bold text-lg text-on-surface hover:border-[#25d366] hover:text-[#25d366] transition-all w-full sm:w-auto group"
               >
-                <svg viewBox="0 0 24 24" className="w-5 h-5 fill-[#25d366] group-hover:scale-110 transition-transform" aria-hidden="true">
+                <svg viewBox="0 0 24 24" className="size-5 fill-[#25d366] group-hover:scale-110 transition-transform" aria-hidden="true">
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                 </svg>
                 Consultar Ahora

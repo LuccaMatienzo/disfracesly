@@ -96,7 +96,7 @@ export default function InteraccionModal({ open, onClose, onSubmit, loading, tip
 
         {/* Quién realiza la acción */}
         <div className="space-y-3">
-          <h3 className="text-sm font-label font-bold uppercase tracking-widest text-on-surface-variant">
+          <h3 className="text-sm font-label font-semibold uppercase tracking-widest text-on-surface-variant">
             ¿A quién se le realiza {textoAccion}?
           </h3>
           
@@ -111,7 +111,7 @@ export default function InteraccionModal({ open, onClose, onSubmit, loading, tip
                 name="persona_tipo"
                 checked={!isNuevaPersona}
                 onChange={() => setIsNuevaPersona(false)}
-                className="w-4 h-4 text-primary bg-transparent border-outline-variant focus:ring-primary focus:ring-offset-background"
+                className="size-4 text-primary bg-transparent border-outline-variant focus:ring-primary focus:ring-offset-background"
               />
               <div className="flex-1 min-w-0">
                 <span className="block text-sm font-medium text-on-surface">Titular</span>
@@ -131,7 +131,7 @@ export default function InteraccionModal({ open, onClose, onSubmit, loading, tip
                 name="persona_tipo"
                 checked={isNuevaPersona}
                 onChange={() => setIsNuevaPersona(true)}
-                className="w-4 h-4 text-primary bg-transparent border-outline-variant focus:ring-primary focus:ring-offset-background"
+                className="size-4 text-primary bg-transparent border-outline-variant focus:ring-primary focus:ring-offset-background"
               />
               <div className="flex-1 min-w-0">
                 <span className="block text-sm font-medium text-on-surface">Otra persona</span>

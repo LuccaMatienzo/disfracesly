@@ -37,7 +37,7 @@ export default function ProfileDropdown({ onOpenSettings, onOpenAccount }) {
       {/* Trigger Avatar */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-9 h-9 rounded-xl gradient-secondary flex items-center justify-center text-white font-headline font-bold text-sm shadow-sm transition-all ${isOpen ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-container-low' : 'hover:opacity-90'
+        className={`size-9 rounded-xl gradient-secondary flex items-center justify-center text-white font-headline font-bold text-sm shadow-sm transition-all ${isOpen ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-container-low' : 'hover:opacity-90'
           }`}
         aria-label="Perfil"
         aria-expanded={isOpen}
@@ -50,7 +50,7 @@ export default function ProfileDropdown({ onOpenSettings, onOpenAccount }) {
         <div className="absolute right-0 mt-2 w-72 bg-card-panel rounded-xl shadow-xl border border-outline-variant/20 py-2 z-50 animate-fade-in origin-top-right">
           {/* Header */}
           <div className="p-4 flex flex-col items-center text-center gap-2">
-            <div className="w-16 h-16 rounded-full gradient-secondary flex items-center justify-center text-white font-headline font-bold text-2xl shadow-sm shrink-0">
+            <div className="size-16 rounded-full gradient-secondary flex items-center justify-center text-white font-headline font-bold text-2xl shadow-sm shrink-0">
               {initials}
             </div>
             <div className="min-w-0 w-full mt-1">

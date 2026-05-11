@@ -19,7 +19,7 @@ function SuccessModal({ open }) {
       <div className="glass border border-outline-variant/20 rounded-2xl shadow-float w-full max-w-sm p-8 flex flex-col items-center gap-5 animate-scale-in">
         {/* Círculo animado con tilde */}
         <div className="relative flex items-center justify-center">
-          <svg className="w-24 h-24" viewBox="0 0 96 96" fill="none">
+          <svg className="size-24" viewBox="0 0 96 96" fill="none">
             {/* Círculo exterior */}
             <circle
               cx="48" cy="48" r="44"
@@ -44,10 +44,10 @@ function SuccessModal({ open }) {
           </svg>
         </div>
         <div className="text-center">
-          <h2 className="font-display text-headline-md font-bold text-on-surface">¡Venta creada!</h2>
+          <h2 className="font-display text-headline-md font-semibold text-on-surface">¡Venta creada!</h2>
           <p className="text-body-md text-on-surface-variant mt-1">La operación se registró correctamente.</p>
         </div>
-        <div className="text-label-lg text-on-surface-variant animate-pulse">Redirigiendo...</div>
+        <div className="text-label-lg text-on-surface-variant animate-pulse">Redirigiendo…</div>
       </div>
 
       <style>{`
@@ -135,14 +135,14 @@ export default function VentaForm() {
       <div className="max-w-3xl">
         <div className="mb-6">
           <button onClick={() => navigate(-1)} className="text-body-md text-primary hover:underline font-label mb-2">← Volver</button>
-          <h1 className="font-display text-headline-md font-bold text-on-surface">Nueva venta</h1>
+          <h1 className="font-display text-headline-md font-semibold text-on-surface">Nueva venta</h1>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
           <div className="bg-surface-container-lowest rounded-2xl shadow-card p-5">
             <h2 className="font-headline text-title-md text-on-surface mb-4">Cliente</h2>
             <Select label="Cliente" error={errors.id_cliente?.message} {...register('id_cliente', { required: 'Seleccioná un cliente' })}>
-              <option value="">Seleccionar cliente...</option>
+              <option value="">Seleccionar cliente…</option>
               {clientes.map((c) => (
                 <option key={c.id_cliente} value={c.id_cliente}>{c.persona?.nombre} {c.persona?.apellido} — {c.persona?.documento}</option>
               ))}
@@ -151,7 +151,7 @@ export default function VentaForm() {
 
           <div className="bg-surface-container-lowest rounded-2xl shadow-card p-5">
             <h2 className="font-headline text-title-md text-on-surface mb-4">Piezas disponibles</h2>
-            <Input placeholder="Buscar pieza..." value={stockSearch} onChange={(e) => setStockSearch(e.target.value)} className="mb-4" />
+            <Input placeholder="Buscar pieza…" value={stockSearch} onChange={(e) => setStockSearch(e.target.value)} className="mb-4" />
             
             {selectedPiezas.size > 0 && (
               <div className="mb-3 flex gap-2 flex-wrap">

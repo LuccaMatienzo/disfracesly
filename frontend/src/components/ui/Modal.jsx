@@ -33,7 +33,7 @@ export default function Modal({ open, onClose, title, children, size = 'md', foo
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[200] flex items-end md:items-center justify-center p-0 md:p-4 w-screen h-screen bg-on-surface/20 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[200] flex items-end md:items-center justify-center p-0 md:p-4 size-screen bg-on-surface/20 backdrop-blur-sm animate-fade-in"
       onClick={(e) => e.target === e.currentTarget && onClose?.()}
     >
       <div
@@ -48,7 +48,7 @@ export default function Modal({ open, onClose, title, children, size = 'md', foo
           <h2 className="font-headline text-title-lg md:text-headline-md text-on-surface">{title}</h2>
           <button
             onClick={onClose}
-            className="w-9 h-9 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-surface-container text-on-surface-variant transition-colors"
+            className="size-9 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-surface-container text-on-surface-variant transition-colors"
             aria-label="Cerrar"
           >
             ✕

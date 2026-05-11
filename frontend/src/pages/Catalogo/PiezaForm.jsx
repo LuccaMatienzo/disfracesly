@@ -44,7 +44,7 @@ function CatChip({ cat, isSelected, onToggle }) {
       }}>
         {isSelected && (
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="animate-scale-in">
-            <path d="M2 5l2.5 2.5L8 3" stroke="var(--color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M2 5l2.5 2.5L8 3" stroke="var(--color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         )}
       </span>
@@ -126,7 +126,7 @@ export default function PiezaForm() {
     <div className="w-full h-[calc(100vh-120px)] flex flex-col">
       <div className="mb-6 shrink-0">
         <button onClick={() => navigate(-1)} className="text-body-md text-primary hover:underline font-label mb-2">← Volver</button>
-        <h1 className="font-display text-headline-md font-bold text-on-surface">
+        <h1 className="font-display text-headline-md font-semibold text-on-surface">
           {isEditing ? 'Editar pieza' : 'Nueva pieza del catálogo'}
         </h1>
       </div>
@@ -139,8 +139,8 @@ export default function PiezaForm() {
           className="flex flex-col gap-6 flex-1 min-h-0"
         >
           <div className="flex flex-col gap-6 shrink-0">
-            <Input label="Nombre" placeholder="Nombre de la pieza..." {...register('nombre', { required: true })} />
-            <Input label="Descripción" placeholder="Descripción opcional..." {...register('descripcion')} />
+            <Input label="Nombre" placeholder="Nombre de la pieza…" {...register('nombre', { required: true })} />
+            <Input label="Descripción" placeholder="Descripción opcional…" {...register('descripcion')} />
           </div>
 
           {/* ── Sección de categorías ────────────────────────────────── */}
@@ -187,7 +187,7 @@ export default function PiezaForm() {
                     {/* Separador de letra */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
                       <span style={{
-                        fontSize: '0.7rem',
+                        fontSize: '1rem',
                         fontWeight: '700',
                         letterSpacing: '0.12em',
                         color: 'var(--color-primary)',

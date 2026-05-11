@@ -33,7 +33,7 @@ function Toast({ toast, onRemove }) {
         ${styles[toast.type] ?? styles.info}
       `}
     >
-      <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 ${iconStyles[toast.type]}`}>
+      <span className={`size-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 ${iconStyles[toast.type]}`}>
         {icons[toast.type]}
       </span>
       <div className="flex-1 min-w-0">

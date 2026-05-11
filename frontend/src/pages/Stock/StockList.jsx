@@ -86,7 +86,7 @@ export default function StockList() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-headline-md font-bold text-on-surface">Inventario</h1>
+          <h1 className="font-display text-headline-md font-semibold text-on-surface">Inventario</h1>
           <p className="text-body-md text-on-surface-variant mt-0.5">
             Gestión de piezas individuales de stock
           </p>
@@ -100,7 +100,7 @@ export default function StockList() {
       <div className="bg-surface-container-lowest rounded-2xl shadow-card p-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input
-            placeholder="Buscar por nombre de pieza..."
+            placeholder="Buscar por nombre de pieza…"
             value={search}
             onChange={(e) => { setSearch(e.target.value); reset(); }}
           />

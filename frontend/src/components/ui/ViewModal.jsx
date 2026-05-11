@@ -84,7 +84,7 @@ export default function ViewModal({ open, onClose, title, loading = false, child
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center p-4 w-screen h-screen bg-on-surface/20 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4 size-screen bg-on-surface/20 backdrop-blur-sm animate-fade-in"
       onClick={(e) => e.target === e.currentTarget && onClose?.()}
     >
       <div
@@ -99,7 +99,7 @@ export default function ViewModal({ open, onClose, title, loading = false, child
           <h2 className="font-headline text-headline-md text-on-surface">{title}</h2>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container text-on-surface-variant transition-colors"
+            className="size-8 flex items-center justify-center rounded-lg hover:bg-surface-container text-on-surface-variant transition-colors"
             aria-label="Cerrar"
           >
             ✕

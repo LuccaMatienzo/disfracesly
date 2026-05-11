@@ -122,7 +122,7 @@ export default function OperacionesList() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-headline-md font-bold text-on-surface">Operaciones</h1>
+          <h1 className="font-display text-headline-md font-semibold text-on-surface">Operaciones</h1>
           <p className="text-body-md text-on-surface-variant mt-0.5">Alquileres y ventas del sistema</p>
         </div>
         <div className="flex gap-3">
@@ -140,7 +140,7 @@ export default function OperacionesList() {
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
             <Input 
-              placeholder="Buscar por ID o Nombre de cliente..." 
+              placeholder="Buscar por ID o Nombre de cliente…" 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}

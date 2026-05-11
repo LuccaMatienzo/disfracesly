@@ -62,7 +62,7 @@ export default function PiezasModal({ open, onClose, onSubmit, currentDetalles, 
     >
       <div className="space-y-4">
         <Input
-          placeholder="Buscar pieza para agregar..."
+          placeholder="Buscar pieza para agregar…"
           value={stockSearch}
           onChange={(e) => setStockSearch(e.target.value)}
         />
