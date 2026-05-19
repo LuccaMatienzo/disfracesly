@@ -11,6 +11,7 @@ import ActionButtons from '@/components/ui/ActionButtons';
 import ConfirmDeleteModal from '@/components/ui/ConfirmDeleteModal';
 import ClienteViewModal from '@/components/ui/ClienteViewModal';
 import ToastContainer from '@/components/ui/Toast';
+import { FiSearch } from 'react-icons/fi';
 
 export default function ClientesList() {
   const navigate = useNavigate();
@@ -79,28 +80,45 @@ export default function ClientesList() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-headline-md font-semibold text-on-surface">Clientes</h1>
-          <p className="text-body-md text-on-surface-variant mt-0.5">Registro de clientes activos</p>
+      <div className="flex flex-row items-center justify-between gap-2 md:gap-4 w-full mb-6">
+        <div className="min-w-0 overflow-x-auto">
+          <div className="inline-flex h-11 bg-surface-container-high border border-transparent dark:border-zinc-800 rounded-xl items-center">
+            <div className="relative flex h-full items-center justify-center px-6 rounded-xl text-sm font-medium transition-all duration-200 bg-surface-container-lowest shadow-sm text-primary font-semibold">
+              Clientes
+            </div>
+          </div>
         </div>
+
         <Link to="/admin/clientes/nuevo">
-          <Button>+ Nuevo cliente</Button>
+          <Button className="h-11 px-4 flex items-center justify-center gap-2 whitespace-nowrap flex-shrink-0">
+            <span className="material-symbols-outlined text-[18px]">add</span>
+            Nuevo
+          </Button>
         </Link>
       </div>
 
       {/* Buscador */}
-      <div className="bg-surface-container-lowest rounded-2xl shadow-card p-5">
-        <Input
-          placeholder="Buscar por nombre o documento…"
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); reset(); }}
-          className="max-w-sm"
-        />
+      <div className="bg-surface-container-lowest rounded-2xl shadow-card p-3 md:p-5">
+        <div className="flex flex-col md:flex-row gap-3 md:gap-4">
+          <div className="flex-1">
+            <Input
+              placeholder="Buscar por nombre o documento…"
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); reset(); }}
+            />
+          </div>
+          <Button
+            onClick={() => reset()}
+            className="h-[48px] w-full md:w-auto px-6 shrink-0 self-end md:self-auto"
+          >
+            <FiSearch className="size-5 mr-2" />
+            Buscar
+          </Button>
+        </div>
       </div>
 
       {/* Tabla */}
-      <div className="bg-surface-container-lowest rounded-2xl shadow-card overflow-hidden">
+      <div className="md:bg-surface-container-lowest rounded-2xl md:shadow-card md:overflow-hidden">
         <Table columns={columns} data={data?.data} loading={isLoading} emptyMessage="Sin clientes" />
         <div className="px-4 pb-4">
           <Pagination meta={data?.meta} page={page} onPageChange={goToPage} />

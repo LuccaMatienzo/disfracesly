@@ -59,15 +59,15 @@ export default function PiezaViewModal({ id, open, onClose }) {
                 {data.stocks.map((s, i) => (
                   <div
                     key={s.id_pieza_stock ?? i}
-                    className="flex items-center justify-between px-3 py-2 rounded-xl bg-surface-container-low"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-surface-container-low"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-wrap min-w-0">
                       <span className="text-on-surface-variant text-label-lg">#{String(s.id_pieza_stock)}</span>
                       <span className="text-body-md text-on-surface">
                         {s.talle ? `Talle ${s.talle}` : 'Sin talle'}
                       </span>
                       {s.descripcion && (
-                        <span className="text-body-md text-on-surface-variant truncate max-w-xs">
+                        <span className="text-body-md text-on-surface-variant truncate max-w-[160px] sm:max-w-xs">
                           — {s.descripcion}
                         </span>
                       )}

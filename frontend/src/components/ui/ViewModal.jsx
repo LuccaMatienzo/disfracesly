@@ -90,24 +90,24 @@ export default function ViewModal({ open, onClose, title, loading = false, child
       <div
         className={`
           glass border border-outline-variant/20 rounded-2xl shadow-float
-          w-full ${sizes[size] ?? sizes.md} animate-scale-in
-          flex flex-col max-h-[90vh]
+          w-[calc(100%-2rem)] sm:w-full ${sizes[size] ?? sizes.md} animate-scale-in
+          flex flex-col max-h-[85vh] md:max-h-[85vh]
         `}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-outline-variant/20 shrink-0">
-          <h2 className="font-headline text-headline-md text-on-surface">{title}</h2>
+        <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-outline-variant/20 shrink-0">
+          <h2 className="font-headline text-title-lg md:text-headline-md text-on-surface">{title}</h2>
           <button
             onClick={onClose}
-            className="size-8 flex items-center justify-center rounded-lg hover:bg-surface-container text-on-surface-variant transition-colors"
+            className="size-9 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-surface-container text-on-surface-variant transition-colors"
             aria-label="Cerrar"
           >
             ✕
           </button>
         </div>
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">
+        {/* Body — scroll interno cuando el contenido excede el espacio */}
+        <div className="flex-1 overflow-y-auto overscroll-contain px-4 md:px-6 py-4 md:py-5">
           {loading ? <ViewModalSkeleton /> : children}
         </div>
       </div>

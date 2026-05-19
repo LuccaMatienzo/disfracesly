@@ -13,6 +13,8 @@ const NAV_ITEMS = [
   { to: '/admin/operaciones', label: 'Operaciones', icon: 'calendar_today', end: false },
   { to: '/admin/clientes', label: 'Clientes', icon: 'people', end: false },
   { to: '/admin/stock', label: 'Stock', icon: 'inventory_2', end: false },
+  { to: '/admin/usuarios', label: 'Usuarios', icon: 'manage_accounts', end: false },
+  { to: '/admin/finanzas', label: 'Finanzas', icon: 'query_stats', end: false },
 ];
 
 export default function PageWrapper() {

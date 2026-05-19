@@ -148,15 +148,15 @@ export default function DisfrazForm() {
   const clearAll = () => setValue('pieza_ids', [], { shouldDirty: true });
 
   return (
-    <div className="w-full h-[calc(100vh-120px)] flex flex-col">
-      <div className="mb-6 shrink-0">
-        <button onClick={() => navigate(-1)} className="text-body-md text-primary hover:underline font-label mb-2">← Volver</button>
+    <div className="w-full min-h-0 md:h-[calc(100vh-120px)] flex flex-col">
+      <div className="mb-4 md:mb-6 shrink-0">
+        <button onClick={() => navigate(-1)} className="text-body-md text-primary hover:underline font-label mb-2 min-h-[44px] inline-flex items-center">← Volver</button>
         <h1 className="font-display text-headline-md font-semibold text-on-surface">
           {isEditing ? 'Editar disfraz' : 'Nuevo disfraz del catálogo'}
         </h1>
       </div>
 
-      <div className="bg-surface-container-lowest rounded-2xl shadow-card p-6 flex flex-col flex-1 min-h-0">
+      <div className="bg-surface-container-lowest rounded-2xl shadow-card p-4 md:p-6 flex flex-col flex-1 min-h-0">
         <form
           onSubmit={handleSubmit((data) =>
             mutation.mutate({ ...data, pieza_ids: (data.pieza_ids ?? []).map(Number) })
@@ -225,7 +225,7 @@ export default function DisfrazForm() {
                     </div>
 
                     {/* Chips de ese grupo */}
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', paddingLeft: '26px' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', paddingLeft: '8px' }} className="md:!pl-[26px]">
                       {items.map((pieza) => (
                         <PiezaChip
                           key={pieza.id_pieza}
@@ -275,9 +275,9 @@ export default function DisfrazForm() {
           {/* Campo oculto que react-hook-form necesita para pieza_ids */}
           <input type="hidden" {...register('pieza_ids')} />
 
-          <div className="flex gap-3 justify-end mt-2 shrink-0">
-            <Button type="button" variant="secondary" onClick={() => navigate(-1)}>Cancelar</Button>
-            <Button type="submit" loading={isSubmitting}>
+          <div className="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end mt-4 md:mt-2 shrink-0">
+            <Button type="button" variant="secondary" onClick={() => navigate(-1)} className="w-full sm:w-auto">Cancelar</Button>
+            <Button type="submit" loading={isSubmitting} className="w-full sm:w-auto">
               {isEditing ? 'Guardar cambios' : 'Crear disfraz'}
             </Button>
           </div>

@@ -152,56 +152,70 @@ export default function CatalogoList() {
   const activeCols = tab === 'piezas' ? piezasCols : disfrazCols;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-headline-md font-semibold text-on-surface">Catálogo</h1>
-          <p className="text-body-md text-on-surface-variant mt-0.5">Piezas y disfraces del sistema</p>
+      <div className="flex flex-row items-center justify-between gap-2 md:gap-4 w-full mb-6">
+        {/* Segmented Control */}
+        <div className="min-w-0 overflow-x-auto">
+          <div className="inline-flex h-11 bg-surface-container-high border border-transparent dark:border-zinc-800 rounded-xl items-center">
+            <button
+              type="button"
+              onClick={() => {
+                setTab('piezas');
+                reset();
+                setViewId(null);
+                setViewDisfrazId(null);
+                setSearch('');
+                setTempSearch('');
+                setCategoria('');
+                setTempCategoria('');
+              }}
+              className={[
+                'relative flex h-full items-center justify-center px-6 rounded-xl text-sm font-medium transition-all duration-200',
+                tab === 'piezas'
+                  ? 'bg-surface-container-lowest shadow-sm text-primary font-semibold'
+                  : 'bg-transparent text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200',
+              ].join(' ')}
+            >
+              Piezas
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setTab('disfraces');
+                reset();
+                setViewId(null);
+                setViewDisfrazId(null);
+                setSearch('');
+                setTempSearch('');
+                setCategoria('');
+                setTempCategoria('');
+              }}
+              className={[
+                'relative flex h-full items-center justify-center px-6 rounded-xl text-sm font-medium transition-all duration-200',
+                tab === 'disfraces'
+                  ? 'bg-surface-container-lowest shadow-sm text-primary font-semibold'
+                  : 'bg-transparent text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200',
+              ].join(' ')}
+            >
+              Disfraces
+            </button>
+          </div>
         </div>
-        <div>
-          {tab === 'piezas' ? (
-            <Link to="/admin/catalogo/piezas/nueva">
-              <Button>+ Nueva pieza</Button>
-            </Link>
-          ) : (
-            <Link to="/admin/catalogo/disfraces/nuevo">
-              <Button>+ Nuevo disfraz</Button>
-            </Link>
-          )}
-        </div>
-      </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 border-b border-outline-variant/20">
-        {['piezas', 'disfraces'].map((t) => (
-          <button
-            key={t}
-            onClick={() => { 
-              setTab(t); 
-              reset(); 
-              setViewId(null); 
-              setViewDisfrazId(null); 
-              setSearch('');
-              setTempSearch('');
-              setCategoria('');
-              setTempCategoria('');
-            }}
-            className={`px-4 py-2.5 text-body-md font-label font-medium capitalize transition-all border-b-2 -mb-px ${
-              tab === t
-                ? 'border-primary text-primary'
-                : 'border-transparent text-on-surface-variant hover:text-on-surface'
-            }`}
-          >
-            {t}
-          </button>
-        ))}
+        {/* CTA */}
+        <Link to={tab === 'piezas' ? '/admin/catalogo/piezas/nueva' : '/admin/catalogo/disfraces/nuevo'}>
+          <Button className="h-11 px-4 flex items-center justify-center gap-2 whitespace-nowrap flex-shrink-0">
+            <span className="material-symbols-outlined text-[18px]">add</span>
+            Nuevo
+          </Button>
+        </Link>
       </div>
 
       {/* Buscador y Filtros */}
-      <div className="bg-surface-container-lowest rounded-2xl shadow-card p-5">
-        <div className="flex flex-col md:flex-row gap-4 items-end">
-          <div className="flex-1 w-full max-w-sm">
+      <div className="bg-surface-container-lowest rounded-2xl shadow-card p-3 md:p-5">
+        <div className="flex flex-col md:flex-row gap-3 md:gap-4">
+          <div className="flex-1">
             <Input
               placeholder={`Buscar ${tab}…`}
               value={tempSearch}
@@ -215,7 +229,7 @@ export default function CatalogoList() {
               }}
             />
           </div>
-          <div className="flex-1 w-full md:max-w-[200px]">
+          <div className="w-full md:w-56">
             <Select
               value={tempCategoria}
               onChange={(e) => setTempCategoria(e.target.value)}
@@ -234,7 +248,7 @@ export default function CatalogoList() {
               setCategoria(tempCategoria);
               reset();
             }}
-            className="h-[48px] px-6"
+            className="h-[48px] w-full md:w-auto px-6 shrink-0 self-end md:self-auto"
           >
             <FiSearch className="size-5 mr-2" />
             Buscar
@@ -242,15 +256,15 @@ export default function CatalogoList() {
         </div>
       </div>
 
-      {/* Tabla */}
-      <div className="bg-surface-container-lowest rounded-2xl shadow-card overflow-hidden">
+      {/* Tabla — cards en móvil, tabla clásica en md+ */}
+      <div className="md:bg-surface-container-lowest rounded-2xl md:shadow-card md:overflow-hidden">
         <Table
           columns={activeCols}
           data={activeData?.data}
           loading={activeLoading}
           emptyMessage={`Sin ${tab}`}
         />
-        <div className="px-4 pb-4">
+        <div className="px-1 md:px-4 pb-3 md:pb-4">
           <Pagination meta={activeData?.meta} page={page} onPageChange={goToPage} />
         </div>
       </div>

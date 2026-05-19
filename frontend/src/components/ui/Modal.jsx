@@ -33,14 +33,14 @@ export default function Modal({ open, onClose, title, children, size = 'md', foo
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[200] flex items-end md:items-center justify-center p-0 md:p-4 size-screen bg-on-surface/20 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4 size-screen bg-on-surface/20 backdrop-blur-sm animate-fade-in"
       onClick={(e) => e.target === e.currentTarget && onClose?.()}
     >
       <div
         className={`
-          glass border border-outline-variant/20 rounded-t-2xl md:rounded-2xl shadow-float
-          w-full ${sizes[size]} animate-scale-in
-          flex flex-col max-h-[95vh] md:max-h-[90vh]
+          glass border border-outline-variant/20 rounded-2xl shadow-float
+          w-[calc(100%-2rem)] sm:w-full ${sizes[size]} animate-scale-in
+          flex flex-col max-h-[85vh]
         `}
       >
         {/* Header */}
@@ -56,7 +56,7 @@ export default function Modal({ open, onClose, title, children, size = 'md', foo
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 md:py-5">
+        <div className="flex-1 overflow-y-auto overscroll-contain px-4 md:px-6 py-4 md:py-5">
           {children}
         </div>
 

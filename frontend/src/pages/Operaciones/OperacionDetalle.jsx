@@ -368,15 +368,15 @@ export default function OperacionDetalle() {
             </h1>
             <Badge value={etapa} />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             {transition && !isTerminal && (
-              <Button onClick={handleAdvance} loading={advanceLoading}>
+              <Button onClick={handleAdvance} loading={advanceLoading} className="w-full sm:w-auto">
                 <span className="material-symbols-outlined text-base">{transition.icon}</span>
                 {transition.label}
               </Button>
             )}
             {!isTerminal && (
-              <Button variant="danger" size="sm" onClick={() => setShowCancelModal(true)}>
+              <Button variant="danger" size="sm" onClick={() => setShowCancelModal(true)} className="w-full sm:w-auto">
                 <span className="material-symbols-outlined text-base">cancel</span>
                 Cancelar
               </Button>

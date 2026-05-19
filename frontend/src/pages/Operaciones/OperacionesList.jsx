@@ -18,11 +18,11 @@ export default function OperacionesList() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { page, limit, goToPage, reset } = usePagination();
-  const [tipo, setTipo] = useState('');
+  const [tipo, setTipo] = useState('alquiler');
   const [searchQuery, setSearchQuery] = useState('');
   const [etapa, setEtapa] = useState('');
-  
-  const [appliedFilters, setAppliedFilters] = useState({ search: '', tipo: '', etapa: '' });
+
+  const [appliedFilters, setAppliedFilters] = useState({ search: '', tipo: 'alquiler', etapa: '' });
 
   const { toasts, success, error, remove } = useToast();
 
@@ -30,9 +30,9 @@ export default function OperacionesList() {
   const [viewId, setViewId] = useState(null);             // id de operación en modal Ver
 
   // ─── Query ────────────────────────────────────────────────────────────────
-  const { data, isLoading } = useOperaciones({ 
-    page, 
-    limit, 
+  const { data, isLoading } = useOperaciones({
+    page,
+    limit,
     tipo: appliedFilters.tipo || undefined,
     search: appliedFilters.search || undefined,
     etapa: appliedFilters.etapa || undefined
@@ -117,42 +117,71 @@ export default function OperacionesList() {
     },
   ];
 
+  /* ─── Tab state ─────────────────────────────────────────────────────────── */
+  const [activeTab, setActiveTab] = useState('alquiler');
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setTipo(tab);
+    setAppliedFilters((prev) => ({ ...prev, tipo: tab }));
+    reset();
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-headline-md font-semibold text-on-surface">Operaciones</h1>
-          <p className="text-body-md text-on-surface-variant mt-0.5">Alquileres y ventas del sistema</p>
+      <div className="flex flex-row items-center justify-between gap-2 md:gap-4 w-full mb-6">
+        {/* Segmented Control */}
+        <div className="min-w-0 overflow-x-auto">
+          <div className="inline-flex h-11 bg-surface-container-high border border-transparent dark:border-zinc-800 rounded-xl items-center">
+            <button
+              type="button"
+              onClick={() => handleTabChange('alquiler')}
+              className={[
+                'relative flex h-full items-center justify-center px-6 rounded-xl text-sm font-medium transition-all duration-200',
+                activeTab === 'alquiler'
+                  ? 'bg-surface-container-lowest shadow-sm text-primary font-semibold'
+                  : 'bg-transparent text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200',
+              ].join(' ')}
+            >
+              Alquileres
+            </button>
+            <button
+              type="button"
+              onClick={() => handleTabChange('venta')}
+              className={[
+                'relative flex h-full items-center justify-center px-6 rounded-xl text-sm font-medium transition-all duration-200',
+                activeTab === 'venta'
+                  ? 'bg-surface-container-lowest shadow-sm text-primary font-semibold'
+                  : 'bg-transparent text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200',
+              ].join(' ')}
+            >
+              Ventas
+            </button>
+          </div>
         </div>
-        <div className="flex gap-3">
-          <Link to="/admin/operaciones/alquiler/nuevo">
-            <Button variant="outline">+ Alquiler</Button>
-          </Link>
-          <Link to="/admin/operaciones/venta/nuevo">
-            <Button variant="secondary">+ Venta</Button>
-          </Link>
-        </div>
+
+        {/* CTA */}
+        <Link to={`/admin/operaciones/${activeTab === 'alquiler' ? 'alquiler' : 'venta'}/nuevo`}>
+          <Button className="h-11 px-4 flex items-center justify-center gap-2 whitespace-nowrap flex-shrink-0">
+            <span className="material-symbols-outlined text-[18px]">add</span>
+            Nuevo
+          </Button>
+        </Link>
       </div>
 
       {/* Filtros */}
       <div className="bg-surface-container-lowest rounded-2xl shadow-card p-5">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
-            <Input 
-              placeholder="Buscar por ID o Nombre de cliente…" 
+            <Input
+              placeholder="Buscar por ID o Nombre de cliente…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             />
           </div>
-          <div className="w-full md:w-48">
-            <Select value={tipo} onChange={(e) => setTipo(e.target.value)}>
-              <option value="">Todos los tipos</option>
-              <option value="alquiler">Solo alquileres</option>
-              <option value="venta">Solo ventas</option>
-            </Select>
-          </div>
+
           <div className="w-full md:w-56">
             <Select value={etapa} onChange={(e) => setEtapa(e.target.value)}>
               <option value="">Todas las etapas</option>
@@ -164,7 +193,7 @@ export default function OperacionesList() {
               <option value="CANCELADO">Cancelado</option>
             </Select>
           </div>
-          <Button onClick={handleSearch} className="shrink-0 md:h-[48px] self-end md:self-auto">
+          <Button onClick={handleSearch} className="h-[48px] w-full md:w-auto shrink-0 self-end md:self-auto">
             <span className="material-symbols-outlined mr-2">search</span>
             Buscar
           </Button>
@@ -172,7 +201,7 @@ export default function OperacionesList() {
       </div>
 
       {/* Tabla */}
-      <div className="bg-surface-container-lowest rounded-2xl shadow-card overflow-hidden">
+      <div className="md:bg-surface-container-lowest rounded-2xl md:shadow-card md:overflow-hidden">
         <Table columns={columns} data={data?.data} loading={isLoading} emptyMessage="Sin operaciones" />
         <div className="px-4 pb-4">
           <Pagination meta={data?.meta} page={page} onPageChange={goToPage} />
