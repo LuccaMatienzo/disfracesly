@@ -1,7 +1,10 @@
 const svc = require('./clientes.service');
 
 async function getAll(req, res, next) {
-  try { res.json(await svc.getAllClientes(req.query)); } catch (e) { next(e); }
+  try {
+    const include_deleted = req.user.rol === 'Superadministrador' && req.query.include_deleted === 'true';
+    res.json(await svc.getAllClientes({ ...req.query, include_deleted }));
+  } catch (e) { next(e); }
 }
 
 async function getById(req, res, next) {
@@ -23,4 +26,11 @@ async function remove(req, res, next) {
   } catch (e) { next(e); }
 }
 
-module.exports = { getAll, getById, create, update, remove };
+async function restore(req, res, next) {
+  try {
+    await svc.restoreCliente(req.params.id);
+    res.json({ message: 'Cliente restaurado' });
+  } catch (e) { next(e); }
+}
+
+module.exports = { getAll, getById, create, update, remove, restore };

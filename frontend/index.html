@@ -2,34 +2,42 @@
 <html lang="es">
 
 <head>
+  <!-- ── Codificación y viewport ────────────────────────────────────────── -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ── SEO ────────────────────────────────────────────────────────────── -->
   <meta name="description"
     content="Alquiler y venta de disfraces artesanales en Tucumán. Encontrá el traje perfecto para actos escolares, fiestas y eventos con la colección de Liliana Sosa." />
+
+  <!-- ── Theme color adaptativo (light / dark) ──────────────────────────── -->
   <meta name="theme-color" content="#65a30d" media="(prefers-color-scheme: light)" />
   <meta name="theme-color" content="#a3e635" media="(prefers-color-scheme: dark)" />
 
-  <!-- Google Fonts: Manrope (display) + Inter (body) -->
+  <!-- ── Tipografía: Manrope (display) + Inter (body) ──────────────────── -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap"
     rel="stylesheet" />
+
+  <!-- ── Iconografía: Material Symbols Outlined ─────────────────────────── -->
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
     rel="stylesheet" />
 
-  <link rel="icon" type="image/png" href="/favicon/favicon-96x96.png" sizes="96x96" />
-  <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg" />
-  <link rel="shortcut icon" href="/favicon/favicon.ico" />
+  <!-- ── Favicon y PWA ──────────────────────────────────────────────────── -->
+  <link rel="icon"           type="image/png"  href="/favicon/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon"           type="image/svg+xml" href="/favicon/favicon.svg" />
+  <link rel="shortcut icon"  href="/favicon/favicon.ico" />
   <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
   <meta name="apple-mobile-web-app-title" content="DisfracesLy" />
   <link rel="manifest" href="/favicon/site.webmanifest" />
+
   <title>DisfracesLy</title>
-
-
 </head>
 
 <body class="bg-background text-on-surface antialiased">
+  <!-- Punto de montaje de la aplicación React -->
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
 </body>

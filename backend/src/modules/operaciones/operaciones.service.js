@@ -15,9 +15,12 @@ const createAlquilerSchema = z.object({
   fecha_constitucion: z.string().datetime({ offset: true }).optional(),
   fecha_retiro: z.string().datetime({ offset: true }).optional(),
   fecha_devolucion: z.string().datetime({ offset: true }).optional(),
-  deposito_monto: z.number().nonnegative().default(0),
-  monto_total: z.number().nonnegative().default(0),
+  deposito_monto: z.number().nonnegative('El depósito no puede ser negativo').default(0),
+  monto_total: z.number().nonnegative('El monto total no puede ser negativo').default(0),
   observaciones: z.string().optional(),
+}).refine((data) => data.deposito_monto <= data.monto_total, {
+  message: "El depósito de garantía no puede ser mayor que el monto total de la operación",
+  path: ["deposito_monto"],
 });
 
 const createVentaSchema = z.object({
@@ -25,9 +28,12 @@ const createVentaSchema = z.object({
   pieza_stock_ids: z.array(z.number().int().positive()).min(1),
   fecha_entrega_estimada: z.string().datetime({ offset: true }).optional(),
   especificaciones_medidas: z.string().optional(),
-  sena_monto: z.number().nonnegative().default(0),
-  monto_total: z.number().nonnegative().default(0),
+  sena_monto: z.number().nonnegative('La seña no puede ser negativa').default(0),
+  monto_total: z.number().nonnegative('El monto total no puede ser negativo').default(0),
   observaciones: z.string().optional(),
+}).refine((data) => data.sena_monto <= data.monto_total, {
+  message: "La seña no puede ser mayor que el monto total de la operación",
+  path: ["sena_monto"],
 });
 
 const avanzarEtapaAlquilerSchema = z.object({
@@ -454,6 +460,22 @@ async function updateOperacionMontos(id, data) {
     include: { alquiler: true, venta: true },
   });
   if (!operacion) throw ApiError.notFound('Operación no encontrada');
+
+  const nuevoMontoTotal = data.monto_total !== undefined ? data.monto_total : Number(operacion.monto_total);
+
+  if (operacion.alquiler) {
+    const nuevoDeposito = data.deposito_monto !== undefined ? data.deposito_monto : Number(operacion.alquiler.deposito_monto);
+    if (nuevoDeposito > nuevoMontoTotal) {
+      throw ApiError.badRequest('El depósito de garantía no puede ser mayor que el monto total de la operación');
+    }
+  }
+
+  if (operacion.venta) {
+    const nuevaSena = data.sena_monto !== undefined ? data.sena_monto : Number(operacion.venta.sena_monto);
+    if (nuevaSena > nuevoMontoTotal) {
+      throw ApiError.badRequest('La seña no puede ser mayor que el monto total de la operación');
+    }
+  }
 
   await prisma.$transaction(async (tx) => {
     if (data.monto_total !== undefined) {

@@ -18,6 +18,12 @@ const getLocalDatetimeStr = (date) => {
   return new Date(date - tzOffset).toISOString().slice(0, 16);
 };
 
+const handlePositiveNumbersOnly = (e) => {
+  if (['-', '+', 'e', 'E'].includes(e.key)) {
+    e.preventDefault();
+  }
+};
+
 const getMinConstitucion = () => {
   const d = new Date();
   d.setDate(d.getDate() - 3);
@@ -297,14 +303,22 @@ export default function AlquilerForm() {
                 type="number"
                 min="0"
                 step="0.01"
-                {...register('monto_total')}
+                error={errors.monto_total?.message}
+                onKeyDown={handlePositiveNumbersOnly}
+                {...register('monto_total', {
+                  validate: (val) => parseFloat(val) >= parseFloat(watch('deposito_monto') || 0) || 'El monto total no puede ser menor que el depósito'
+                })}
               />
               <Input
                 label="Depósito ($)"
                 type="number"
                 min="0"
                 step="0.01"
-                {...register('deposito_monto')}
+                error={errors.deposito_monto?.message}
+                onKeyDown={handlePositiveNumbersOnly}
+                {...register('deposito_monto', {
+                  validate: (val) => parseFloat(val) <= parseFloat(watch('monto_total') || 0) || 'El depósito no puede superar el monto total'
+                })}
               />
             </div>
             <div className="mt-4">

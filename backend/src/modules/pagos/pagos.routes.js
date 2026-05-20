@@ -4,8 +4,12 @@ const { authenticate } = require('../../middleware/auth.middleware');
 const { validate } = require('../../middleware/validate.middleware');
 const { createPagoSchema, updatePagoSchema } = require('./pagos.service');
 
+const { requireRol } = require('../../middleware/rbac.middleware');
+
 router.use(authenticate);
 
+router.get('/', requireRol('Superadministrador', 'Jefe'), ctrl.getAll);
+router.get('/stats', requireRol('Superadministrador', 'Jefe'), ctrl.getStats);
 router.get('/operacion/:operacionId', ctrl.getByOperacion);
 router.post('/', validate(createPagoSchema), ctrl.create);
 router.patch('/:id', validate(updatePagoSchema), ctrl.update);

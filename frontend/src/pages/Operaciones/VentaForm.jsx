@@ -11,6 +11,12 @@ import Badge from '@/components/ui/Badge';
 import ToastContainer from '@/components/ui/Toast';
 import { useState } from 'react';
 
+const handlePositiveNumbersOnly = (e) => {
+  if (['-', '+', 'e', 'E'].includes(e.key)) {
+    e.preventDefault();
+  }
+};
+
 /* ─── Modal de éxito ────────────────────────────────────────────────── */
 function SuccessModal({ open }) {
   if (!open) return null;
@@ -82,7 +88,7 @@ export default function VentaForm() {
       api.get('/stock', { params: { estado: 'DISPONIBLE', search: stockSearch, limit: 30 } }).then((r) => r.data),
   });
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
+  const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm({
     defaultValues: { id_cliente: '', sena_monto: 0, monto_total: 0, especificaciones_medidas: '', observaciones: '' },
   });
 
@@ -191,8 +197,28 @@ export default function VentaForm() {
           <div className="bg-surface-container-lowest rounded-2xl shadow-card p-5">
             <h2 className="font-headline text-title-md text-on-surface mb-4">Detalles de la venta</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input label="Monto total ($)" type="number" min="0" step="0.01" {...register('monto_total')} />
-              <Input label="Seña ($)" type="number" min="0" step="0.01" {...register('sena_monto')} />
+              <Input 
+                label="Monto total ($)" 
+                type="number" 
+                min="0" 
+                step="0.01" 
+                error={errors.monto_total?.message}
+                onKeyDown={handlePositiveNumbersOnly}
+                {...register('monto_total', {
+                  validate: (val) => parseFloat(val) >= parseFloat(watch('sena_monto') || 0) || 'El monto total no puede ser menor que la seña'
+                })} 
+              />
+              <Input 
+                label="Seña ($)" 
+                type="number" 
+                min="0" 
+                step="0.01" 
+                error={errors.sena_monto?.message}
+                onKeyDown={handlePositiveNumbersOnly}
+                {...register('sena_monto', {
+                  validate: (val) => parseFloat(val) <= parseFloat(watch('monto_total') || 0) || 'La seña no puede superar el monto total'
+                })} 
+              />
               <Input label="Especificaciones de medidas" placeholder="Ej: 90cm busto, 70cm cintura" {...register('especificaciones_medidas')} className="col-span-2" />
               <Input label="Observaciones" {...register('observaciones')} className="col-span-2" />
             </div>

@@ -7,7 +7,7 @@
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["views"]
+  previewFeatures = ["views", "omitApi"]
 }
 
 datasource db {

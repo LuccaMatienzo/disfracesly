@@ -4,7 +4,10 @@ const { authenticate } = require('../../middleware/auth.middleware');
 const { validate } = require('../../middleware/validate.middleware');
 const { createStockSchema, updateStockSchema, cambiarEstadoSchema } = require('./stock.service');
 
+const { requireRol } = require('../../middleware/rbac.middleware');
+
 router.use(authenticate);
+router.use(requireRol('Superadministrador', 'Jefe'));
 
 router.get('/stats', ctrl.getStats);
 router.get('/', ctrl.getAll);

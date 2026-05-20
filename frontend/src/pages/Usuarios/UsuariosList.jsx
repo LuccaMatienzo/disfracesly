@@ -10,12 +10,11 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import ActionButtons from '@/components/ui/ActionButtons';
 import ConfirmDeleteModal from '@/components/ui/ConfirmDeleteModal';
-import ClienteViewModal from '@/components/ui/ClienteViewModal';
 import ToastContainer from '@/components/ui/Toast';
 import Badge from '@/components/ui/Badge';
 import { FiSearch } from 'react-icons/fi';
 
-export default function ClientesList() {
+export default function UsuariosList() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -25,44 +24,43 @@ export default function ClientesList() {
   const { toasts, success, error, remove } = useToast();
 
   const [deleteTarget, setDeleteTarget] = useState(null); // { id, nombre }
-  const [viewId, setViewId] = useState(null);             // id de cliente en modal Ver
 
   // ─── Query ────────────────────────────────────────────────────────────────
   const { data, isLoading } = useQuery({
-    queryKey: ['clientes', { page, limit, search, includeDeleted }],
+    queryKey: ['usuarios', { page, limit, search, includeDeleted }],
     queryFn: () =>
-      api.get('/clientes', { params: { page, limit, search: search || undefined, include_deleted: includeDeleted } }).then((r) => r.data),
+      api.get('/usuarios', { params: { page, limit, search: search || undefined, include_deleted: includeDeleted } }).then((r) => r.data),
   });
 
   // ─── Mutación: soft-delete ────────────────────────────────────────────────
   const deleteMutation = useMutation({
-    mutationFn: (id) => api.delete(`/clientes/${id}`),
+    mutationFn: (id) => api.delete(`/usuarios/${id}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['clientes'] });
-      success('Cliente eliminado correctamente');
+      queryClient.invalidateQueries({ queryKey: ['usuarios'] });
+      success('Usuario eliminado correctamente');
       setDeleteTarget(null);
     },
     onError: (err) => {
-      error(err?.response?.data?.message ?? 'Error al eliminar el cliente');
+      error(err?.response?.data?.message ?? 'Error al eliminar el usuario');
       setDeleteTarget(null);
     },
   });
 
   // ─── Mutación: restore ────────────────────────────────────────────────────
   const restoreMutation = useMutation({
-    mutationFn: (id) => api.patch(`/clientes/${id}/restore`),
+    mutationFn: (id) => api.patch(`/usuarios/${id}/restore`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['clientes'] });
-      success('Cliente restaurado correctamente');
+      queryClient.invalidateQueries({ queryKey: ['usuarios'] });
+      success('Usuario restaurado correctamente');
     },
     onError: (err) => {
-      error(err?.response?.data?.message ?? 'Error al restaurar el cliente');
+      error(err?.response?.data?.message ?? 'Error al restaurar el usuario');
     },
   });
 
   // ─── Columnas ─────────────────────────────────────────────────────────────
   const columns = [
-    { key: 'id_cliente', label: '#', width: '60px' },
+    { key: 'id_usuario', label: '#', width: '60px' },
     {
       key: 'persona',
       label: 'Nombre',
@@ -73,12 +71,17 @@ export default function ClientesList() {
         </div>
       ),
     },
+    { key: 'correo', label: 'Correo' },
     { key: 'documento', label: 'Documento', render: (_, r) => r.persona?.documento ?? '—' },
-    { key: 'telefono', label: 'Teléfono' },
     {
-      key: 'fecha_alta',
-      label: 'Alta',
-      render: (v) => new Date(v).toLocaleDateString('es-AR'),
+      key: 'rol',
+      label: 'Rol',
+      render: (_, r) => {
+        const rol = r.rol?.nombre;
+        if (rol === 'Superadministrador') return <Badge variant="primary">{rol}</Badge>;
+        if (rol === 'Jefe') return <Badge variant="secondary">{rol}</Badge>;
+        return <Badge variant="neutral">{rol}</Badge>;
+      },
     },
     {
       key: 'acciones',
@@ -90,10 +93,9 @@ export default function ClientesList() {
         const isDeleted = !!r.deleted_at;
         return (
           <ActionButtons
-            onView={!isDeleted ? () => setViewId(r.id_cliente) : undefined}
-            onEdit={!isDeleted ? () => navigate(`/admin/clientes/${r.id_cliente}/editar`) : undefined}
-            onDelete={!isDeleted ? () => setDeleteTarget({ id: r.id_cliente, nombre: nombreCompleto }) : undefined}
-            onRestore={isDeleted ? () => restoreMutation.mutate(r.id_cliente) : undefined}
+            onEdit={!isDeleted ? () => navigate(`/admin/usuarios/${r.id_usuario}/editar`) : undefined}
+            onDelete={!isDeleted ? () => setDeleteTarget({ id: r.id_usuario, nombre: nombreCompleto }) : undefined}
+            onRestore={isDeleted ? () => restoreMutation.mutate(r.id_usuario) : undefined}
           />
         );
       },
@@ -107,12 +109,12 @@ export default function ClientesList() {
         <div className="min-w-0 overflow-x-auto">
           <div className="inline-flex h-11 bg-surface-container-high border border-transparent dark:border-zinc-800 rounded-xl items-center">
             <div className="relative flex h-full items-center justify-center px-6 rounded-xl text-sm font-medium transition-all duration-200 bg-surface-container-lowest shadow-sm text-primary font-semibold">
-              Clientes
+              Usuarios
             </div>
           </div>
         </div>
 
-        <Link to="/admin/clientes/nuevo">
+        <Link to="/admin/usuarios/nuevo">
           <Button className="h-11 px-4 flex items-center justify-center gap-2 whitespace-nowrap flex-shrink-0">
             <span className="material-symbols-outlined text-[18px]">add</span>
             Nuevo
@@ -125,7 +127,7 @@ export default function ClientesList() {
         <div className="flex flex-col md:flex-row gap-3 md:gap-4 items-center">
           <div className="flex-1 w-full">
             <Input
-              placeholder="Buscar por nombre o documento…"
+              placeholder="Buscar por nombre, apellido o correo…"
               value={search}
               onChange={(e) => { setSearch(e.target.value); reset(); }}
             />
@@ -153,25 +155,18 @@ export default function ClientesList() {
 
       {/* Tabla */}
       <div className="md:bg-surface-container-lowest rounded-2xl md:shadow-card md:overflow-hidden">
-        <Table columns={columns} data={data?.data} loading={isLoading} emptyMessage="Sin clientes" />
+        <Table columns={columns} data={data?.data} loading={isLoading} emptyMessage="Sin usuarios" />
         <div className="px-4 pb-4">
           <Pagination meta={data?.meta} page={page} onPageChange={goToPage} />
         </div>
       </div>
-
-      {/* Modal Ver */}
-      <ClienteViewModal
-        id={viewId}
-        open={!!viewId}
-        onClose={() => setViewId(null)}
-      />
 
       {/* Modal de confirmación */}
       <ConfirmDeleteModal
         open={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={() => deleteMutation.mutate(deleteTarget.id)}
-        entityName={`cliente "${deleteTarget?.nombre ?? ''}"`}
+        entityName={`usuario "${deleteTarget?.nombre ?? ''}"`}
         loading={deleteMutation.isPending}
       />
 

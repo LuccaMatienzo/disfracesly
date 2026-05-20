@@ -42,17 +42,22 @@ const updateClienteSchema = z.object({
 async function getAllClientes(query) {
   const { skip, take, page, limit } = parsePagination(query);
   const search = query.search ?? '';
+  const { include_deleted } = query;
 
-  const where = withNotDeleted({
+  let where = {
     persona: {
-      deleted_at: null,
       OR: [
         { nombre: { contains: search, mode: 'insensitive' } },
         { apellido: { contains: search, mode: 'insensitive' } },
         { documento: { contains: search, mode: 'insensitive' } },
       ],
     },
-  });
+  };
+
+  if (!include_deleted) {
+    where = withNotDeleted(where);
+    where.persona.deleted_at = null;
+  }
 
   const [data, total] = await prisma.$transaction([
     prisma.cliente.findMany({
@@ -137,6 +142,18 @@ async function deleteCliente(id) {
   });
 }
 
+async function restoreCliente(id) {
+  const cliente = await prisma.cliente.findFirst({
+    where: { id_cliente: BigInt(id) },
+  });
+  if (!cliente) throw ApiError.notFound('Cliente no encontrado');
+
+  return prisma.$transaction(async (tx) => {
+    await tx.cliente.update({ where: { id_cliente: BigInt(id) }, data: { deleted_at: null } });
+    await tx.persona.update({ where: { id_persona: cliente.id_persona }, data: { deleted_at: null } });
+  });
+}
+
 module.exports = {
   createClienteSchema,
   updateClienteSchema,
@@ -145,4 +162,5 @@ module.exports = {
   createCliente,
   updateCliente,
   deleteCliente,
+  restoreCliente,
 };

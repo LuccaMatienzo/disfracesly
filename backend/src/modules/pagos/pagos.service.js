@@ -2,6 +2,7 @@ const { z } = require('zod');
 const { prisma } = require('../../config/database');
 const { ApiError } = require('../../utils/ApiError');
 const { withNotDeleted } = require('../../utils/softDelete');
+const { parsePagination, paginatedResponse } = require('../../utils/pagination');
 
 const createPagoSchema = z.object({
   id_operacion: z.number().int().positive(),
@@ -54,4 +55,98 @@ async function deletePago(id) {
   await prisma.pagoOperacion.update({ where: { id_pago_operacion: BigInt(id) }, data: { deleted_at: new Date() } });
 }
 
-module.exports = { createPagoSchema, updatePagoSchema, getPagosByOperacion, createPago, updatePago, deletePago };
+async function getAllPagos(query) {
+  const { skip, take, page, limit } = parsePagination(query);
+  const search = query.search ?? '';
+  const { metodo, flujo } = query;
+
+  let baseWhere = { AND: [] };
+
+  if (search) {
+    baseWhere.AND.push({
+      OR: [
+        { operacion: { cliente: { persona: { nombre: { contains: search, mode: 'insensitive' } } } } },
+        { operacion: { cliente: { persona: { apellido: { contains: search, mode: 'insensitive' } } } } },
+      ]
+    });
+  }
+
+  if (metodo === 'EFECTIVO' || metodo === 'TRANSFERENCIA') {
+    baseWhere.AND.push({ metodo });
+  }
+
+  if (flujo === 'ingreso') {
+    baseWhere.AND.push({
+      OR: [
+        { tipo: { in: ['SENA', 'DEPOSITO', 'SALDO'] } },
+        { tipo: 'AJUSTE', monto: { gt: 0 } }
+      ]
+    });
+  } else if (flujo === 'egreso') {
+    baseWhere.AND.push({
+      OR: [
+        { tipo: 'DEVOLUCION_DEPOSITO' },
+        { tipo: 'AJUSTE', monto: { lt: 0 } }
+      ]
+    });
+  }
+
+  const where = baseWhere.AND.length > 0 ? baseWhere : {};
+
+  const [data, total] = await prisma.$transaction([
+    prisma.pagoOperacion.findMany({
+      where: withNotDeleted(where),
+      skip,
+      take,
+      include: {
+        operacion: {
+          include: {
+            cliente: { include: { persona: true } }
+          }
+        },
+        persona: true // El usuario que registró el pago
+      },
+      orderBy: { fecha: 'desc' },
+    }),
+    prisma.pagoOperacion.count({ where: withNotDeleted(where) }),
+  ]);
+
+  return paginatedResponse(data, total, page, limit);
+}
+
+async function getPagosStats() {
+  const now = new Date();
+  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const pagosMes = await prisma.pagoOperacion.findMany({
+    where: withNotDeleted({
+      fecha: { gte: firstDay }
+    }),
+  });
+
+  let totalIngresos = 0;
+  let totalEgresos = 0;
+  let efectivo = 0;
+  let transferencia = 0;
+
+  for (const p of pagosMes) {
+    const m = Number(p.monto);
+    if (p.tipo === 'DEVOLUCION_DEPOSITO' || (p.tipo === 'AJUSTE' && m < 0)) {
+      totalEgresos += Math.abs(m);
+    } else {
+      totalIngresos += m;
+      if (p.metodo === 'EFECTIVO') efectivo += m;
+      if (p.metodo === 'TRANSFERENCIA') transferencia += m;
+    }
+  }
+
+  return {
+    ingresos: totalIngresos,
+    egresos: totalEgresos,
+    saldoNeto: totalIngresos - totalEgresos,
+    efectivo,
+    transferencia
+  };
+}
+
+module.exports = { createPagoSchema, updatePagoSchema, getPagosStats, getAllPagos, getPagosByOperacion, createPago, updatePago, deletePago };

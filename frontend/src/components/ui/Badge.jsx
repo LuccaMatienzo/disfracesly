@@ -21,6 +21,17 @@ const config = {
   // Etapa venta
   LISTO_PARA_ENTREGA: { label: 'Listo para entrega', cls: 'bg-primary/10 text-primary' },
   VENDIDO: { label: 'Vendido', cls: 'bg-on-surface/10 text-on-surface-variant' },
+
+  // Pagos: Tipo
+  SENA: { label: 'Seña', cls: 'bg-secondary-container/30 text-secondary' },
+  DEPOSITO: { label: 'Depósito', cls: 'bg-primary/10 text-primary' },
+  SALDO: { label: 'Saldo', cls: 'bg-primary-container text-primary-on-container' },
+  DEVOLUCION_DEPOSITO: { label: 'Dev. Depósito', cls: 'bg-error-container text-error-on-container' },
+  AJUSTE: { label: 'Ajuste', cls: 'bg-surface-container text-on-surface-variant' },
+
+  // Pagos: Método
+  EFECTIVO: { label: 'Efectivo', cls: 'bg-primary-container text-primary-on-container' },
+  TRANSFERENCIA: { label: 'Transferencia', cls: 'bg-secondary-container text-secondary-on-container' },
 };
 
 export default function Badge({ value, className = '' }) {

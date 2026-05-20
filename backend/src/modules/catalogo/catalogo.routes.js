@@ -11,7 +11,10 @@ router.get('/disfraces/:id/publico', ctrl.getDisfrazByIdPublico);
 router.get('/categorias/publico', ctrl.getAllCategoriasPublico);
 
 // ─── Rutas protegidas ─────────────────────────────────────────────────────────
+const { requireRol } = require('../../middleware/rbac.middleware');
+
 router.use(authenticate);
+router.use(requireRol('Superadministrador', 'Jefe'));
 
 // Piezas
 router.get('/piezas', ctrl.getAllPiezas);

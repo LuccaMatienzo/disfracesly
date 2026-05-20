@@ -8,17 +8,17 @@ import SettingsModal from './SettingsModal';
 import AccountModal from './AccountModal';
 
 const NAV_ITEMS = [
-  { to: '/admin', label: 'Panel General', icon: 'grid_view', end: true },
-  { to: '/admin/catalogo', label: 'Catálogo', icon: 'apparel', end: false },
-  { to: '/admin/operaciones', label: 'Operaciones', icon: 'calendar_today', end: false },
-  { to: '/admin/clientes', label: 'Clientes', icon: 'people', end: false },
-  { to: '/admin/stock', label: 'Stock', icon: 'inventory_2', end: false },
-  { to: '/admin/usuarios', label: 'Usuarios', icon: 'manage_accounts', end: false },
-  { to: '/admin/finanzas', label: 'Finanzas', icon: 'query_stats', end: false },
+  { to: '/admin', label: 'Panel General', icon: 'grid_view', end: true, roles: ['Superadministrador', 'Jefe', 'Empleado'] },
+  { to: '/admin/catalogo', label: 'Catálogo', icon: 'apparel', end: false, roles: ['Superadministrador', 'Jefe'] },
+  { to: '/admin/operaciones', label: 'Operaciones', icon: 'calendar_today', end: false, roles: ['Superadministrador', 'Jefe', 'Empleado'] },
+  { to: '/admin/clientes', label: 'Clientes', icon: 'people', end: false, roles: ['Superadministrador', 'Jefe'] },
+  { to: '/admin/stock', label: 'Stock', icon: 'inventory_2', end: false, roles: ['Superadministrador', 'Jefe'] },
+  { to: '/admin/usuarios', label: 'Usuarios', icon: 'manage_accounts', end: false, roles: ['Superadministrador'] },
+  { to: '/admin/finanzas', label: 'Finanzas', icon: 'query_stats', end: false, roles: ['Superadministrador', 'Jefe'] },
 ];
 
 export default function PageWrapper() {
-  const { user, logout } = useAuth();
+  const { user, logout, hasRol } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const toast = useToast();
@@ -42,6 +42,8 @@ export default function PageWrapper() {
     user?.persona?.nombre?.charAt(0),
     user?.persona?.apellido?.charAt(0),
   ].filter(Boolean).join('').toUpperCase() || '?';
+
+  const filteredNavItems = NAV_ITEMS.filter(item => item.roles.includes(user?.rol));
 
   return (
     <div className="flex min-h-screen bg-surface-container-low">
@@ -126,7 +128,7 @@ export default function PageWrapper() {
 
         {/* Nav */}
         <nav className="flex-1 px-2 py-3 overflow-y-auto space-y-0.5">
-          {NAV_ITEMS.map(({ to, label, icon, end }) => (
+          {filteredNavItems.map(({ to, label, icon, end }) => (
             <NavLink
               key={to}
               to={to}

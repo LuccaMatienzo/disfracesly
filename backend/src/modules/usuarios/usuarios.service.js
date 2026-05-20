@@ -21,15 +21,16 @@ const createUsuarioSchema = z.object({
 
 const updateUsuarioSchema = z.object({
   correo: z.string().email().optional(),
-  contrasena: z.string().min(8).optional(),
+  contrasena: z.string().min(8).optional().or(z.literal('')),
   id_rol: z.number().int().positive().optional(),
   persona: z
     .object({
       nombre: z.string().min(1).max(100).optional(),
       apellido: z.string().min(1).max(100).optional(),
     })
+    .strict("No se pueden modificar campos inmutables como el documento")
     .optional(),
-});
+}).strict("Campos no permitidos en la actualización");
 
 const updateProfileSchema = z.object({
   nombre:   z.string().trim().min(1, 'El nombre no puede estar vacío').max(100).optional(),
@@ -39,47 +40,87 @@ const updateProfileSchema = z.object({
   password: z.string().min(8, 'La nueva contraseña debe tener al menos 8 caracteres').optional().or(z.literal('')),
 });
 
+// ─── Utils ────────────────────────────────────────────────────────────────────
+
+async function checkRoleHierarchy(currentUserRoleName, targetRoleId) {
+  if (!targetRoleId) return;
+  const targetRole = await prisma.rol.findUnique({ where: { id_rol: BigInt(targetRoleId) } });
+  if (!targetRole) throw ApiError.badRequest('Rol inválido');
+
+  const hierarchy = { 'Superadministrador': 3, 'Jefe': 2, 'Empleado': 1 };
+  const userWeight = hierarchy[currentUserRoleName] || 0;
+  const targetWeight = hierarchy[targetRole.nombre] || 0;
+
+  if (targetWeight > userWeight) {
+    throw ApiError.forbidden('Escalada de privilegios denegada: No puedes asignar un rol superior al tuyo');
+  }
+}
+
 // ─── Services ─────────────────────────────────────────────────────────────────
 
 async function getAllUsuarios(query) {
   const { skip, take, page, limit } = parsePagination(query);
   const search = query.search ?? '';
+  const { include_deleted } = query;
 
-  const where = withNotDeleted({
+  let where = {
     OR: [
       { correo: { contains: search, mode: 'insensitive' } },
       { persona: { nombre: { contains: search, mode: 'insensitive' } } },
       { persona: { apellido: { contains: search, mode: 'insensitive' } } },
     ],
-  });
+  };
+
+  if (!include_deleted) {
+    where = withNotDeleted(where);
+    // If we want to check persona.deleted_at too:
+    // but the original code didn't specifically check persona.deleted_at here
+  }
 
   const [data, total] = await prisma.$transaction([
     prisma.usuario.findMany({
       where,
       skip,
       take,
-      include: { persona: true, rol: true },
+      select: {
+        id_usuario: true,
+        id_persona: true,
+        id_rol: true,
+        correo: true,
+        foto_url: true,
+        deleted_at: true,
+        persona: true,
+        rol: true,
+      },
       orderBy: { id_usuario: 'desc' },
     }),
     prisma.usuario.count({ where }),
   ]);
 
-  // No devolver contrasenas
-  const sanitized = data.map(({ contrasena: _, ...u }) => u);
-  return paginatedResponse(sanitized, total, page, limit);
+  return paginatedResponse(data, total, page, limit);
 }
 
 async function getUsuarioById(id) {
   const usuario = await prisma.usuario.findFirst({
     where: withNotDeleted({ id_usuario: BigInt(id) }),
-    include: { persona: true, rol: { include: { permisos: { include: { permiso: true } } } } },
+    select: {
+      id_usuario: true,
+      id_persona: true,
+      id_rol: true,
+      correo: true,
+      foto_url: true,
+      deleted_at: true,
+      persona: true,
+      rol: { include: { permisos: { include: { permiso: true } } } },
+    },
   });
   if (!usuario) throw ApiError.notFound('Usuario no encontrado');
-  const { contrasena: _, ...safe } = usuario;
-  return safe;
+  return usuario;
 }
 
-async function createUsuario(data) {
+async function createUsuario(data, reqUser) {
+  await checkRoleHierarchy(reqUser?.rol, data.id_rol);
+
   const { persona, contrasena, ...usuData } = data;
 
   const existing = await prisma.persona.findUnique({ where: { documento: persona.documento } });
@@ -91,14 +132,26 @@ async function createUsuario(data) {
     const newPersona = await tx.persona.create({ data: persona });
     const newUsuario = await tx.usuario.create({
       data: { ...usuData, id_persona: newPersona.id_persona, contrasena: hashed, id_rol: BigInt(usuData.id_rol) },
-      include: { persona: true, rol: true },
+      select: {
+        id_usuario: true,
+        id_persona: true,
+        id_rol: true,
+        correo: true,
+        foto_url: true,
+        deleted_at: true,
+        persona: true,
+        rol: true,
+      },
     });
-    const { contrasena: _, ...safe } = newUsuario;
-    return safe;
+    return newUsuario;
   });
 }
 
-async function updateUsuario(id, data) {
+async function updateUsuario(id, data, reqUser) {
+  if (data.id_rol) {
+    await checkRoleHierarchy(reqUser?.rol, data.id_rol);
+  }
+
   const usuario = await prisma.usuario.findFirst({
     where: withNotDeleted({ id_usuario: BigInt(id) }),
   });
@@ -117,10 +170,18 @@ async function updateUsuario(id, data) {
     const updated = await tx.usuario.update({
       where: { id_usuario: BigInt(id) },
       data: updateData,
-      include: { persona: true, rol: true },
+      select: {
+        id_usuario: true,
+        id_persona: true,
+        id_rol: true,
+        correo: true,
+        foto_url: true,
+        deleted_at: true,
+        persona: true,
+        rol: true,
+      },
     });
-    const { contrasena: _, ...safe } = updated;
-    return safe;
+    return updated;
   });
 }
 
@@ -132,6 +193,17 @@ async function deleteUsuario(id) {
   await prisma.usuario.update({
     where: { id_usuario: BigInt(id) },
     data: { deleted_at: new Date() },
+  });
+}
+
+async function restoreUsuario(id) {
+  const usuario = await prisma.usuario.findFirst({
+    where: { id_usuario: BigInt(id) },
+  });
+  if (!usuario) throw ApiError.notFound('Usuario no encontrado');
+  await prisma.usuario.update({
+    where: { id_usuario: BigInt(id) },
+    data: { deleted_at: null },
   });
 }
 
@@ -199,6 +271,12 @@ async function updateProfile(id, { nombre, apellido, foto_url, password, current
   };
 }
 
+async function getRoles() {
+  return prisma.rol.findMany({
+    orderBy: { id_rol: 'asc' },
+  });
+}
+
 module.exports = {
   createUsuarioSchema,
   updateUsuarioSchema,
@@ -208,5 +286,7 @@ module.exports = {
   createUsuario,
   updateUsuario,
   deleteUsuario,
+  restoreUsuario,
   updateProfile,
+  getRoles,
 };
