@@ -1,11 +1,46 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import Modal from '@/components/ui/Modal';
 import { useToast } from '@/hooks/useToast';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
+
+const baseSchema = z.object({
+  correo: z.string().email('Correo inválido'),
+  id_rol: z.number({ invalid_type_error: 'Rol requerido' }).int().positive('Rol requerido'),
+  persona: z.object({
+    documento: z.string()
+      .min(7, 'El DNI debe tener entre 7 y 8 números')
+      .max(8, 'El DNI debe tener entre 7 y 8 números')
+      .regex(/^[0-9]+$/, 'Solo números permitidos'),
+    nombre: z.string()
+      .min(1, 'Requerido')
+      .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s']+$/, 'Caracteres inválidos'),
+    apellido: z.string()
+      .min(1, 'Requerido')
+      .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s']+$/, 'Caracteres inválidos'),
+  }),
+});
+
+const createSchema = baseSchema.extend({
+  contrasena: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
+});
+
+const updateSchema = baseSchema;
+
+const resetPasswordSchema = z.object({
+  nuevaContrasena: z.string().min(8, 'Mínimo 8 caracteres'),
+  confirmarContrasena: z.string().min(8, 'Mínimo 8 caracteres'),
+}).refine(data => data.nuevaContrasena === data.confirmarContrasena, {
+  message: "Las contraseñas no coinciden",
+  path: ["confirmarContrasena"],
+});
 
 export default function UsuarioForm() {
   const { id } = useParams();
@@ -13,6 +48,8 @@ export default function UsuarioForm() {
   const qc = useQueryClient();
   const { success, error } = useToast();
   const isEditing = !!id;
+
+  const [showPass, setShowPass] = useState(false);
 
   const { data: usuario } = useQuery({
     queryKey: ['usuarios', id],
@@ -40,12 +77,16 @@ export default function UsuarioForm() {
     }
   });
 
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
+  const schema = isEditing ? updateSchema : createSchema;
+
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting, isValid } } = useForm({
+    resolver: zodResolver(schema),
+    mode: 'onChange',
     defaultValues: {
       correo: '',
-      contrasena: '',
       id_rol: '',
-      persona: { documento: '', nombre: '', apellido: '' }
+      persona: { documento: '', nombre: '', apellido: '' },
+      contrasena: '',
     },
   });
 
@@ -53,7 +94,6 @@ export default function UsuarioForm() {
     if (isEditing && usuario) {
       reset({
         correo: usuario.correo,
-        contrasena: '', // intentionally empty
         id_rol: Number(usuario.id_rol),
         persona: {
           documento: usuario.persona.documento,
@@ -65,90 +105,86 @@ export default function UsuarioForm() {
   }, [usuario, isEditing, reset]);
 
   const onSubmit = (formData) => {
-    // If we are editing and no password was provided, we delete it from the payload
-    if (isEditing && !formData.contrasena) {
-      delete formData.contrasena;
-    }
-    
-    // Convert id_rol to number
     const payload = {
       ...formData,
       id_rol: Number(formData.id_rol)
     };
-
-    // Document is not strictly updatable in some flows, but the backend update schema allows persona.nombre/apellido.
-    // The backend schema: updateUsuarioSchema -> persona: { nombre, apellido }
-    if (isEditing) {
-      delete payload.persona.documento; // Previene envío de documento al actualizar si backend no lo acepta
-    }
-
     mutation.mutate(payload);
   };
 
   return (
     <div className="w-full">
-      <div className="mb-6">
-        <button onClick={() => navigate(-1)} className="text-body-md text-primary hover:underline font-label mb-2">← Volver</button>
-        <h1 className="font-display text-headline-md font-semibold text-on-surface">
-          {isEditing ? 'Editar usuario' : 'Nuevo usuario'}
-        </h1>
+      <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <button onClick={() => navigate(-1)} className="text-body-md text-primary hover:underline font-label mb-2">← Volver</button>
+          <h1 className="font-display text-headline-md font-semibold text-on-surface">
+            {isEditing ? 'Editar usuario' : 'Nuevo usuario'}
+          </h1>
+        </div>
       </div>
+      
       <div className="bg-surface-container-lowest rounded-2xl shadow-card p-6">
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5" autoComplete="off">
           <h2 className="font-headline text-title-md text-on-surface">Datos personales</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input label="DNI / Documento" error={errors.persona?.documento?.message} disabled={isEditing}
-              {...register('persona.documento', { 
-                required: isEditing ? false : 'Documento requerido',
-              })} />
+            <Input label="DNI / Documento" error={errors.persona?.documento?.message}
+              {...register('persona.documento')} />
             <Input label="Nombre" error={errors.persona?.nombre?.message}
-              {...register('persona.nombre', { 
-                required: 'Nombre requerido',
-              })} />
+              {...register('persona.nombre')} />
             <Input label="Apellido" error={errors.persona?.apellido?.message}
-              {...register('persona.apellido', { 
-                required: 'Apellido requerido',
-              })} className="sm:col-span-2" />
+              {...register('persona.apellido')} className="sm:col-span-2" />
           </div>
 
           <h2 className="font-headline text-title-md text-on-surface mt-2">Acceso al sistema</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="Correo electrónico" type="email" error={errors.correo?.message}
-              {...register('correo', { 
-                required: 'Correo requerido',
-              })} />
+              autoComplete="new-password"
+              {...register('correo')} />
             
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-on-surface">Rol</label>
+              <label className="text-label-lg font-label font-medium text-on-surface-variant uppercase tracking-wide">Rol</label>
               <select
-                {...register('id_rol', { required: 'Rol requerido' })}
-                className="w-full h-[48px] bg-surface-container hover:bg-surface-container-high focus:bg-surface-container-high transition-colors outline-none border border-outline-variant/30 focus:border-primary px-4 rounded-xl text-on-surface"
+                {...register('id_rol', { valueAsNumber: true })}
+                className={`w-full rounded-lg px-4 py-3 bg-surface-container-high text-on-surface text-body-md border-0 outline-none transition-all duration-150 focus:ring-2 focus:ring-primary/30 focus:bg-surface-container-lowest ${errors.id_rol ? 'ring-2 ring-error' : ''}`}
               >
                 <option value="">Seleccionar rol…</option>
                 {roles.map(rol => (
                   <option key={rol.id_rol} value={rol.id_rol}>{rol.nombre}</option>
                 ))}
               </select>
-              {errors.id_rol && <span className="text-error text-xs font-medium">{errors.id_rol.message}</span>}
+              {errors.id_rol && <p className="text-label-lg text-error">{errors.id_rol.message}</p>}
             </div>
 
-            <Input 
-              label={isEditing ? 'Nueva contraseña (Opcional)' : 'Contraseña'} 
-              type="password" 
-              error={errors.contrasena?.message}
-              {...register('contrasena', { 
-                required: isEditing ? false : 'Contraseña requerida',
-                minLength: { value: 8, message: 'La contraseña debe tener al menos 8 caracteres' }
-              })} 
-            />
+            {!isEditing && (
+              <div className="sm:col-span-2 relative">
+                <Input 
+                  label="Contraseña" 
+                  type={showPass ? 'text' : 'password'} 
+                  error={errors.contrasena?.message}
+                  autoComplete="new-password"
+                  {...register('contrasena')} 
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass((p) => !p)}
+                  className="absolute right-4 top-[38px] text-on-surface-variant hover:text-primary transition-colors"
+                  aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                >
+                  {showPass ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="flex gap-3 justify-end mt-2">
             <Button type="button" variant="secondary" onClick={() => navigate(-1)}>Cancelar</Button>
-            <Button type="submit" loading={isSubmitting}>{isEditing ? 'Guardar cambios' : 'Crear usuario'}</Button>
+            <Button type="submit" loading={isSubmitting} disabled={!isValid || isSubmitting}>
+              {isEditing ? 'Guardar cambios' : 'Crear usuario'}
+            </Button>
           </div>
         </form>
       </div>
+
     </div>
   );
 }

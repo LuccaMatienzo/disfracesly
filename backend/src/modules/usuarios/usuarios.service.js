@@ -13,9 +13,9 @@ const createUsuarioSchema = z.object({
   contrasena: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
   id_rol: z.number().int().positive(),
   persona: z.object({
-    documento: z.string().min(1).max(20),
-    nombre: z.string().min(1).max(100),
-    apellido: z.string().min(1).max(100),
+    documento: z.string().min(7, "El DNI debe tener al menos 7 números").max(8, "El DNI no puede exceder 8 números").regex(/^[0-9]+$/, "El DNI solo puede contener números"),
+    nombre: z.string().min(1, "Requerido").max(100).regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s']+$/, "El nombre contiene caracteres inválidos"),
+    apellido: z.string().min(1, "Requerido").max(100).regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s']+$/, "El apellido contiene caracteres inválidos"),
   }),
 });
 
@@ -25,16 +25,17 @@ const updateUsuarioSchema = z.object({
   id_rol: z.number().int().positive().optional(),
   persona: z
     .object({
-      nombre: z.string().min(1).max(100).optional(),
-      apellido: z.string().min(1).max(100).optional(),
+      documento: z.string().min(7, "El DNI debe tener entre 7 y 8 números").max(8).regex(/^[0-9]+$/, "Solo números").optional(),
+      nombre: z.string().min(1, "Requerido").max(100).regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s']+$/, "El nombre contiene caracteres inválidos").optional(),
+      apellido: z.string().min(1, "Requerido").max(100).regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s']+$/, "El apellido contiene caracteres inválidos").optional(),
     })
-    .strict("No se pueden modificar campos inmutables como el documento")
+    .strict("Campos no permitidos en persona")
     .optional(),
 }).strict("Campos no permitidos en la actualización");
 
 const updateProfileSchema = z.object({
-  nombre:   z.string().trim().min(1, 'El nombre no puede estar vacío').max(100).optional(),
-  apellido: z.string().trim().min(1, 'El apellido no puede estar vacío').max(100).optional(),
+  nombre:   z.string().trim().min(1, 'El nombre no puede estar vacío').max(100).regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s']+$/, "El nombre contiene caracteres inválidos").optional(),
+  apellido: z.string().trim().min(1, 'El apellido no puede estar vacío').max(100).regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s']+$/, "El apellido contiene caracteres inválidos").optional(),
   foto_url: z.string().url().optional().nullable(),
   currentPassword: z.string().optional().or(z.literal('')),
   password: z.string().min(8, 'La nueva contraseña debe tener al menos 8 caracteres').optional().or(z.literal('')),
@@ -61,7 +62,7 @@ async function checkRoleHierarchy(currentUserRoleName, targetRoleId) {
 async function getAllUsuarios(query) {
   const { skip, take, page, limit } = parsePagination(query);
   const search = query.search ?? '';
-  const { include_deleted } = query;
+  const { include_deleted, id_rol } = query;
 
   let where = {
     OR: [
@@ -71,10 +72,12 @@ async function getAllUsuarios(query) {
     ],
   };
 
+  if (id_rol) {
+    where.id_rol = BigInt(id_rol);
+  }
+
   if (!include_deleted) {
     where = withNotDeleted(where);
-    // If we want to check persona.deleted_at too:
-    // but the original code didn't specifically check persona.deleted_at here
   }
 
   const [data, total] = await prisma.$transaction([
@@ -90,7 +93,9 @@ async function getAllUsuarios(query) {
         foto_url: true,
         deleted_at: true,
         persona: true,
-        rol: true,
+        rol: {
+          select: { nombre: true }
+        },
       },
       orderBy: { id_usuario: 'desc' },
     }),
@@ -154,6 +159,7 @@ async function updateUsuario(id, data, reqUser) {
 
   const usuario = await prisma.usuario.findFirst({
     where: withNotDeleted({ id_usuario: BigInt(id) }),
+    include: { persona: true }
   });
   if (!usuario) throw ApiError.notFound('Usuario no encontrado');
 
@@ -161,6 +167,12 @@ async function updateUsuario(id, data, reqUser) {
 
   return prisma.$transaction(async (tx) => {
     if (persona) {
+      if (persona.documento && persona.documento !== usuario.persona.documento) {
+        const existingDoc = await tx.persona.findUnique({ where: { documento: persona.documento } });
+        if (existingDoc && existingDoc.id_persona !== usuario.id_persona) {
+          throw ApiError.conflict('Ya existe una persona con ese documento');
+        }
+      }
       await tx.persona.update({ where: { id_persona: usuario.id_persona }, data: persona });
     }
     const updateData = { ...usuData };

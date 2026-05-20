@@ -7,12 +7,25 @@ import { useToast } from '@/hooks/useToast';
 import { useAuth } from '@/context/AuthContext';
 import Table, { Pagination } from '@/components/ui/Table';
 import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
+import Input, { Select } from '@/components/ui/Input';
 import ActionButtons from '@/components/ui/ActionButtons';
 import ConfirmDeleteModal from '@/components/ui/ConfirmDeleteModal';
 import ToastContainer from '@/components/ui/Toast';
 import Badge from '@/components/ui/Badge';
-import { FiSearch } from 'react-icons/fi';
+import ToggleSwitch from '@/components/ui/ToggleSwitch';
+import { FiSearch, FiEye, FiEyeOff } from 'react-icons/fi';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import Modal from '@/components/ui/Modal';
+
+const resetPasswordSchema = z.object({
+  nuevaContrasena: z.string().min(8, 'Mínimo 8 caracteres'),
+  confirmarContrasena: z.string().min(8, 'Mínimo 8 caracteres'),
+}).refine(data => data.nuevaContrasena === data.confirmarContrasena, {
+  message: "Las contraseñas no coinciden",
+  path: ["confirmarContrasena"],
+});
 
 export default function UsuariosList() {
   const navigate = useNavigate();
@@ -24,12 +37,21 @@ export default function UsuariosList() {
   const { toasts, success, error, remove } = useToast();
 
   const [deleteTarget, setDeleteTarget] = useState(null); // { id, nombre }
+  const [roleFilter, setRoleFilter] = useState('');
+  const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [resetTarget, setResetTarget] = useState(null);
+
+  // ─── Query Roles ──────────────────────────────────────────────────────────
+  const { data: roles = [] } = useQuery({
+    queryKey: ['roles'],
+    queryFn: () => api.get('/usuarios/roles').then((r) => r.data),
+  });
 
   // ─── Query ────────────────────────────────────────────────────────────────
   const { data, isLoading } = useQuery({
-    queryKey: ['usuarios', { page, limit, search, includeDeleted }],
+    queryKey: ['usuarios', { page, limit, search, includeDeleted, roleFilter }],
     queryFn: () =>
-      api.get('/usuarios', { params: { page, limit, search: search || undefined, include_deleted: includeDeleted } }).then((r) => r.data),
+      api.get('/usuarios', { params: { page, limit, search: search || undefined, include_deleted: includeDeleted, id_rol: roleFilter || undefined } }).then((r) => r.data),
   });
 
   // ─── Mutación: soft-delete ────────────────────────────────────────────────
@@ -94,6 +116,7 @@ export default function UsuariosList() {
         return (
           <ActionButtons
             onEdit={!isDeleted ? () => navigate(`/admin/usuarios/${r.id_usuario}/editar`) : undefined}
+            onPassword={!isDeleted ? () => { setResetTarget(r.id_usuario); setResetModalOpen(true); } : undefined}
             onDelete={!isDeleted ? () => setDeleteTarget({ id: r.id_usuario, nombre: nombreCompleto }) : undefined}
             onRestore={isDeleted ? () => restoreMutation.mutate(r.id_usuario) : undefined}
           />
@@ -125,29 +148,38 @@ export default function UsuariosList() {
       {/* Buscador */}
       <div className="bg-surface-container-lowest rounded-2xl shadow-card p-3 md:p-5">
         <div className="flex flex-col md:flex-row gap-3 md:gap-4 items-center">
-          <div className="flex-1 w-full">
-            <Input
-              placeholder="Buscar por nombre, apellido o correo…"
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); reset(); }}
-            />
+          <div className="flex-1 w-full flex flex-col md:flex-row gap-3">
+            <div className="flex-1">
+              <Input
+                placeholder="Buscar por nombre, apellido o correo…"
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); reset(); }}
+              />
+            </div>
+            <Select
+              value={roleFilter}
+              onChange={(e) => { setRoleFilter(e.target.value); reset(); }}
+              className="w-full md:w-auto"
+            >
+              <option value="">Todos los roles</option>
+              {roles.map(rol => (
+                <option key={rol.id_rol} value={rol.id_rol}>{rol.nombre}</option>
+              ))}
+            </Select>
           </div>
           {user?.rol === 'Superadministrador' && (
-            <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-on-surface-variant min-w-max">
-              <input
-                type="checkbox"
-                className="w-4 h-4 text-primary bg-surface-container-high border-outline-variant/30 rounded focus:ring-primary"
-                checked={includeDeleted}
-                onChange={(e) => { setIncludeDeleted(e.target.checked); reset(); }}
-              />
-              Ver inactivos
-            </label>
+            <ToggleSwitch
+              checked={includeDeleted}
+              onChange={(val) => { setIncludeDeleted(val); reset(); }}
+              label="Ver inactivos"
+              id="toggle-inactivos-usuarios"
+            />
           )}
           <Button
             onClick={() => reset()}
             className="h-[48px] w-full md:w-auto px-6 shrink-0"
           >
-            <FiSearch className="size-5 mr-2" />
+            <span className="material-symbols-outlined text-[20px] mr-2">search</span>
             Buscar
           </Button>
         </div>
@@ -172,6 +204,92 @@ export default function UsuariosList() {
 
       {/* Toasts */}
       <ToastContainer toasts={toasts} onRemove={remove} />
+
+      {/* Modal de Restablecer Contraseña */}
+      {resetTarget && (
+        <ResetPasswordModal 
+          open={resetModalOpen} 
+          onClose={() => { setResetModalOpen(false); setResetTarget(null); }} 
+          userId={resetTarget} 
+        />
+      )}
     </div>
+  );
+}
+
+function ResetPasswordModal({ open, onClose, userId }) {
+  const { success, error } = useToast();
+  const [showP1, setShowP1] = useState(false);
+  const [showP2, setShowP2] = useState(false);
+
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting, isValid } } = useForm({
+    resolver: zodResolver(resetPasswordSchema),
+    mode: 'onChange',
+    defaultValues: { nuevaContrasena: '', confirmarContrasena: '' },
+  });
+
+  const mutation = useMutation({
+    mutationFn: (data) => api.put(`/usuarios/${userId}`, { contrasena: data.nuevaContrasena }),
+    onSuccess: () => {
+      success('Contraseña restablecida correctamente');
+      reset();
+      onClose();
+    },
+    onError: (err) => {
+      error(err?.response?.data?.message || 'Error al restablecer contraseña');
+    }
+  });
+
+  const onSubmit = (data) => {
+    mutation.mutate(data);
+  };
+
+  return (
+    <Modal open={open} onClose={onClose} title="Restablecer Contraseña" 
+      footer={
+        <>
+          <Button type="button" variant="secondary" onClick={onClose}>Cancelar</Button>
+          <Button type="button" onClick={handleSubmit(onSubmit)} loading={isSubmitting} disabled={!isValid || isSubmitting}>
+            Restablecer
+          </Button>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+        <div className="relative">
+          <Input 
+            label="Nueva Contraseña" 
+            type={showP1 ? 'text' : 'password'} 
+            error={errors.nuevaContrasena?.message}
+            autoComplete="new-password"
+            {...register('nuevaContrasena')} 
+          />
+          <button
+            type="button"
+            onClick={() => setShowP1((p) => !p)}
+            className="absolute right-4 top-[38px] text-on-surface-variant hover:text-primary transition-colors"
+          >
+            {showP1 ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+          </button>
+        </div>
+        
+        <div className="relative">
+          <Input 
+            label="Confirmar Nueva Contraseña" 
+            type={showP2 ? 'text' : 'password'} 
+            error={errors.confirmarContrasena?.message}
+            autoComplete="new-password"
+            {...register('confirmarContrasena')} 
+          />
+          <button
+            type="button"
+            onClick={() => setShowP2((p) => !p)}
+            className="absolute right-4 top-[38px] text-on-surface-variant hover:text-primary transition-colors"
+          >
+            {showP2 ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }

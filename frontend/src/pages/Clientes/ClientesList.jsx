@@ -13,6 +13,7 @@ import ConfirmDeleteModal from '@/components/ui/ConfirmDeleteModal';
 import ClienteViewModal from '@/components/ui/ClienteViewModal';
 import ToastContainer from '@/components/ui/Toast';
 import Badge from '@/components/ui/Badge';
+import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import { FiSearch } from 'react-icons/fi';
 
 export default function ClientesList() {
@@ -131,21 +132,18 @@ export default function ClientesList() {
             />
           </div>
           {user?.rol === 'Superadministrador' && (
-            <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-on-surface-variant min-w-max">
-              <input
-                type="checkbox"
-                className="w-4 h-4 text-primary bg-surface-container-high border-outline-variant/30 rounded focus:ring-primary"
-                checked={includeDeleted}
-                onChange={(e) => { setIncludeDeleted(e.target.checked); reset(); }}
-              />
-              Ver inactivos
-            </label>
+            <ToggleSwitch
+              checked={includeDeleted}
+              onChange={(val) => { setIncludeDeleted(val); reset(); }}
+              label="Ver inactivos"
+              id="toggle-inactivos-clientes"
+            />
           )}
           <Button
             onClick={() => reset()}
             className="h-[48px] w-full md:w-auto px-6 shrink-0"
           >
-            <FiSearch className="size-5 mr-2" />
+            <span className="material-symbols-outlined text-[20px] mr-2">search</span>
             Buscar
           </Button>
         </div>

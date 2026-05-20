@@ -18,12 +18,13 @@ const Input = forwardRef(function Input(
       <input
         ref={ref}
         className={[
-          'w-full rounded-lg px-4 py-3',
+          'w-full rounded-lg px-4 h-[48px]',
           'bg-surface-container-high text-on-surface text-body-md',
           'border-0 outline-none',
           'transition-all duration-150',
           'placeholder:text-on-surface-variant/50',
           'focus:ring-2 focus:ring-primary/30 focus:bg-surface-container-lowest',
+          '[&::-ms-reveal]:hidden [&::-webkit-credentials-auto-fill-button]:hidden',
           error ? 'ring-2 ring-error' : '',
           className,
         ].join(' ')}
@@ -54,7 +55,7 @@ export const Select = forwardRef(function Select(
       <select
         ref={ref}
         className={[
-          'w-full rounded-lg px-4 py-3',
+          'w-full rounded-lg px-4 h-[48px]',
           'bg-surface-container-high text-on-surface text-body-md',
           'border-0 outline-none',
           'transition-all duration-150',

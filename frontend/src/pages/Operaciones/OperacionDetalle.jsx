@@ -127,7 +127,7 @@ function EtapaStepper({ etapa, etapas }) {
         const isCancelled = etapa === 'CANCELADO';
 
         return (
-          <div key={step} className="flex flex-col items-center flex-1 relative">
+          <div key={step} className="flex flex-col items-center flex-1 min-w-0 relative">
             {/* Line to next step */}
             {i < etapas.length - 1 && (
               <div className="absolute top-4 left-1/2 w-full px-4">
@@ -155,7 +155,7 @@ function EtapaStepper({ etapa, etapas }) {
             </div>
 
             {/* Text */}
-            <span className={`text-[9px] font-label uppercase tracking-wider mt-1.5 whitespace-nowrap text-center ${
+            <span className={`text-[9px] font-label uppercase tracking-wider mt-1.5 text-center px-1 ${
               isCurrent ? 'text-primary font-bold' : 'text-on-surface-variant'
             }`}>
               {step.replace(/_/g, ' ')}

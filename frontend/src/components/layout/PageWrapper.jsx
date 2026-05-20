@@ -9,10 +9,10 @@ import AccountModal from './AccountModal';
 
 const NAV_ITEMS = [
   { to: '/admin', label: 'Panel General', icon: 'grid_view', end: true, roles: ['Superadministrador', 'Jefe', 'Empleado'] },
-  { to: '/admin/catalogo', label: 'Catálogo', icon: 'apparel', end: false, roles: ['Superadministrador', 'Jefe'] },
   { to: '/admin/operaciones', label: 'Operaciones', icon: 'calendar_today', end: false, roles: ['Superadministrador', 'Jefe', 'Empleado'] },
-  { to: '/admin/clientes', label: 'Clientes', icon: 'people', end: false, roles: ['Superadministrador', 'Jefe'] },
   { to: '/admin/stock', label: 'Stock', icon: 'inventory_2', end: false, roles: ['Superadministrador', 'Jefe'] },
+  { to: '/admin/catalogo', label: 'Catálogo', icon: 'apparel', end: false, roles: ['Superadministrador', 'Jefe'] },
+  { to: '/admin/clientes', label: 'Clientes', icon: 'people', end: false, roles: ['Superadministrador', 'Jefe'] },
   { to: '/admin/usuarios', label: 'Usuarios', icon: 'manage_accounts', end: false, roles: ['Superadministrador'] },
   { to: '/admin/finanzas', label: 'Finanzas', icon: 'query_stats', end: false, roles: ['Superadministrador', 'Jefe'] },
 ];
@@ -113,19 +113,6 @@ export default function PageWrapper() {
             </span>
           </button>
         </div>
-
-        {/* New Rental CTA */}
-        <div className={`px-3 pt-4 pb-2 shrink-0 ${!sidebarOpen && 'flex justify-center'}`}>
-          <button
-            onClick={() => navigate('/admin/operaciones')}
-            className={`editorial-gradient text-white font-headline font-bold text-sm shadow-md hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 rounded-xl ${sidebarOpen ? 'w-full px-4 py-3' : 'size-10 justify-center p-0'
-              }`}
-          >
-            <span className="material-symbols-outlined text-xl">add</span>
-            {sidebarOpen && 'Nueva Operación'}
-          </button>
-        </div>
-
         {/* Nav */}
         <nav className="flex-1 px-2 py-3 overflow-y-auto space-y-0.5">
           {filteredNavItems.map(({ to, label, icon, end }) => (
@@ -134,8 +121,9 @@ export default function PageWrapper() {
               to={to}
               end={end}
               className={({ isActive }) => `
-                relative flex items-center gap-3 px-3 py-3 rounded-xl
+                relative flex items-center ${sidebarOpen ? '' : 'justify-center'} gap-3 px-3 py-3 rounded-xl
                 font-label font-medium transition-all duration-150 group
+                ${sidebarOpen ? 'w-[220px]' : 'w-full'}
                 ${isActive
                   ? 'bg-primary/10 text-primary'
                   : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'

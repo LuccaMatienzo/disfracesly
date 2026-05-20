@@ -58,7 +58,7 @@ export default function ProfileDropdown({ onOpenSettings, onOpenAccount }) {
                 {user?.persona?.nombre} {user?.persona?.apellido}
               </p>
               <p className="text-xs text-tertiary truncate">
-                {user?.email || 'usuario@disfracesly.com'}
+                {user?.correo || 'usuario@disfracesly.com'}
               </p>
             </div>
           </div>

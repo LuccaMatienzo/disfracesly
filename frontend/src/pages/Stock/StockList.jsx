@@ -123,9 +123,9 @@ export default function StockList() {
           </div>
           <Button
             onClick={() => reset()}
-            className="h-[48px] w-full md:w-auto px-6 shrink-0 self-end md:self-auto"
+            className="h-[48px] w-full md:w-auto px-6 shrink-0"
           >
-            <FiSearch className="size-5 mr-2" />
+            <span className="material-symbols-outlined text-[20px] mr-2">search</span>
             Buscar
           </Button>
         </div>

@@ -193,8 +193,8 @@ export default function OperacionesList() {
               <option value="CANCELADO">Cancelado</option>
             </Select>
           </div>
-          <Button onClick={handleSearch} className="h-[48px] w-full md:w-auto shrink-0 self-end md:self-auto">
-            <span className="material-symbols-outlined mr-2">search</span>
+          <Button onClick={handleSearch} className="h-[48px] w-full md:w-auto px-6 shrink-0">
+            <span className="material-symbols-outlined text-[20px] mr-2">search</span>
             Buscar
           </Button>
         </div>

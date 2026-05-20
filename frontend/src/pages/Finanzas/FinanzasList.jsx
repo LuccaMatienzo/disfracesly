@@ -5,7 +5,7 @@ import api from '@/api/axios.instance';
 import { usePagination } from '@/hooks/usePagination';
 import Table, { Pagination } from '@/components/ui/Table';
 import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
+import Input, { Select } from '@/components/ui/Input';
 import ActionButtons from '@/components/ui/ActionButtons';
 import Badge from '@/components/ui/Badge';
 import { FiSearch } from 'react-icons/fi';
@@ -180,36 +180,34 @@ export default function FinanzasList() {
           </div>
           
           <div className="w-full md:w-1/4 xl:w-1/5">
-            <select
+            <Select
               value={filtroFlujo}
               onChange={(e) => { setFiltroFlujo(e.target.value); reset(); }}
-              className="w-full h-12 bg-surface-container-low border-0 text-on-surface rounded-xl px-4 focus:ring-2 focus:ring-primary focus:outline-none transition-shadow text-sm cursor-pointer"
             >
               <option value="">Todos los Flujos</option>
               <option value="ingreso">Ingresos</option>
               <option value="egreso">Egresos</option>
-            </select>
+            </Select>
           </div>
 
           <div className="w-full md:w-1/4 xl:w-1/5">
-            <select
+            <Select
               value={filtroMetodo}
               onChange={(e) => { setFiltroMetodo(e.target.value); reset(); }}
-              className="w-full h-12 bg-surface-container-low border-0 text-on-surface rounded-xl px-4 focus:ring-2 focus:ring-primary focus:outline-none transition-shadow text-sm cursor-pointer"
             >
               <option value="">Todos los Métodos</option>
               <option value="EFECTIVO">Efectivo</option>
               <option value="TRANSFERENCIA">Transferencia</option>
-            </select>
+            </Select>
           </div>
 
           <div className="w-full md:w-auto md:ml-auto">
             <Button
               onClick={() => reset()}
-              className="h-12 w-full px-6 shrink-0"
+              className="h-[48px] w-full px-6 shrink-0"
             >
-              <FiSearch className="size-5 mr-2" />
-              Actualizar
+              <span className="material-symbols-outlined text-[20px] mr-2">search</span>
+              Buscar
             </Button>
           </div>
         </div>

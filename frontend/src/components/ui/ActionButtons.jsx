@@ -8,7 +8,7 @@
  *  - size     : 'sm' | 'md' (default 'sm')
  */
 
-import { FiEye, FiEdit2, FiTrash2, FiArrowRight, FiRotateCcw } from 'react-icons/fi';
+import { FiEye, FiEdit2, FiTrash2, FiArrowRight, FiRotateCcw, FiKey } from 'react-icons/fi';
 
 const baseBtn =
   'inline-flex items-center justify-center rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 disabled:opacity-40 disabled:pointer-events-none min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0';
@@ -18,7 +18,7 @@ const sizeMap = {
   md: 'size-11 md:w-9 md:h-9 text-xl md:text-lg',
 };
 
-export default function ActionButtons({ onView, onEdit, onDelete, onDetail, onRestore, size = 'sm' }) {
+export default function ActionButtons({ onView, onEdit, onDelete, onDetail, onPassword, onRestore, size = 'sm' }) {
   const sz = sizeMap[size] ?? sizeMap.sm;
 
   return (
@@ -53,6 +53,17 @@ export default function ActionButtons({ onView, onEdit, onDelete, onDetail, onRe
           className={`${baseBtn} ${sz} text-on-surface-variant hover:bg-secondary/10 hover:text-secondary`}
         >
           <FiEdit2 />
+        </button>
+      )}
+
+      {onPassword && (
+        <button
+          type="button"
+          onClick={onPassword}
+          title="Restablecer Contraseña"
+          className={`${baseBtn} ${sz} text-on-surface-variant hover:bg-tertiary/10 hover:text-tertiary`}
+        >
+          <FiKey />
         </button>
       )}
 
