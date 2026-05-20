@@ -2,14 +2,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useOperacion, useAvanzarEtapaAlquiler, useAvanzarEtapaVenta, useCreateInteraccion, useUpdateOperacionMontos, useUpdateOperacionPiezas } from '@/hooks/useOperaciones';
 import { usePagos } from '@/hooks/usePagos';
-import { useToast } from '@/hooks/useToast';
+import { useFeedback } from '@/context/FeedbackContext';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import ActionButtons from '@/components/ui/ActionButtons';
 import ConfirmDeleteModal from '@/components/ui/ConfirmDeleteModal';
 import PagoFormModal from '@/components/ui/PagoFormModal';
-import ToastContainer from '@/components/ui/Toast';
 import InteraccionModal from '@/components/ui/InteraccionModal';
 import MontosModal from '@/components/ui/MontosModal';
 import PiezasModal from '@/components/ui/PiezasModal';
@@ -174,7 +173,7 @@ export default function OperacionDetalle() {
   const navigate = useNavigate();
   const { data: op, isLoading, isError } = useOperacion(id);
   const { createPago, updatePago, deletePago } = usePagos(id);
-  const { toasts, success, error, remove } = useToast();
+  const { showSuccess, showError } = useFeedback();
 
   const avanzarAlquiler = useAvanzarEtapaAlquiler();
   const avanzarVenta = useAvanzarEtapaVenta();
@@ -282,10 +281,10 @@ export default function OperacionDetalle() {
       }
       
       const textoAccion = payload.tipo === 'RETIRO' ? (isVenta ? 'la entrega' : 'el retiro') : 'la devolución';
-      success(`Se ha registrado ${textoAccion} correctamente`);
+      showSuccess(`Se ha registrado ${textoAccion} correctamente`);
       setInteraccionModal({ open: false, tipo: null });
     } catch (err) {
-      error(err?.response?.data?.message ?? `Error al registrar la acción`);
+      showError(err?.response?.data?.message ?? `Error al registrar la acción`);
     }
   };
 
@@ -308,44 +307,44 @@ export default function OperacionDetalle() {
     try {
       if (pagoModal.data) {
         await updatePago.mutateAsync({ id: pagoModal.data.id_pago_operacion, ...data });
-        success('Pago actualizado correctamente');
+        showSuccess('Pago actualizado correctamente');
       } else {
         await createPago.mutateAsync(data);
-        success('Pago registrado correctamente');
+        showSuccess('Pago registrado correctamente');
       }
       setPagoModal({ open: false, data: null });
     } catch (err) {
-      error(err?.response?.data?.message ?? 'Error al procesar el pago');
+      showError(err?.response?.data?.message ?? 'Error al procesar el pago');
     }
   };
 
   const handlePagoDelete = async () => {
     try {
       await deletePago.mutateAsync(pagoDeleteTarget.id_pago_operacion);
-      success('Pago eliminado correctamente');
+      showSuccess('Pago eliminado correctamente');
       setPagoDeleteTarget(null);
     } catch (err) {
-      error(err?.response?.data?.message ?? 'Error al eliminar el pago');
+      showError(err?.response?.data?.message ?? 'Error al eliminar el pago');
     }
   };
 
   const handleUpdateMontos = async (data) => {
     try {
       await updateMontos.mutateAsync(data);
-      success('Montos actualizados correctamente');
+      showSuccess('Montos actualizados correctamente');
       setMontosModalOpen(false);
     } catch (err) {
-      error(err?.response?.data?.message ?? 'Error al actualizar los montos');
+      showError(err?.response?.data?.message ?? 'Error al actualizar los montos');
     }
   };
 
   const handleUpdatePiezas = async (data) => {
     try {
       await updatePiezas.mutateAsync(data);
-      success('Piezas actualizadas correctamente');
+      showSuccess('Piezas actualizadas correctamente');
       setPiezasModalOpen(false);
     } catch (err) {
-      error(err?.response?.data?.message ?? 'Error al actualizar las piezas');
+      showError(err?.response?.data?.message ?? 'Error al actualizar las piezas');
     }
   };
 
@@ -797,9 +796,6 @@ export default function OperacionDetalle() {
         currentDetalles={op.detalles}
         loading={updatePiezas.isPending}
       />
-
-      {/* Toasts */}
-      <ToastContainer toasts={toasts} onRemove={remove} />
     </div>
   );
 }

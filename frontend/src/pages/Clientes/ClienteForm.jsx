@@ -5,11 +5,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import { useFeedback } from '@/context/FeedbackContext';
 
 export default function ClienteForm() {
   const { id } = useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { showSuccess, showError } = useFeedback();
   const isEditing = !!id;
 
   const { data: cliente } = useQuery({
@@ -25,8 +27,13 @@ export default function ClienteForm() {
         : api.post('/clientes', data).then((r) => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['clientes'] });
-      navigate('/admin/clientes');
+      showSuccess(isEditing ? 'Cliente actualizado con éxito' : 'Cliente creado con éxito', () => {
+        navigate('/admin/clientes');
+      });
     },
+    onError: (err) => {
+      showError(err?.response?.data?.message || 'Error al guardar el cliente');
+    }
   });
 
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({

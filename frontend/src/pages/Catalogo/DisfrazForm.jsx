@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import { useFeedback } from '@/context/FeedbackContext';
 
 /* ── Chip individual de pieza ──────────────────────────────────────── */
 function PiezaChip({ pieza, isSelected, onToggle }) {
@@ -58,6 +59,7 @@ export default function DisfrazForm() {
   const { id } = useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { showSuccess, showError } = useFeedback();
   const isEditing = !!id;
 
   // Si quisiéramos modo editar después, esto ya queda preparado
@@ -79,8 +81,13 @@ export default function DisfrazForm() {
         : api.post('/catalogo/disfraces', data).then((r) => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['disfraces'] });
-      navigate('/admin/catalogo');
+      showSuccess(isEditing ? 'Disfraz actualizado con éxito' : 'Disfraz creado con éxito', () => {
+        navigate('/admin/catalogo');
+      });
     },
+    onError: (err) => {
+      showError(err?.response?.data?.message || 'Error al guardar el disfraz');
+    }
   });
 
   const { register, handleSubmit, reset, setValue, getValues, control, formState: { isSubmitting } } = useForm({

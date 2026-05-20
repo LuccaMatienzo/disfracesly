@@ -6,7 +6,7 @@ import api from '@/api/axios.instance';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Modal from '@/components/ui/Modal';
-import { useToast } from '@/hooks/useToast';
+import { useFeedback } from '@/context/FeedbackContext';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
@@ -46,7 +46,7 @@ export default function UsuarioForm() {
   const { id } = useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const { success, error } = useToast();
+  const { showSuccess, showError } = useFeedback();
   const isEditing = !!id;
 
   const [showPass, setShowPass] = useState(false);
@@ -69,11 +69,12 @@ export default function UsuarioForm() {
         : api.post('/usuarios', data).then((r) => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['usuarios'] });
-      success(isEditing ? 'Usuario actualizado con éxito' : 'Usuario creado con éxito');
-      navigate('/admin/usuarios');
+      showSuccess(isEditing ? 'Usuario actualizado con éxito' : 'Usuario creado con éxito', () => {
+        navigate('/admin/usuarios');
+      });
     },
     onError: (err) => {
-      error(err?.response?.data?.message || 'Error al guardar el usuario');
+      showError(err?.response?.data?.message || 'Error al guardar el usuario');
     }
   });
 

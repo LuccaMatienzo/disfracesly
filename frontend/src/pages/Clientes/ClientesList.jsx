@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
 import { usePagination } from '@/hooks/usePagination';
-import { useToast } from '@/hooks/useToast';
+import { useFeedback } from '@/context/FeedbackContext';
 import { useAuth } from '@/context/AuthContext';
 import Table, { Pagination } from '@/components/ui/Table';
 import Button from '@/components/ui/Button';
@@ -11,7 +11,6 @@ import Input from '@/components/ui/Input';
 import ActionButtons from '@/components/ui/ActionButtons';
 import ConfirmDeleteModal from '@/components/ui/ConfirmDeleteModal';
 import ClienteViewModal from '@/components/ui/ClienteViewModal';
-import ToastContainer from '@/components/ui/Toast';
 import Badge from '@/components/ui/Badge';
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import { FiSearch } from 'react-icons/fi';
@@ -23,7 +22,7 @@ export default function ClientesList() {
   const { page, limit, goToPage, reset } = usePagination();
   const [search, setSearch] = useState('');
   const [includeDeleted, setIncludeDeleted] = useState(false);
-  const { toasts, success, error, remove } = useToast();
+  const { showSuccess, showError } = useFeedback();
 
   const [deleteTarget, setDeleteTarget] = useState(null); // { id, nombre }
   const [viewId, setViewId] = useState(null);             // id de cliente en modal Ver
@@ -40,11 +39,11 @@ export default function ClientesList() {
     mutationFn: (id) => api.delete(`/clientes/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clientes'] });
-      success('Cliente eliminado correctamente');
+      showSuccess('Cliente eliminado correctamente');
       setDeleteTarget(null);
     },
     onError: (err) => {
-      error(err?.response?.data?.message ?? 'Error al eliminar el cliente');
+      showError(err?.response?.data?.message ?? 'Error al eliminar el cliente');
       setDeleteTarget(null);
     },
   });
@@ -54,10 +53,10 @@ export default function ClientesList() {
     mutationFn: (id) => api.patch(`/clientes/${id}/restore`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clientes'] });
-      success('Cliente restaurado correctamente');
+      showSuccess('Cliente restaurado correctamente');
     },
     onError: (err) => {
-      error(err?.response?.data?.message ?? 'Error al restaurar el cliente');
+      showError(err?.response?.data?.message ?? 'Error al restaurar el cliente');
     },
   });
 
@@ -172,8 +171,7 @@ export default function ClientesList() {
         loading={deleteMutation.isPending}
       />
 
-      {/* Toasts */}
-      <ToastContainer toasts={toasts} onRemove={remove} />
+
     </div>
   );
 }

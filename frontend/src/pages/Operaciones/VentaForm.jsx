@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
 import { useCreateVenta } from '@/hooks/useOperaciones';
 import { useToast } from '@/hooks/useToast';
+import { useFeedback } from '@/context/FeedbackContext';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { Select } from '@/components/ui/Input';
@@ -17,65 +18,12 @@ const handlePositiveNumbersOnly = (e) => {
   }
 };
 
-/* ─── Modal de éxito ────────────────────────────────────────────────── */
-function SuccessModal({ open }) {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/30 backdrop-blur-sm animate-fade-in">
-      <div className="glass border border-outline-variant/20 rounded-2xl shadow-float w-full max-w-sm p-8 flex flex-col items-center gap-5 animate-scale-in">
-        {/* Círculo animado con tilde */}
-        <div className="relative flex items-center justify-center">
-          <svg className="size-24" viewBox="0 0 96 96" fill="none">
-            {/* Círculo exterior */}
-            <circle
-              cx="48" cy="48" r="44"
-              stroke="var(--color-primary)"
-              strokeWidth="4"
-              strokeLinecap="round"
-              strokeDasharray="276"
-              strokeDashoffset="0"
-              style={{ animation: 'dash-circle 0.6s ease-out forwards' }}
-            />
-            {/* Tilde */}
-            <path
-              d="M28 50 L42 64 L68 36"
-              stroke="var(--color-primary)"
-              strokeWidth="5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeDasharray="60"
-              strokeDashoffset="60"
-              style={{ animation: 'dash-check 0.4s 0.5s ease-out forwards' }}
-            />
-          </svg>
-        </div>
-        <div className="text-center">
-          <h2 className="font-display text-headline-md font-semibold text-on-surface">¡Venta creada!</h2>
-          <p className="text-body-md text-on-surface-variant mt-1">La operación se registró correctamente.</p>
-        </div>
-        <div className="text-label-lg text-on-surface-variant animate-pulse">Redirigiendo…</div>
-      </div>
-
-      <style>{`
-        @keyframes dash-circle {
-          from { stroke-dashoffset: 276; }
-          to   { stroke-dashoffset: 0; }
-        }
-        @keyframes dash-check {
-          from { stroke-dashoffset: 60; }
-          to   { stroke-dashoffset: 0; }
-        }
-      `}</style>
-    </div>
-  );
-}
-
 export default function VentaForm() {
   const navigate = useNavigate();
   const createVenta = useCreateVenta();
   const toast = useToast();
+  const { showSuccess, showError } = useFeedback();
   const [stockSearch, setStockSearch] = useState('');
-  const [showSuccess, setShowSuccess] = useState(false);
 
   const { data: clientesData } = useQuery({
     queryKey: ['clientes-all'],
@@ -122,11 +70,12 @@ export default function VentaForm() {
       });
 
       // Mostrar modal de éxito y redirigir
-      setShowSuccess(true);
-      setTimeout(() => navigate('/admin/operaciones'), 1800);
+      showSuccess('La operación se registró correctamente.', () => {
+        navigate('/admin/operaciones');
+      });
     } catch (err) {
       const msg = err?.response?.data?.details?.[0]?.message ?? err?.response?.data?.error ?? 'Ocurrió un error al crear la venta.';
-      toast.error(msg, 'No se pudo crear la venta');
+      showError(msg);
     }
   };
 
@@ -135,7 +84,6 @@ export default function VentaForm() {
 
   return (
     <>
-      <SuccessModal open={showSuccess} />
       <ToastContainer toasts={toast.toasts} onRemove={toast.remove} />
 
       <div className="max-w-3xl">

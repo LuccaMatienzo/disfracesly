@@ -3,14 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
 import { usePagination } from '@/hooks/usePagination';
-import { useToast } from '@/hooks/useToast';
+import { useFeedback } from '@/context/FeedbackContext';
 import { useAuth } from '@/context/AuthContext';
 import Table, { Pagination } from '@/components/ui/Table';
 import Button from '@/components/ui/Button';
 import Input, { Select } from '@/components/ui/Input';
 import ActionButtons from '@/components/ui/ActionButtons';
 import ConfirmDeleteModal from '@/components/ui/ConfirmDeleteModal';
-import ToastContainer from '@/components/ui/Toast';
 import Badge from '@/components/ui/Badge';
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import { FiSearch, FiEye, FiEyeOff } from 'react-icons/fi';
@@ -34,7 +33,7 @@ export default function UsuariosList() {
   const { page, limit, goToPage, reset } = usePagination();
   const [search, setSearch] = useState('');
   const [includeDeleted, setIncludeDeleted] = useState(false);
-  const { toasts, success, error, remove } = useToast();
+  const { showSuccess, showError } = useFeedback();
 
   const [deleteTarget, setDeleteTarget] = useState(null); // { id, nombre }
   const [roleFilter, setRoleFilter] = useState('');
@@ -59,11 +58,11 @@ export default function UsuariosList() {
     mutationFn: (id) => api.delete(`/usuarios/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['usuarios'] });
-      success('Usuario eliminado correctamente');
+      showSuccess('Usuario eliminado correctamente');
       setDeleteTarget(null);
     },
     onError: (err) => {
-      error(err?.response?.data?.message ?? 'Error al eliminar el usuario');
+      showError(err?.response?.data?.message ?? 'Error al eliminar el usuario');
       setDeleteTarget(null);
     },
   });
@@ -73,10 +72,10 @@ export default function UsuariosList() {
     mutationFn: (id) => api.patch(`/usuarios/${id}/restore`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['usuarios'] });
-      success('Usuario restaurado correctamente');
+      showSuccess('Usuario restaurado correctamente');
     },
     onError: (err) => {
-      error(err?.response?.data?.message ?? 'Error al restaurar el usuario');
+      showError(err?.response?.data?.message ?? 'Error al restaurar el usuario');
     },
   });
 
@@ -202,8 +201,7 @@ export default function UsuariosList() {
         loading={deleteMutation.isPending}
       />
 
-      {/* Toasts */}
-      <ToastContainer toasts={toasts} onRemove={remove} />
+
 
       {/* Modal de Restablecer Contraseña */}
       {resetTarget && (
@@ -218,7 +216,7 @@ export default function UsuariosList() {
 }
 
 function ResetPasswordModal({ open, onClose, userId }) {
-  const { success, error } = useToast();
+  const { showSuccess, showError } = useFeedback();
   const [showP1, setShowP1] = useState(false);
   const [showP2, setShowP2] = useState(false);
 
@@ -231,12 +229,12 @@ function ResetPasswordModal({ open, onClose, userId }) {
   const mutation = useMutation({
     mutationFn: (data) => api.put(`/usuarios/${userId}`, { contrasena: data.nuevaContrasena }),
     onSuccess: () => {
-      success('Contraseña restablecida correctamente');
+      showSuccess('Contraseña restablecida correctamente');
       reset();
       onClose();
     },
     onError: (err) => {
-      error(err?.response?.data?.message || 'Error al restablecer contraseña');
+      showError(err?.response?.data?.message || 'Error al restablecer contraseña');
     }
   });
 

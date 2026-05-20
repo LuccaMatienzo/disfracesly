@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
 import { usePagination } from '@/hooks/usePagination';
-import { useToast } from '@/hooks/useToast';
+import { useFeedback } from '@/context/FeedbackContext';
 import Table, { Pagination } from '@/components/ui/Table';
 import Button from '@/components/ui/Button';
 import Input, { Select } from '@/components/ui/Input';
@@ -11,7 +11,6 @@ import ActionButtons from '@/components/ui/ActionButtons';
 import ConfirmDeleteModal from '@/components/ui/ConfirmDeleteModal';
 import PiezaViewModal from '@/components/ui/PiezaViewModal';
 import DisfrazViewModal from '@/components/ui/DisfrazViewModal';
-import ToastContainer from '@/components/ui/Toast';
 import { FiSearch } from 'react-icons/fi';
 
 
@@ -25,7 +24,7 @@ export default function CatalogoList() {
   const [tempCategoria, setTempCategoria] = useState('');
   
   const [tab, setTab] = useState('piezas');
-  const { toasts, success, error, remove } = useToast();
+  const { showSuccess, showError } = useFeedback();
 
   const [deleteTarget, setDeleteTarget] = useState(null); // { id, nombre, tipo }
   const [viewId, setViewId] = useState(null);             // id de pieza en modal Ver
@@ -57,11 +56,11 @@ export default function CatalogoList() {
     mutationFn: (id) => api.delete(`/catalogo/piezas/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['piezas'] });
-      success('Pieza eliminada correctamente');
+      showSuccess('Pieza eliminada correctamente');
       setDeleteTarget(null);
     },
     onError: (err) => {
-      error(err?.response?.data?.message ?? 'Error al eliminar la pieza');
+      showError(err?.response?.data?.message ?? 'Error al eliminar la pieza');
       setDeleteTarget(null);
     },
   });
@@ -70,11 +69,11 @@ export default function CatalogoList() {
     mutationFn: (id) => api.delete(`/catalogo/disfraces/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['disfraces'] });
-      success('Disfraz eliminado correctamente');
+      showSuccess('Disfraz eliminado correctamente');
       setDeleteTarget(null);
     },
     onError: (err) => {
-      error(err?.response?.data?.message ?? 'Error al eliminar el disfraz');
+      showError(err?.response?.data?.message ?? 'Error al eliminar el disfraz');
       setDeleteTarget(null);
     },
   });
@@ -292,8 +291,6 @@ export default function CatalogoList() {
         loading={activeMutation.isPending}
       />
 
-      {/* Toasts */}
-      <ToastContainer toasts={toasts} onRemove={remove} />
-    </div>
+
   );
 }

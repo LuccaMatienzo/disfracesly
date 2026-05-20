@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
 import { useOperaciones } from '@/hooks/useOperaciones';
 import { usePagination } from '@/hooks/usePagination';
-import { useToast } from '@/hooks/useToast';
+import { useFeedback } from '@/context/FeedbackContext';
 import Table, { Pagination } from '@/components/ui/Table';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
@@ -12,7 +12,6 @@ import Input, { Select } from '@/components/ui/Input';
 import ActionButtons from '@/components/ui/ActionButtons';
 import ConfirmDeleteModal from '@/components/ui/ConfirmDeleteModal';
 import OperacionViewModal from '@/components/ui/OperacionViewModal';
-import ToastContainer from '@/components/ui/Toast';
 
 export default function OperacionesList() {
   const queryClient = useQueryClient();
@@ -24,7 +23,7 @@ export default function OperacionesList() {
 
   const [appliedFilters, setAppliedFilters] = useState({ search: '', tipo: 'alquiler', etapa: '' });
 
-  const { toasts, success, error, remove } = useToast();
+  const { showSuccess, showError } = useFeedback();
 
   const [deleteTarget, setDeleteTarget] = useState(null); // { id, label }
   const [viewId, setViewId] = useState(null);             // id de operación en modal Ver
@@ -48,11 +47,11 @@ export default function OperacionesList() {
     mutationFn: (id) => api.delete(`/operaciones/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['operaciones'] });
-      success('Operación eliminada correctamente');
+      showSuccess('Operación eliminada correctamente');
       setDeleteTarget(null);
     },
     onError: (err) => {
-      error(err?.response?.data?.message ?? 'Error al eliminar la operación');
+      showError(err?.response?.data?.message ?? 'Error al eliminar la operación');
       setDeleteTarget(null);
     },
   });
@@ -224,8 +223,7 @@ export default function OperacionesList() {
         loading={deleteMutation.isPending}
       />
 
-      {/* Toasts */}
-      <ToastContainer toasts={toasts} onRemove={remove} />
+
     </div>
   );
 }

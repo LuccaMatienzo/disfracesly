@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
 import { useStock } from '@/hooks/useStock';
 import { usePagination } from '@/hooks/usePagination';
-import { useToast } from '@/hooks/useToast';
+import { useFeedback } from '@/context/FeedbackContext';
 import Table, { Pagination } from '@/components/ui/Table';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
@@ -13,7 +13,6 @@ import { Select } from '@/components/ui/Input';
 import ActionButtons from '@/components/ui/ActionButtons';
 import ConfirmDeleteModal from '@/components/ui/ConfirmDeleteModal';
 import StockViewModal from '@/components/ui/StockViewModal';
-import ToastContainer from '@/components/ui/Toast';
 import { FiSearch } from 'react-icons/fi';
 
 const ESTADOS = ['', 'DISPONIBLE', 'RESERVADA', 'ALQUILADA', 'VENDIDA', 'FUERA_DE_SERVICIO'];
@@ -24,7 +23,7 @@ export default function StockList() {
   const { page, limit, goToPage, reset } = usePagination();
   const [search, setSearch] = useState('');
   const [estado, setEstado] = useState('');
-  const { toasts, success, error, remove } = useToast();
+  const { showSuccess, showError } = useFeedback();
 
   const [deleteTarget, setDeleteTarget] = useState(null); // { id, nombre }
   const [viewId, setViewId] = useState(null);             // id de stock en modal Ver
@@ -42,11 +41,11 @@ export default function StockList() {
     mutationFn: (id) => api.delete(`/stock/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stock'] });
-      success('Pieza de stock eliminada correctamente');
+      showSuccess('Pieza de stock eliminada correctamente');
       setDeleteTarget(null);
     },
     onError: (err) => {
-      error(err?.response?.data?.message ?? 'Error al eliminar la pieza de stock');
+      showError(err?.response?.data?.message ?? 'Error al eliminar la pieza de stock');
       setDeleteTarget(null);
     },
   });
@@ -160,8 +159,7 @@ export default function StockList() {
         loading={deleteMutation.isPending}
       />
 
-      {/* Toasts */}
-      <ToastContainer toasts={toasts} onRemove={remove} />
+
     </div>
   );
 }

@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { FiX, FiUser, FiLock } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext';
-import { useToast } from '@/hooks/useToast';
+import { useFeedback } from '@/context/FeedbackContext';
 import api from '@/api/axios.instance';
 
 export default function AccountModal({ isOpen, onClose }) {
   const { user, updateLocalUser } = useAuth();
-  const toast = useToast();
+  const { showSuccess, showError } = useFeedback();
   
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
@@ -16,7 +16,6 @@ export default function AccountModal({ isOpen, onClose }) {
   const [isLoading, setIsLoading] = useState(false);
   
   const [showConfirm, setShowConfirm] = useState(false);
-  const [statusModal, setStatusModal] = useState({ show: false, type: '', message: '' });
 
   useEffect(() => {
     if (isOpen) {
@@ -26,7 +25,6 @@ export default function AccountModal({ isOpen, onClose }) {
       setPassword('');
       setConfirmPassword('');
       setShowConfirm(false);
-      setStatusModal({ show: false, type: '', message: '' });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
@@ -54,19 +52,19 @@ export default function AccountModal({ isOpen, onClose }) {
     const trimmedApellido = apellido.trim();
 
     if (!trimmedNombre || !trimmedApellido) {
-      return toast.error('El nombre y apellido no pueden estar vacíos');
+      return showError('El nombre y apellido no pueden estar vacíos');
     }
 
     // Si el usuario intentó escribir algo en cualquier campo de contraseña, validarlos
     if (password || confirmPassword || currentPassword) {
       if (!currentPassword) {
-        return toast.error('Debe ingresar su contraseña actual');
+        return showError('Debe ingresar su contraseña actual');
       }
       if (password !== confirmPassword) {
-        return toast.error('Las contraseñas no coinciden');
+        return showError('Las contraseñas no coinciden');
       }
       if (password.length < 8) {
-        return toast.error('La contraseña debe tener al menos 8 caracteres');
+        return showError('La contraseña debe tener al menos 8 caracteres');
       }
     }
     
@@ -91,10 +89,10 @@ export default function AccountModal({ isOpen, onClose }) {
       
       if (updateLocalUser) updateLocalUser(data);
       setShowConfirm(false);
-      setStatusModal({ show: true, type: 'success', message: 'Perfil actualizado correctamente' });
+      showSuccess('Perfil actualizado correctamente', onClose);
     } catch (error) {
       setShowConfirm(false);
-      setStatusModal({ show: true, type: 'error', message: error.response?.data?.error || 'Error al actualizar el perfil' });
+      showError(error.response?.data?.error || 'Error al actualizar el perfil');
     } finally {
       setIsLoading(false);
     }
@@ -285,45 +283,6 @@ export default function AccountModal({ isOpen, onClose }) {
         </div>
       )}
 
-      {/* Status Modal */}
-      {statusModal.show && (
-        <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: 80 }}>
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => {
-            setStatusModal({ show: false, type: '', message: '' });
-            if (statusModal.type === 'success') onClose();
-          }} />
-          <div className="relative bg-card-panel border border-outline-variant/20 rounded-2xl shadow-2xl w-full max-w-sm p-6 animate-fade-in text-center flex flex-col items-center">
-            {statusModal.type === 'success' ? (
-              <div className="size-16 rounded-full bg-green-500/10 flex items-center justify-center text-green-500 mb-4">
-                <svg className="size-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-            ) : (
-              <div className="size-16 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 mb-4">
-                <svg className="size-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-            )}
-            <h3 className="text-lg font-headline font-semibold text-on-surface mb-2">
-              {statusModal.type === 'success' ? '¡Éxito!' : 'Error'}
-            </h3>
-            <p className="text-sm text-on-surface-variant mb-6">
-              {statusModal.message}
-            </p>
-            <button 
-              onClick={() => {
-                setStatusModal({ show: false, type: '', message: '' });
-                if (statusModal.type === 'success') onClose();
-              }}
-              className="w-full px-4 py-2 rounded-xl font-medium text-white bg-primary hover:bg-primary/90 shadow-sm transition-colors"
-            >
-              Aceptar
-            </button>
-          </div>
-        </div>
-      )}
     </>
   );
 }

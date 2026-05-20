@@ -6,6 +6,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
+import { FeedbackProvider } from './context/FeedbackContext';
 import './styles/globals.css';
 
 /**
@@ -37,14 +38,17 @@ const queryClient = new QueryClient({
  *  2. BrowserRouter          – Habilita la navegación basada en History API.
  *  3. QueryClientProvider    – Provee el cliente de caché de React Query.
  *  4. AuthProvider           – Gestiona el estado global de autenticación.
- *  5. ReactQueryDevtools     – Panel de inspección de queries (solo en DEV).
+ *  5. FeedbackProvider       – Gestiona los modales globales de retroalimentación.
+ *  6. ReactQueryDevtools     – Panel de inspección de queries (solo en DEV).
  */
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <App />
+          <FeedbackProvider>
+            <App />
+          </FeedbackProvider>
         </AuthProvider>
         {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
       </QueryClientProvider>

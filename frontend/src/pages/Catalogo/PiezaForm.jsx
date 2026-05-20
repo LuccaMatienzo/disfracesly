@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import { useFeedback } from '@/context/FeedbackContext';
 
 /* ── Chip individual de categoría ──────────────────────────────────────── */
 function CatChip({ cat, isSelected, onToggle }) {
@@ -58,6 +59,7 @@ export default function PiezaForm() {
   const { id } = useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { showSuccess, showError } = useFeedback();
   const isEditing = !!id;
 
   const { data: pieza } = useQuery({
@@ -78,8 +80,13 @@ export default function PiezaForm() {
         : api.post('/catalogo/piezas', data).then((r) => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['piezas'] });
-      navigate('/admin/catalogo');
+      showSuccess(isEditing ? 'Pieza actualizada con éxito' : 'Pieza creada con éxito', () => {
+        navigate('/admin/catalogo');
+      });
     },
+    onError: (err) => {
+      showError(err?.response?.data?.message || 'Error al guardar la pieza');
+    }
   });
 
   const { register, handleSubmit, reset, setValue, getValues, control, formState: { isSubmitting } } = useForm({
