@@ -87,19 +87,19 @@ export default function UsuariosList() {
       key: 'persona',
       label: 'Nombre',
       render: (_, r) => (
-        <div className="flex items-center gap-2">
+        <div className={`flex items-center gap-2 ${r.deleted_at ? 'text-coral font-medium' : ''}`}>
           <span>{`${r.persona?.nombre ?? ''} ${r.persona?.apellido ?? ''}`.trim()}</span>
-          {r.deleted_at && <Badge variant="error">Inactivo</Badge>}
         </div>
       ),
     },
-    { key: 'correo', label: 'Correo' },
-    { key: 'documento', label: 'Documento', render: (_, r) => r.persona?.documento ?? '—' },
+    { key: 'correo', label: 'Correo', render: (_, r) => <span className={r.deleted_at ? 'text-coral' : ''}>{r.correo}</span> },
+    { key: 'documento', label: 'Documento', render: (_, r) => <span className={r.deleted_at ? 'text-coral' : ''}>{r.persona?.documento ?? '—'}</span> },
     {
       key: 'rol',
       label: 'Rol',
       render: (_, r) => {
         const rol = r.rol?.nombre;
+        if (r.deleted_at) return <span className="text-coral font-medium uppercase text-xs tracking-wider">{rol}</span>;
         if (rol === 'Superadministrador') return <Badge variant="primary">{rol}</Badge>;
         if (rol === 'Jefe') return <Badge variant="secondary">{rol}</Badge>;
         return <Badge variant="neutral">{rol}</Badge>;
@@ -207,10 +207,10 @@ export default function UsuariosList() {
 
       {/* Modal de Restablecer Contraseña */}
       {resetTarget && (
-        <ResetPasswordModal 
-          open={resetModalOpen} 
-          onClose={() => { setResetModalOpen(false); setResetTarget(null); }} 
-          userId={resetTarget} 
+        <ResetPasswordModal
+          open={resetModalOpen}
+          onClose={() => { setResetModalOpen(false); setResetTarget(null); }}
+          userId={resetTarget}
         />
       )}
     </div>
@@ -245,7 +245,7 @@ function ResetPasswordModal({ open, onClose, userId }) {
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Restablecer Contraseña" 
+    <Modal open={open} onClose={onClose} title="Restablecer Contraseña"
       footer={
         <>
           <Button type="button" variant="secondary" onClick={onClose}>Cancelar</Button>
@@ -257,12 +257,12 @@ function ResetPasswordModal({ open, onClose, userId }) {
     >
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         <div className="relative">
-          <Input 
-            label="Nueva Contraseña" 
-            type={showP1 ? 'text' : 'password'} 
+          <Input
+            label="Nueva Contraseña"
+            type={showP1 ? 'text' : 'password'}
             error={errors.nuevaContrasena?.message}
             autoComplete="new-password"
-            {...register('nuevaContrasena')} 
+            {...register('nuevaContrasena')}
           />
           <button
             type="button"
@@ -272,14 +272,14 @@ function ResetPasswordModal({ open, onClose, userId }) {
             {showP1 ? <FiEyeOff size={20} /> : <FiEye size={20} />}
           </button>
         </div>
-        
+
         <div className="relative">
-          <Input 
-            label="Confirmar Nueva Contraseña" 
-            type={showP2 ? 'text' : 'password'} 
+          <Input
+            label="Confirmar Nueva Contraseña"
+            type={showP2 ? 'text' : 'password'}
             error={errors.confirmarContrasena?.message}
             autoComplete="new-password"
-            {...register('confirmarContrasena')} 
+            {...register('confirmarContrasena')}
           />
           <button
             type="button"

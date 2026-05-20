@@ -68,18 +68,17 @@ export default function ClientesList() {
       key: 'persona',
       label: 'Nombre',
       render: (_, r) => (
-        <div className="flex items-center gap-2">
+        <div className={`flex items-center gap-2 ${r.deleted_at ? 'text-coral font-medium' : ''}`}>
           <span>{`${r.persona?.nombre ?? ''} ${r.persona?.apellido ?? ''}`.trim()}</span>
-          {r.deleted_at && <Badge variant="error">Inactivo</Badge>}
         </div>
       ),
     },
-    { key: 'documento', label: 'Documento', render: (_, r) => r.persona?.documento ?? '—' },
-    { key: 'telefono', label: 'Teléfono' },
+    { key: 'documento', label: 'Documento', render: (_, r) => <span className={r.deleted_at ? 'text-coral' : ''}>{r.persona?.documento ?? '—'}</span> },
+    { key: 'telefono', label: 'Teléfono', render: (_, r) => <span className={r.deleted_at ? 'text-coral' : ''}>{r.telefono}</span> },
     {
       key: 'fecha_alta',
       label: 'Alta',
-      render: (v) => new Date(v).toLocaleDateString('es-AR'),
+      render: (v, r) => <span className={r.deleted_at ? 'text-coral' : ''}>{new Date(v).toLocaleDateString('es-AR')}</span>,
     },
     {
       key: 'acciones',

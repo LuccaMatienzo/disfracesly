@@ -34,7 +34,29 @@ const config = {
   TRANSFERENCIA: { label: 'Transferencia', cls: 'bg-secondary-container text-secondary-on-container' },
 };
 
-export default function Badge({ value, className = '' }) {
+const variantClasses = {
+  primary: 'bg-primary-container text-primary-on-container',
+  secondary: 'bg-secondary-container text-secondary-on-container',
+  error: 'bg-error-container text-error-on-container',
+  neutral: 'bg-surface-container text-on-surface-variant',
+};
+
+export default function Badge({ value, variant, children, className = '' }) {
+  if (variant || children) {
+    const cls = variantClasses[variant] || variantClasses.neutral;
+    return (
+      <span
+        className={`
+          inline-flex items-center px-2.5 py-0.5 rounded-pill
+          text-label-lg font-label font-medium uppercase tracking-wide
+          ${cls} ${className}
+        `}
+      >
+        {children}
+      </span>
+    );
+  }
+
   const { label, cls } = config[value] ?? { label: value, cls: 'bg-surface-container text-on-surface-variant' };
   return (
     <span

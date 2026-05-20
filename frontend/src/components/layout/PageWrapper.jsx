@@ -51,7 +51,7 @@ export default function PageWrapper() {
       {/* ── Mobile backdrop ────────────────────────────────────────────────── */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-40 bg-on-surface/30 backdrop-blur-sm md:hidden animate-fade-in"
+          className="fixed inset-0 z-40 bg-on-surface/30 backdrop-blur-sm lg:hidden animate-fade-in"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
@@ -62,13 +62,13 @@ export default function PageWrapper() {
           fixed top-0 left-0 h-full
           flex flex-col bg-card-panel border-r border-outline-variant/20
           shadow-glass transition-all duration-300
-          ${/* Mobile: slide in/out as overlay */''}
+          
           ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
-          md:translate-x-0
-          z-50 md:z-30
+          lg:translate-x-0
+          z-50 lg:z-30
           w-64
-          ${/* Desktop: collapse toggle */''}
-          ${!sidebarOpen ? 'md:w-[4.5rem]' : 'md:w-64'}
+         
+          ${!sidebarOpen ? 'lg:w-[4.5rem]' : 'lg:w-64'}
         `}
       >
         {/* Logo + toggle */}
@@ -104,7 +104,7 @@ export default function PageWrapper() {
           </div>
           <button
             onClick={() => setSidebarOpen((p) => !p)}
-            className={`hidden md:flex items-center justify-center rounded-lg text-tertiary hover:text-primary hover:bg-primary/8 transition-all shrink-0 ${sidebarOpen ? 'size-7' : 'size-8 mt-1'
+            className={`hidden lg:flex items-center justify-center rounded-lg text-tertiary hover:text-primary hover:bg-primary/8 transition-all shrink-0 ${sidebarOpen ? 'size-7' : 'size-8 mt-1'
               }`}
             aria-label={sidebarOpen ? 'Colapsar menú' : 'Expandir menú'}
           >
@@ -176,7 +176,7 @@ export default function PageWrapper() {
 
       {/* ── Main content ─────────────────────────────────────────────────────── */}
       <main
-        className={`flex-1 flex flex-col transition-all duration-300 ml-0 ${sidebarOpen ? 'md:ml-64' : 'md:ml-[4.5rem]'}`}
+        className={`flex-1 flex flex-col transition-all duration-300 ml-0 min-w-0 ${sidebarOpen ? 'lg:ml-64' : 'lg:ml-[4.5rem]'}`}
       >
         {/* Top header */}
         <header className="sticky top-0 z-20 bg-card-panel/90 backdrop-blur-md border-b border-outline-variant/20 px-3 md:px-6 py-3 flex items-center gap-3 md:gap-4">
@@ -184,7 +184,7 @@ export default function PageWrapper() {
           {/* Hamburger — mobile only */}
           <button
             onClick={() => setMobileMenuOpen((p) => !p)}
-            className="md:hidden size-10 min-h-[44px] flex items-center justify-center rounded-xl hover:bg-surface-container text-on-surface-variant transition-colors"
+            className="lg:hidden size-10 min-h-[44px] flex items-center justify-center rounded-xl hover:bg-surface-container text-on-surface-variant transition-colors"
             aria-label="Abrir menú"
           >
             <span className="material-symbols-outlined text-2xl">menu</span>
@@ -203,7 +203,7 @@ export default function PageWrapper() {
             </button>
 
             {/* Avatar Profile Dropdown */}
-            <ProfileDropdown 
+            <ProfileDropdown
               onOpenSettings={() => setIsSettingsOpen(true)}
               onOpenAccount={() => setIsAccountOpen(true)}
             />
@@ -211,20 +211,20 @@ export default function PageWrapper() {
         </header>
 
         {/* Page content */}
-        <div className="flex-1 p-3 md:p-6 animate-fade-in">
+        <div className="flex-1 p-3 md:p-6 animate-fade-in min-w-0">
           <Outlet />
         </div>
       </main>
 
       <ToastContainer toasts={toast.toasts} onRemove={toast.remove} />
 
-      <SettingsModal 
-        isOpen={isSettingsOpen} 
-        onClose={() => setIsSettingsOpen(false)} 
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
       />
-      <AccountModal 
-        isOpen={isAccountOpen} 
-        onClose={() => setIsAccountOpen(false)} 
+      <AccountModal
+        isOpen={isAccountOpen}
+        onClose={() => setIsAccountOpen(false)}
       />
     </div>
   );
