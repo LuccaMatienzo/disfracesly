@@ -1,3 +1,12 @@
+/**
+ * @module pages/public/LandingPage
+ * @description Página de aterrizaje pública de Disfracesly.
+ *
+ * Muestra el hero con el próximo evento festivo, los disfraces populares
+ * en un grid bento, el proceso de alquiler en 3 pasos y el CTA de WhatsApp.
+ * Los emojis en EVENTOS_ANUALES y BENTO_STYLES son datos de UI intencionales,
+ * no salidas de consola.
+ */
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import PublicNavbar from '@/components/public/PublicNavbar';
@@ -13,6 +22,14 @@ const EVENTOS_ANUALES = [
   { nombre: 'Halloween', mes: 10, dia: 31, subtitle: 'Noche de Brujas', color: 'from-[#c2410c] to-[#f97316]', emoji: '🎃' },
 ];
 
+/**
+ * Calcula el próximo evento festivo del año con respecto a la fecha actual.
+ * Recorre la lista de eventos ordenada por mes/día y retorna el primero que
+ * aún no haya ocurrido en el año en curso. Si todos ya pasaron, retorna el
+ * primero del año (ciclo anual).
+ *
+ * @returns {{ nombre: string, mes: number, dia: number, subtitle: string, color: string, emoji: string }}
+ */
 function getProximoEvento() {
   const hoy = new Date();
   const mesActual = hoy.getMonth() + 1;
@@ -56,6 +73,13 @@ const JOURNEY_STEPS = [
 
 const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER ?? '5493814120331';
 
+/**
+ * Página de aterrizaje pública.
+ * Carga los disfraces populares y el disfraz del próximo evento al montar.
+ * Si la API no responde, la página muestra el estado vacío sin romper el layout.
+ *
+ * @returns {JSX.Element}
+ */
 export default function LandingPage() {
   const [populares, setPopulares] = useState([]);
   const [heroDisfraz, setHeroDisfraz] = useState(null);
@@ -75,7 +99,7 @@ export default function LandingPage() {
           setPopulares(data.data);
         }
       })
-      .catch(console.error);
+      .catch((err) => console.error('[LandingPage] Error al cargar disfraces populares:', err));
 
     fetch(`${API_URL}/catalogo/disfraces/publico?search=${encodeURIComponent(proximoEvento.nombre)}&limit=1`)
       .then(r => r.json())
@@ -84,7 +108,7 @@ export default function LandingPage() {
           setHeroDisfraz(res.data[0]);
         }
       })
-      .catch(console.error);
+      .catch((err) => console.error('[LandingPage] Error al cargar disfraz del evento:', err));
   }, [proximoEvento.nombre]);
 
   return (

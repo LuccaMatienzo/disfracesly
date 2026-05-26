@@ -1,8 +1,21 @@
+/**
+ * @module hooks/useStock
+ * @description Hooks de React Query para el módulo de Stock (PiezaStock).
+ * Todas las mutaciones invalidan la query key base `['stock']` para mantener
+ * la lista y las estadísticas sincronizadas tras cada operación de escritura.
+ */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
 
+/** Clave base del caché de stock. */
 const STOCK_KEY = ['stock'];
 
+/**
+ * Lista paginada de unidades de stock con soporte de filtros.
+ *
+ * @param {object} [params={}] - Filtros: { estado, id_pieza, search, page, limit }
+ * @returns {import('@tanstack/react-query').UseQueryResult}
+ */
 export function useStock(params = {}) {
   return useQuery({
     queryKey: [...STOCK_KEY, params],
@@ -10,6 +23,12 @@ export function useStock(params = {}) {
   });
 }
 
+/**
+ * Estadísticas de stock agrupadas por estado.
+ * Se considera stale pasados 30 segundos para evitar refetch excesivo en la vista de dashboard.
+ *
+ * @returns {import('@tanstack/react-query').UseQueryResult}
+ */
 export function useStockStats() {
   return useQuery({
     queryKey: [...STOCK_KEY, 'stats'],
@@ -18,6 +37,13 @@ export function useStockStats() {
   });
 }
 
+/**
+ * Detalle de una unidad de stock por ID.
+ * La query se deshabilita si `id` es falsy.
+ *
+ * @param {string|number} id - ID de la pieza de stock
+ * @returns {import('@tanstack/react-query').UseQueryResult}
+ */
 export function useStockItem(id) {
   return useQuery({
     queryKey: [...STOCK_KEY, id],
@@ -26,6 +52,11 @@ export function useStockItem(id) {
   });
 }
 
+/**
+ * Mutación para crear una nueva unidad de stock.
+ *
+ * @returns {import('@tanstack/react-query').UseMutationResult}
+ */
 export function useCreateStock() {
   const qc = useQueryClient();
   return useMutation({
@@ -34,6 +65,11 @@ export function useCreateStock() {
   });
 }
 
+/**
+ * Mutación para actualizar los datos descriptivos de una unidad de stock.
+ *
+ * @returns {import('@tanstack/react-query').UseMutationResult}
+ */
 export function useUpdateStock() {
   const qc = useQueryClient();
   return useMutation({
@@ -42,6 +78,13 @@ export function useUpdateStock() {
   });
 }
 
+/**
+ * Mutación para el cambio manual de estado de una pieza de stock.
+ * Solo permite transiciones a DISPONIBLE o FUERA_DE_SERVICIO desde el frontend;
+ * el resto de transiciones son gestionadas automáticamente por el backend.
+ *
+ * @returns {import('@tanstack/react-query').UseMutationResult}
+ */
 export function useCambiarEstadoStock() {
   const qc = useQueryClient();
   return useMutation({
@@ -51,6 +94,11 @@ export function useCambiarEstadoStock() {
   });
 }
 
+/**
+ * Mutación para el borrado lógico de una unidad de stock.
+ *
+ * @returns {import('@tanstack/react-query').UseMutationResult}
+ */
 export function useDeleteStock() {
   const qc = useQueryClient();
   return useMutation({

@@ -1,3 +1,15 @@
+/**
+ * @component PageWrapper
+ * @description Shell principal del portal de administración.
+ *
+ * Encapsula el layout de dos columnas (sidebar + contenido) con:
+ * - Sidebar responsive con colapso en desktop y overlay en mobile
+ * - Header sticky con notificaciones, perfil y selector de tema
+ * - Navegación filtrada por rol (RBAC basado en `user.rol`)
+ * - Modales globales de ajustes de apariencia y administración de cuenta
+ *
+ * Usa `<Outlet />` de React Router para renderizar las rutas hijas.
+ */
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
@@ -18,6 +30,13 @@ const NAV_ITEMS = [
   { to: '/admin/finanzas', label: 'Finanzas', icon: 'query_stats', end: false, roles: ['Superadministrador', 'Jefe'] },
 ];
 
+/**
+ * Componente raíz del portal de administración.
+ * Renderiza el shell de layout y delega el contenido de cada ruta a `<Outlet />`.
+ * Filtra los ítems de navegación según el rol del usuario en sesión.
+ *
+ * @returns {JSX.Element}
+ */
 export default function PageWrapper() {
   const { user, logout, hasRol } = useAuth();
   const navigate = useNavigate();

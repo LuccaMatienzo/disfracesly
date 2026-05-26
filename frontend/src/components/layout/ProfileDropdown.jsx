@@ -1,3 +1,14 @@
+/**
+ * @component ProfileDropdown
+ * @description Dropdown de perfil del usuario autenticado en el header del panel.
+ *
+ * Muestra las iniciales del usuario como trigger. Al hacer click, despliega
+ * un menú con el nombre, correo, y opciones de configuración, cuenta y logout.
+ * Se cierra automáticamente al hacer click fuera del área del dropdown.
+ *
+ * @param {{ onOpenSettings: Function, onOpenAccount: Function }} props
+ * @returns {JSX.Element}
+ */
 import { useState, useRef, useEffect } from 'react';
 import { FiSettings, FiUser, FiLogOut } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext';

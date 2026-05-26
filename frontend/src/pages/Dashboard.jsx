@@ -1,3 +1,12 @@
+/**
+ * @module pages/Dashboard
+ * @description Página principal del panel de administración.
+ *
+ * Carga todos los KPIs del dashboard en un solo request a `/dashboard`
+ * y los distribuye en una grilla de tarjetas tipo Bento.
+ * Los sub-componentes (KpiCards, DonutChart, MovimientosTable, etc.) son
+ * componentes funcionales privados del módulo para reducir la superficie pública.
+ */
 import { useState, useEffect, useMemo } from 'react';
 import api from '@/api/axios.instance';
 import { useAuth } from '@/context/AuthContext';
@@ -8,6 +17,11 @@ import KpiDetailsModal from '@/components/ui/KpiDetailsModal';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+/**
+ * Convierte una fecha ISO a texto relativo en español (e.g. '5 min atrás', '2 días atrás').
+ * @param {string} dateStr - Fecha en formato ISO 8601
+ * @returns {string}
+ */
 function timeAgo(dateStr) {
   const now = new Date();
   const date = new Date(dateStr);
@@ -486,6 +500,15 @@ function SkeletonCard() {
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 
+/**
+ * Componente principal del Dashboard del panel de administración.
+ *
+ * Carga los datos del dashboard desde `/dashboard` al montar.
+ * Incluye estados de carga (skeleton), error con retry y la vista principal
+ * con grid de KPIs, movimientos recientes, flujo de caja y próximos vencimientos.
+ *
+ * @returns {JSX.Element}
+ */
 export default function Dashboard() {
   const { user } = useAuth();
   const [dashboard, setDashboard] = useState(null);
@@ -550,7 +573,7 @@ export default function Dashboard() {
         const { data } = await api.get('/dashboard');
         setDashboard(data);
       } catch (err) {
-        console.error('Error fetching dashboard:', err);
+        console.error('[Dashboard] Error al cargar datos del dashboard:', err);
         setError('No se pudo cargar el dashboard');
       } finally {
         setLoading(false);

@@ -1,3 +1,13 @@
+/**
+ * @component NotificationsDropdown
+ * @description Dropdown de notificaciones del sistema para el header del panel administrativo.
+ *
+ * Carga las notificaciones desde el endpoint `/dashboard/notifications` al montar.
+ * Implementa un sistema de "marcar como leídas" basado en localStorage:
+ * compara el ID de la primera notificación con el último ID visto.
+ * Las notificaciones se marcan como leídas automáticamente al hacer scroll
+ * hasta el final de la lista, o inmediatamente si la lista no requiere scroll.
+ */
 import { useState, useRef, useEffect } from 'react';
 import api from '@/api/axios.instance';
 
@@ -9,6 +19,13 @@ export default function NotificationsDropdown() {
   const dropdownRef = useRef(null);
   const scrollContainerRef = useRef(null);
 
+  /**
+   * Formatea una fecha o string de tiempo en texto relativo legible.
+   * Acepta strings especiales como 'Urgente', 'Hoy' o 'Ahora' y los retorna sin modificar.
+   *
+   * @param {string} dateStr - Fecha ISO o string especial
+   * @returns {string} Texto relativo (ej. 'hace 5 min', 'hace 2h', '15 may')
+   */
   const formatTime = (dateStr) => {
     if (!dateStr) return '';
     if (['Urgente', 'Hoy', 'Ahora'].includes(dateStr)) return dateStr;
@@ -53,7 +70,7 @@ export default function NotificationsDropdown() {
         }
       }
     } catch (e) {
-      console.error('Error fetching notifications:', e);
+      console.error('[NotificationsDropdown] Error al cargar notificaciones:', e);
     } finally {
       setLoading(false);
     }
@@ -98,6 +115,12 @@ export default function NotificationsDropdown() {
     setHasUnread(false);
   };
 
+  /**
+   * Determina el icono y colores según el tipo de notificación.
+   *
+   * @param {'alert'|'warning'|'pickup'|'return'|'sale'|string} type
+   * @returns {{ icon: string, color: string, bg: string }}
+   */
   const getIconForType = (type) => {
     switch (type) {
       case 'alert': return { icon: 'error', color: 'text-error', bg: 'bg-error/10' };
