@@ -45,6 +45,7 @@ export default function UsuariosList() {
 
   const [deleteTarget, setDeleteTarget] = useState(null); // { id, nombre }
   const [roleFilter, setRoleFilter] = useState('');
+  const [isRoleMenuOpen, setIsRoleMenuOpen] = useState(false);
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const [resetTarget, setResetTarget] = useState(null);
 
@@ -199,19 +200,59 @@ export default function UsuariosList() {
               </>
             )}
 
-            {/* Filtro por Roles (Pill) */}
+            {/* Filtro por Roles (Custom Dropdown Pill) */}
             <div className="relative inline-block shrink-0">
-              <select
-                value={roleFilter}
-                onChange={(e) => { setRoleFilter(e.target.value); reset(); }}
-                className="appearance-none text-xs px-2 py-1 max-w-[130px] pr-6 font-medium shrink-0 rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer"
+              <button
+                type="button"
+                onClick={() => setIsRoleMenuOpen(!isRoleMenuOpen)}
+                className="w-auto min-w-[120px] max-w-[200px] px-3 py-1 text-sm shrink-0 rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 flex items-center justify-between gap-2 text-gray-700 dark:text-gray-200"
               >
-                <option value="">Todos los roles</option>
-                {roles.map(rol => (
-                  <option key={rol.id_rol} value={rol.id_rol}>{rol.nombre}</option>
-                ))}
-              </select>
-              <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 size-3.5" />
+                <span className="truncate">
+                  {roleFilter === '' 
+                    ? 'Todos los roles' 
+                    : roles.find(r => r.id_rol.toString() === roleFilter.toString())?.nombre || 'Todos los roles'}
+                </span>
+                <FiChevronDown className="shrink-0 text-gray-500 size-3.5" />
+              </button>
+
+              {isRoleMenuOpen && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-40"
+                    onClick={() => setIsRoleMenuOpen(false)}
+                  ></div>
+                  <ul className="absolute top-full left-0 mt-2 w-48 z-50 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <li>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRoleFilter('');
+                          reset();
+                          setIsRoleMenuOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
+                      >
+                        Todos los roles
+                      </button>
+                    </li>
+                    {roles.map(rol => (
+                      <li key={rol.id_rol}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setRoleFilter(rol.id_rol);
+                            reset();
+                            setIsRoleMenuOpen(false);
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
+                        >
+                          {rol.nombre}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
             </div>
 
             <div className="w-px h-6 bg-divider shrink-0 ml-1"></div>

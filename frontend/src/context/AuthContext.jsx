@@ -49,6 +49,9 @@ export function AuthProvider({ children }) {
       if (updatedData.persona && prev?.persona) {
         newUser.persona = { ...prev.persona, ...updatedData.persona };
       }
+      if (newUser.rol && typeof newUser.rol === 'object') {
+        newUser.rol = newUser.rol.nombre;
+      }
       localStorage.setItem('user', JSON.stringify(newUser));
       return newUser;
     });

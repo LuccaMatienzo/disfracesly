@@ -10,6 +10,7 @@ import { useFeedback } from '@/context/FeedbackContext';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
+import { useAuth } from '@/context/AuthContext';
 
 const baseSchema = z.object({
   correo: z.string().email('Correo inválido'),
@@ -47,6 +48,7 @@ export default function UsuarioForm() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { showSuccess, showError } = useFeedback();
+  const { user: currentUser, updateLocalUser } = useAuth();
   const isEditing = !!id;
 
   const [showPass, setShowPass] = useState(false);
@@ -67,8 +69,15 @@ export default function UsuarioForm() {
       isEditing
         ? api.put(`/usuarios/${id}`, data).then((r) => r.data)
         : api.post('/usuarios', data).then((r) => r.data),
-    onSuccess: () => {
+    onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ['usuarios'] });
+      
+      // Si el usuario actualizó su propio perfil desde el módulo de usuarios, 
+      // sincronizamos el estado global para reflejar los cambios al instante en el header.
+      if (isEditing && data && Number(data.id_usuario) === Number(currentUser?.id_usuario)) {
+        updateLocalUser(data);
+      }
+
       showSuccess(isEditing ? 'Usuario actualizado con éxito' : 'Usuario creado con éxito', () => {
         navigate('/admin/usuarios');
       });
