@@ -60,7 +60,7 @@ export default function StockViewModal({ id, open, onClose }) {
                     key={img.id_imagen ?? i}
                     src={img.imagen?.url}
                     alt={`Imagen ${i + 1}`}
-                    className="size-24 object-cover rounded-xl border border-outline-variant/20"
+                    className="size-24 object-cover rounded-xl border border-divider"
                   />
                 ))}
               </div>

@@ -226,7 +226,7 @@ export default function SolicitudPedido() {
                     setFechaDevolucion('');
                     if (errors.fechas) setErrors({ ...errors, fechas: '' });
                   }}
-                  className="w-full mt-3 py-3 rounded-xl border border-outline-variant/40 text-on-surface-variant font-medium text-sm hover:bg-surface-container-high transition-colors"
+                  className="w-full mt-3 py-3 rounded-xl border border-divider text-on-surface-variant font-medium text-sm hover:bg-surface-container-high transition-colors"
                 >
                   Aún no tengo una fecha definida
                 </button>
@@ -256,7 +256,7 @@ export default function SolicitudPedido() {
                       required
                       className={`w-full pl-12 pr-4 py-4 rounded-xl bg-card-panel border text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 transition ${errors.nombre
                         ? 'border-error focus:ring-error/40'
-                        : 'border-outline-variant/40 focus:ring-primary/40'
+                        : 'border-divider focus:ring-primary/40'
                         }`}
                     />
                   </div>
@@ -282,7 +282,7 @@ export default function SolicitudPedido() {
                       required
                       className={`w-full pl-12 pr-4 py-4 rounded-xl bg-card-panel border text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 transition ${errors.telefono
                         ? 'border-error focus:ring-error/40'
-                        : 'border-outline-variant/40 focus:ring-primary/40'
+                        : 'border-divider focus:ring-primary/40'
                         }`}
                     />
                   </div>
@@ -299,7 +299,7 @@ export default function SolicitudPedido() {
                     onChange={(e) => setNotas(e.target.value)}
                     placeholder="Notas adicionales: talle exacto, evento, dudas…"
                     rows={3}
-                    className="w-full pl-12 pr-4 py-4 rounded-xl bg-card-panel border border-outline-variant/40 text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 focus:ring-primary/40 transition resize-none"
+                    className="w-full pl-12 pr-4 py-4 rounded-xl bg-card-panel border border-divider text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 focus:ring-primary/40 transition resize-none"
                   />
                 </div>
               </div>
@@ -339,7 +339,7 @@ export default function SolicitudPedido() {
           {/* ── Resumen del pedido ─────────────────────────────────────────── */}
           <div className="lg:col-span-2">
             <div className="bg-card-panel rounded-2xl shadow-card p-6 sticky top-24">
-              <h3 className="font-headline font-semibold text-lg text-on-surface mb-4 border-b border-outline-variant/20 pb-3">
+              <h3 className="font-headline font-semibold text-lg text-on-surface mb-4 border-b border-divider pb-3">
                 Resumen del pedido
               </h3>
 
@@ -363,7 +363,7 @@ export default function SolicitudPedido() {
                 <p className="text-sm text-tertiary mt-1">Talle: {disfraz.talle}</p>
               )}
 
-              <div className="mt-4 pt-4 border-t border-outline-variant/20 space-y-2 text-sm text-on-surface-variant">
+              <div className="mt-4 pt-4 border-t border-divider space-y-2 text-sm text-on-surface-variant">
                 {tipo === 'alquiler' && fechaRetiro && (
                   <div className="flex justify-between">
                     <span>Retiro:</span>

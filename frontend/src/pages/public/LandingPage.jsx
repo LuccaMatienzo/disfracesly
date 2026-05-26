@@ -161,7 +161,7 @@ export default function LandingPage() {
               style={{ animation: 'float 6s ease-in-out infinite' }}
             >
               {heroDisfraz && heroDisfraz.imagenPrincipal ? (
-                <div className="size-full rounded-3xl overflow-hidden shadow-editorial border border-outline-variant/30 relative">
+                <div className="size-full rounded-3xl overflow-hidden shadow-editorial border border-divider relative">
                   <img src={heroDisfraz.imagenPrincipal} alt={heroDisfraz.nombre} className="size-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8">
                     <span className="text-white/80 font-label text-xs uppercase tracking-widest mb-1">{proximoEvento.nombre}</span>
@@ -265,7 +265,7 @@ export default function LandingPage() {
                 {/* Connector line */}
                 <div className="hidden md:block absolute top-8 left-full w-full h-px bg-outline-variant/40 z-0 w-1/2" />
 
-                <div className="relative z-10 flex flex-col items-start gap-4 p-8 rounded-2xl bg-card-panel border border-outline-variant/20 shadow-card hover:-translate-y-1 transition-transform">
+                <div className="relative z-10 flex flex-col items-start gap-4 p-8 rounded-2xl bg-card-panel border border-divider shadow-card hover:-translate-y-1 transition-transform">
                   <div className="size-14 rounded-xl editorial-gradient flex items-center justify-center shadow-md">
                     <span className="material-symbols-outlined text-white text-2xl">{icon}</span>
                   </div>
@@ -287,7 +287,7 @@ export default function LandingPage() {
 
         <div className="relative max-w-4xl mx-auto">
           {/* Floating Container with Glassmorphism */}
-          <div className="rounded-xl shadow-sm border border-outline-variant/30 bg-[#FFFFF0]/90 dark:bg-[#1f201a]/90 backdrop-blur-md px-8 py-16 md:py-20 text-center flex flex-col items-center transition-colors duration-300">
+          <div className="rounded-xl shadow-sm border border-divider bg-[#FFFFF0]/90 dark:bg-[#1f201a]/90 backdrop-blur-md px-8 py-16 md:py-20 text-center flex flex-col items-center transition-colors duration-300">
 
             <h2 className="font-headline font-semibold text-4xl md:text-5xl text-gray-800 dark:text-on-surface mb-6">
               Encontrá el Disfraz

@@ -290,7 +290,6 @@ export default function CatalogoList() {
         entityName={`${deleteTarget?.tipo ?? 'registro'} "${deleteTarget?.nombre ?? ''}"`}
         loading={activeMutation.isPending}
       />
-
-
+    </div>
   );
 }

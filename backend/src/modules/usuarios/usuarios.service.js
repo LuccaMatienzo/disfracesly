@@ -59,6 +59,39 @@ async function checkRoleHierarchy(currentUserRoleName, targetRoleId) {
 
 // ─── Services ─────────────────────────────────────────────────────────────────
 
+/**
+ * Campos permitidos para ordenamiento dinamico.
+ * Las claves son los nombres publicos que acepta la API;
+ * los valores son la ruta Prisma correspondiente.
+ */
+const SORT_WHITELIST = {
+  nombre:     { persona: { nombre: undefined } },
+  apellido:   { persona: { apellido: undefined } },
+  documento:  { persona: { documento: undefined } },
+  correo:     { correo: undefined },
+  id_usuario: { id_usuario: undefined },
+};
+
+/**
+ * Construye la clausula orderBy a partir de los query params.
+ * Devuelve el default (id_usuario desc) cuando no se especifica un campo valido.
+ */
+function buildOrderBy(sortField, sortDirection) {
+  const direction = sortDirection === 'asc' ? 'asc' : 'desc';
+  const template = SORT_WHITELIST[sortField];
+  if (!template) return { id_usuario: 'desc' };
+
+  const applyDirection = (obj) => {
+    const result = {};
+    for (const [key, val] of Object.entries(obj)) {
+      result[key] = val === undefined ? direction : applyDirection(val);
+    }
+    return result;
+  };
+
+  return applyDirection(template);
+}
+
 async function getAllUsuarios(query) {
   const { skip, take, page, limit } = parsePagination(query);
   const search = query.search ?? '';
@@ -80,6 +113,8 @@ async function getAllUsuarios(query) {
     where = withNotDeleted(where);
   }
 
+  const orderBy = buildOrderBy(query.sort_field, query.sort_direction);
+
   const [data, total] = await prisma.$transaction([
     prisma.usuario.findMany({
       where,
@@ -97,7 +132,7 @@ async function getAllUsuarios(query) {
           select: { nombre: true }
         },
       },
-      orderBy: { id_usuario: 'desc' },
+      orderBy,
     }),
     prisma.usuario.count({ where }),
   ]);

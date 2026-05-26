@@ -11,10 +11,16 @@ import Input from '@/components/ui/Input';
 import ActionButtons from '@/components/ui/ActionButtons';
 import ConfirmDeleteModal from '@/components/ui/ConfirmDeleteModal';
 import ClienteViewModal from '@/components/ui/ClienteViewModal';
-import Badge from '@/components/ui/Badge';
+import SortToggle from '@/components/ui/SortToggle';
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
-import { FiSearch } from 'react-icons/fi';
 
+/**
+ * ClientesList -- Vista principal del modulo Clientes.
+ *
+ * Integra el componente SortToggle para permitir ordenamiento dinamico
+ * por columna. El estado de sort se eleva a este componente y se propaga
+ * como query params a la API de backend para un ordenamiento server-side.
+ */
 export default function ClientesList() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -24,17 +30,40 @@ export default function ClientesList() {
   const [includeDeleted, setIncludeDeleted] = useState(false);
   const { showSuccess, showError } = useFeedback();
 
-  const [deleteTarget, setDeleteTarget] = useState(null); // { id, nombre }
-  const [viewId, setViewId] = useState(null);             // id de cliente en modal Ver
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [viewId, setViewId] = useState(null);
 
-  // ─── Query ────────────────────────────────────────────────────────────────
+  const [sort, setSort] = useState({ field: null, direction: null });
+
+  /**
+   * Callback para SortToggle. Actualiza el estado de ordenamiento
+   * y reinicia la paginacion a la primera pagina para reflejar
+   * el nuevo orden desde el inicio del dataset.
+   */
+  const handleSortChange = (field, direction) => {
+    setSort({ field, direction });
+    reset();
+  };
+
+  // -- Query ----------------------------------------------------------------
   const { data, isLoading } = useQuery({
-    queryKey: ['clientes', { page, limit, search, includeDeleted }],
+    queryKey: ['clientes', { page, limit, search, includeDeleted, sort }],
     queryFn: () =>
-      api.get('/clientes', { params: { page, limit, search: search || undefined, include_deleted: includeDeleted } }).then((r) => r.data),
+      api
+        .get('/clientes', {
+          params: {
+            page,
+            limit,
+            search: search || undefined,
+            include_deleted: includeDeleted,
+            sort_field: sort.field ?? undefined,
+            sort_direction: sort.direction ?? undefined,
+          },
+        })
+        .then((r) => r.data),
   });
 
-  // ─── Mutación: soft-delete ────────────────────────────────────────────────
+  // -- Mutacion: soft-delete -------------------------------------------------
   const deleteMutation = useMutation({
     mutationFn: (id) => api.delete(`/clientes/${id}`),
     onSuccess: () => {
@@ -48,7 +77,7 @@ export default function ClientesList() {
     },
   });
 
-  // ─── Mutación: restore ────────────────────────────────────────────────────
+  // -- Mutacion: restore -----------------------------------------------------
   const restoreMutation = useMutation({
     mutationFn: (id) => api.patch(`/clientes/${id}/restore`),
     onSuccess: () => {
@@ -60,7 +89,7 @@ export default function ClientesList() {
     },
   });
 
-  // ─── Columnas ─────────────────────────────────────────────────────────────
+  // -- Columnas --------------------------------------------------------------
   const columns = [
     { key: 'id_cliente', label: '#', width: '60px' },
     {
@@ -73,7 +102,7 @@ export default function ClientesList() {
       ),
     },
     { key: 'documento', label: 'Documento', render: (_, r) => <span className={r.deleted_at ? 'text-coral' : ''}>{r.persona?.documento ?? '—'}</span> },
-    { key: 'telefono', label: 'Teléfono', render: (_, r) => <span className={r.deleted_at ? 'text-coral' : ''}>{r.telefono}</span> },
+    { key: 'telefono', label: 'Telefono', render: (_, r) => <span className={r.deleted_at ? 'text-coral' : ''}>{r.telefono}</span> },
     {
       key: 'fecha_alta',
       label: 'Alta',
@@ -119,31 +148,73 @@ export default function ClientesList() {
         </Link>
       </div>
 
-      {/* Buscador */}
-      <div className="bg-surface-container-lowest rounded-2xl shadow-card p-3 md:p-5">
-        <div className="flex flex-col md:flex-row gap-3 md:gap-4 items-center">
-          <div className="flex-1 w-full">
+      {/* Toolbar */}
+      <div className="bg-surface-container-lowest rounded-2xl shadow-card p-3 lg:p-5 flex flex-col gap-4">
+        {/* Buscador */}
+        <div className="flex flex-row flex-nowrap w-full gap-2 items-center">
+          <div className="flex-1 min-w-0">
             <Input
-              placeholder="Buscar por nombre o documento…"
+              placeholder="Buscar por nombre o documento..."
               value={search}
               onChange={(e) => { setSearch(e.target.value); reset(); }}
             />
           </div>
-          {user?.rol === 'Superadministrador' && (
-            <ToggleSwitch
-              checked={includeDeleted}
-              onChange={(val) => { setIncludeDeleted(val); reset(); }}
-              label="Ver inactivos"
-              id="toggle-inactivos-clientes"
-            />
-          )}
           <Button
             onClick={() => reset()}
-            className="h-[48px] w-full md:w-auto px-6 shrink-0"
+            className="h-[48px] shrink-0 px-4 lg:px-6"
           >
-            <span className="material-symbols-outlined text-[20px] mr-2">search</span>
-            Buscar
+            <span className="material-symbols-outlined text-[20px] sm:mr-2">search</span>
+            <span className="hidden sm:inline">Buscar</span>
           </Button>
+        </div>
+
+        {/* Barra de ordenamiento (Cinta Deslizable) */}
+        <div className="flex flex-row flex-nowrap overflow-x-auto whitespace-nowrap gap-3 pb-2 w-full pt-3 border-t border-divider items-center min-w-0 lg:overflow-visible lg:pb-0 lg:justify-start">
+          <div className="flex flex-row items-center gap-3 shrink-0">
+            {user?.rol === 'Superadministrador' && (
+              <>
+                <div className="shrink-0">
+                  <ToggleSwitch
+                    checked={includeDeleted}
+                    onChange={(val) => { setIncludeDeleted(val); reset(); }}
+                    label="Ver inactivos"
+                    id="toggle-inactivos-clientes"
+                  />
+                </div>
+                <div className="w-px h-6 bg-divider shrink-0"></div>
+              </>
+            )}
+            <span className="text-label-lg font-label font-medium text-on-surface-variant uppercase tracking-wide shrink-0">
+              Ordenar:
+            </span>
+          </div>
+          
+          <div className="flex flex-row items-center gap-2 shrink-0 lg:flex-nowrap">
+            <SortToggle
+              label="Nombre"
+              field="nombre"
+              currentSort={sort}
+              onSortChange={handleSortChange}
+            />
+            <SortToggle
+              label="Apellido"
+              field="apellido"
+              currentSort={sort}
+              onSortChange={handleSortChange}
+            />
+            <SortToggle
+              label="Fecha de Alta"
+              field="fecha_alta"
+              currentSort={sort}
+              onSortChange={handleSortChange}
+            />
+            <SortToggle
+              label="Documento"
+              field="documento"
+              currentSort={sort}
+              onSortChange={handleSortChange}
+            />
+          </div>
         </div>
       </div>
 
@@ -162,7 +233,7 @@ export default function ClientesList() {
         onClose={() => setViewId(null)}
       />
 
-      {/* Modal de confirmación */}
+      {/* Modal de confirmacion */}
       <ConfirmDeleteModal
         open={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}

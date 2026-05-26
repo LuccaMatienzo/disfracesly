@@ -133,7 +133,7 @@ export default function CatalogoPublico() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar disfraces…"
-                className="w-full pl-10 pr-4 py-3 rounded-xl bg-card-panel border border-outline-variant/40 text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
+                className="w-full pl-10 pr-4 py-3 rounded-xl bg-card-panel border border-divider text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
               />
             </div>
             <button
@@ -147,7 +147,7 @@ export default function CatalogoPublico() {
       </section>
 
       {/* ── Inventory Ribbon ───────────────────────────────────────────────── */}
-      <section className="border-b border-outline-variant/20 px-6 md:px-10">
+      <section className="border-b border-divider px-6 md:px-10">
         <div className="max-w-7xl mx-auto py-4 flex items-center gap-3">
           {/* Flecha Izquierda */}
           <button

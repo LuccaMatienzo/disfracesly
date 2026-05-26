@@ -9,7 +9,7 @@ async function getInPreparation() {
   const tomorrowStart = new Date(tomorrow.setHours(0, 0, 0, 0));
   const tomorrowEnd   = new Date(tomorrow.setHours(23, 59, 59, 999));
 
-  const [total, urgent] = await prisma.$transaction([
+  const [rentTotal, rentUrgent, saleTotal, saleUrgent] = await prisma.$transaction([
     prisma.alquiler.count({
       where: { etapa: 'RESERVADO', operacion: { deleted_at: null } },
     }),
@@ -19,19 +19,38 @@ async function getInPreparation() {
         operacion: { deleted_at: null, fecha_retiro: { gte: tomorrowStart, lte: tomorrowEnd } },
       },
     }),
+    prisma.venta.count({
+      where: { etapa: 'RESERVADO', operacion: { deleted_at: null } },
+    }),
+    prisma.venta.count({
+      where: {
+        etapa: 'RESERVADO',
+        fecha_entrega_estimada: { gte: tomorrowStart, lte: tomorrowEnd },
+        operacion: { deleted_at: null },
+      },
+    }),
   ]);
 
-  return { total, urgentTomorrow: urgent };
+  return { 
+    total: rentTotal + saleTotal, 
+    urgentTomorrow: rentUrgent + saleUrgent 
+  };
 }
 
 // ─── KPI: Listos para Retiro ─────────────────────────────────────────────────
 // Alquileres LISTO_PARA_RETIRO — se mantiene en Prisma (COUNT simple)
 
 async function getReadyForPickup() {
-  const totalPackages = await prisma.alquiler.count({
-    where: { etapa: 'LISTO_PARA_RETIRO', operacion: { deleted_at: null } },
-  });
-  return { totalPackages };
+  const [rentTotal, saleTotal] = await prisma.$transaction([
+    prisma.alquiler.count({
+      where: { etapa: 'LISTO_PARA_RETIRO', operacion: { deleted_at: null } },
+    }),
+    prisma.venta.count({
+      where: { etapa: 'LISTO_PARA_ENTREGA', operacion: { deleted_at: null } },
+    }),
+  ]);
+
+  return { totalPackages: rentTotal + saleTotal };
 }
 
 // ─── KPI: Estado del Stock ────────────────────────────────────────────────────
@@ -178,4 +197,65 @@ async function getDashboardData() {
   };
 }
 
-module.exports = { getDashboardData };
+async function getActiveOperationsDetails() {
+  const rows = await prisma.$queryRaw`
+    SELECT * FROM gestion.v_active_operations_details ORDER BY fecha ASC
+  `;
+  return rows.map((r) => ({
+    id: r.id_operacion.toString(),
+    cliente: r.cliente,
+    tipo: r.tipo,
+    etapa: r.etapa,
+    fecha: r.fecha,
+    esAtrasado: r.es_atrasado,
+  }));
+}
+
+async function getNotifications() {
+  const [recentMovements, activeRentals] = await Promise.all([
+    getRecentMovements(10),
+    getActiveRentals()
+  ]);
+
+  const notifications = [];
+
+  if (activeRentals.overdue > 0) {
+    notifications.push({
+      id: 'alert_overdue',
+      type: 'alert',
+      title: 'Operaciones Atrasadas',
+      message: `Hay ${activeRentals.overdue} operaciones con fechas vencidas.`,
+      timeAgo: 'Urgente',
+    });
+  }
+
+  if (activeRentals.dueToday > 0) {
+    notifications.push({
+      id: 'alert_duetoday',
+      type: 'warning',
+      title: 'Vencen Hoy',
+      message: `Hay ${activeRentals.dueToday} operaciones que vencen hoy.`,
+      timeAgo: 'Hoy',
+    });
+  }
+
+  recentMovements.forEach(m => {
+    let title = 'Movimiento registrado';
+    let type = 'info';
+    if (m.status === 'Pickup') { title = 'Retiro de piezas'; type = 'pickup'; }
+    else if (m.status === 'Return') { title = 'Devolución de piezas'; type = 'return'; }
+    else if (m.status === 'Sale') { title = 'Venta registrada'; type = 'sale'; }
+
+    notifications.push({
+      id: `mov_${m.id}`,
+      type,
+      title,
+      message: `${m.itemName} - ${m.customerName}`,
+      timeAgo: m.timeAgo,
+    });
+  });
+
+  return notifications;
+}
+
+module.exports = { getDashboardData, getActiveOperationsDetails, getNotifications };

@@ -39,6 +39,39 @@ const updateClienteSchema = z.object({
 
 // ─── Services ─────────────────────────────────────────────────────────────────
 
+/**
+ * Campos permitidos para ordenamiento dinamico.
+ * Las claves son los nombres publicos que acepta la API;
+ * los valores son la ruta Prisma correspondiente.
+ */
+const SORT_WHITELIST = {
+  nombre:     { persona: { nombre: undefined } },
+  apellido:   { persona: { apellido: undefined } },
+  documento:  { persona: { documento: undefined } },
+  fecha_alta: { fecha_alta: undefined },
+  telefono:   { telefono: undefined },
+};
+
+/**
+ * Construye la clausula orderBy a partir de los query params.
+ * Devuelve el default (fecha_alta desc) cuando no se especifica un campo valido.
+ */
+function buildOrderBy(sortField, sortDirection) {
+  const direction = sortDirection === 'asc' ? 'asc' : 'desc';
+  const template = SORT_WHITELIST[sortField];
+  if (!template) return { fecha_alta: 'desc' };
+
+  const applyDirection = (obj) => {
+    const result = {};
+    for (const [key, val] of Object.entries(obj)) {
+      result[key] = val === undefined ? direction : applyDirection(val);
+    }
+    return result;
+  };
+
+  return applyDirection(template);
+}
+
 async function getAllClientes(query) {
   const { skip, take, page, limit } = parsePagination(query);
   const search = query.search ?? '';
@@ -59,13 +92,15 @@ async function getAllClientes(query) {
     where.persona.deleted_at = null;
   }
 
+  const orderBy = buildOrderBy(query.sort_field, query.sort_direction);
+
   const [data, total] = await prisma.$transaction([
     prisma.cliente.findMany({
       where,
       skip,
       take,
       include: { persona: true },
-      orderBy: { fecha_alta: 'desc' },
+      orderBy,
     }),
     prisma.cliente.count({ where }),
   ]);

@@ -127,7 +127,7 @@ export default function VentaForm() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-64 overflow-y-auto">
               {stockItems.map((s) => (
                 <button key={s.id_pieza_stock} type="button" onClick={() => togglePieza(s)}
-                  className={`flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all ${selectedPiezas.has(s.id_pieza_stock) ? 'border-primary bg-primary/5' : 'border-outline-variant/20 hover:border-primary/30'}`}
+                  className={`flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all ${selectedPiezas.has(s.id_pieza_stock) ? 'border-primary bg-primary/5' : 'border-divider hover:border-primary/30'}`}
                 >
                   <div className="flex-1 min-w-0">
                     <p className="text-body-md font-medium text-on-surface truncate">{s.pieza?.nombre}</p>

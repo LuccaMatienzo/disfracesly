@@ -12,9 +12,9 @@ export default function SettingsModal({ isOpen, onClose }) {
       />
       
       {/* Modal Content */}
-      <div className="relative bg-card-panel border border-outline-variant/20 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in flex flex-col">
+      <div className="relative bg-card-panel border border-divider rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-outline-variant/20">
+        <div className="flex items-center justify-between p-5 border-b border-divider">
           <h2 className="text-xl font-headline font-semibold text-on-surface">Configuración de DisfracesLy</h2>
           <button 
             onClick={onClose}
@@ -32,7 +32,7 @@ export default function SettingsModal({ isOpen, onClose }) {
               <FiGlobe className="text-primary" />
               <h3>Idioma</h3>
             </div>
-            <select className="w-full bg-surface-container border border-outline-variant/30 text-on-surface rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
+            <select className="w-full bg-surface-container border border-divider text-on-surface rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
               <option value="es-AR">Español (Argentina)</option>
               <option value="es-ES">Español (España)</option>
               <option value="en-US">English (US)</option>
@@ -46,11 +46,11 @@ export default function SettingsModal({ isOpen, onClose }) {
               <h3>Notificaciones</h3>
             </div>
             <div className="space-y-2">
-              <label className="flex items-center justify-between p-3 border border-outline-variant/20 rounded-xl hover:bg-surface-container/50 cursor-pointer transition-colors">
+              <label className="flex items-center justify-between p-3 border border-divider rounded-xl hover:bg-surface-container/50 cursor-pointer transition-colors">
                 <span className="text-sm text-on-surface">Alertas del sistema</span>
                 <input type="checkbox" defaultChecked className="size-5 accent-primary rounded cursor-pointer" />
               </label>
-              <label className="flex items-center justify-between p-3 border border-outline-variant/20 rounded-xl hover:bg-surface-container/50 cursor-pointer transition-colors">
+              <label className="flex items-center justify-between p-3 border border-divider rounded-xl hover:bg-surface-container/50 cursor-pointer transition-colors">
                 <span className="text-sm text-on-surface">Nuevas reservas</span>
                 <input type="checkbox" defaultChecked className="size-5 accent-primary rounded cursor-pointer" />
               </label>

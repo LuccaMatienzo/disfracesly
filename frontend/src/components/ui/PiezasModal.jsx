@@ -92,7 +92,7 @@ export default function PiezasModal({ open, onClose, onSubmit, currentDetalles, 
                 flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all
                 ${selectedPiezas.has(s.id_pieza_stock)
                   ? 'border-primary bg-primary/5'
-                  : 'border-outline-variant/20 hover:border-primary/30'
+                  : 'border-divider hover:border-primary/30'
                 }
               `}
             >

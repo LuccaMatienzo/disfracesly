@@ -82,6 +82,7 @@ export default {
         // outline-variant para separadores y bordes decorativos mas sutiles.
         outline:               'var(--color-outline)',
         'outline-variant':     'var(--color-outline-variant)',
+        divider:               'var(--color-divider)',
 
         background:            'var(--color-background)',
         'on-background':       'var(--color-on-background)',

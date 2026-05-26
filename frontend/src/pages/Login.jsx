@@ -33,7 +33,7 @@ export default function Login() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-[800px] rounded-full bg-primary/5 blur-3xl pointer-events-none" />
 
       {/* ── Glass Panel ───────────────────────────────────────────────────── */}
-      <div className="relative w-full max-w-md bg-card-panel/85 backdrop-blur-xl rounded-3xl shadow-editorial border border-outline-variant/30 p-10 animate-slide-up">
+      <div className="relative w-full max-w-md bg-card-panel/85 backdrop-blur-xl rounded-3xl shadow-editorial border border-divider p-10 animate-slide-up">
 
         {/* Logo + título */}
         <div className="text-center mb-8">
@@ -76,7 +76,7 @@ export default function Login() {
                 value={form.correo}
                 onChange={(e) => setForm((p) => ({ ...p, correo: e.target.value }))}
                 required
-                className="w-full pl-12 pr-4 py-4 rounded-xl bg-surface-container-low border border-outline-variant/40 text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
+                className="w-full pl-12 pr-4 py-4 rounded-xl bg-surface-container-low border border-divider text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
               />
             </div>
           </div>
@@ -98,7 +98,7 @@ export default function Login() {
                 value={form.contrasena}
                 onChange={(e) => setForm((p) => ({ ...p, contrasena: e.target.value }))}
                 required
-                className="w-full pl-12 pr-12 py-4 rounded-xl bg-surface-container-low border border-outline-variant/40 text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
+                className="w-full pl-12 pr-12 py-4 rounded-xl bg-surface-container-low border border-divider text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
               />
               <button
                 type="button"

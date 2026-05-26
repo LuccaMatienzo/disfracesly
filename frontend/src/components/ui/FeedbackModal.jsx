@@ -10,7 +10,7 @@ export default function FeedbackModal({ isOpen, type, message, onClose }) {
       style={{ zIndex: 9999 }}
       onClick={(e) => e.target === e.currentTarget && onClose?.()}
     >
-      <div className="glass border border-outline-variant/20 rounded-2xl shadow-float w-full max-w-sm p-6 animate-scale-in text-center flex flex-col items-center">
+      <div className="glass border border-divider rounded-2xl shadow-float w-full max-w-sm p-6 animate-scale-in text-center flex flex-col items-center">
         {type === 'success' ? (
           <div className="p-4 rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 mb-4 shrink-0">
              <FiCheck className="w-10 h-10" />

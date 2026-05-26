@@ -35,7 +35,7 @@ export function Field({ label, value, className = '' }) {
 export function Section({ title, children }) {
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-label-lg font-label font-semibold text-primary border-b border-outline-variant/20 pb-1">
+      <p className="text-label-lg font-label font-semibold text-primary border-b border-divider pb-1">
         {title}
       </p>
       {children}
@@ -89,13 +89,13 @@ export default function ViewModal({ open, onClose, title, loading = false, child
     >
       <div
         className={`
-          glass border border-outline-variant/20 rounded-2xl shadow-float
+          glass border border-divider rounded-2xl shadow-float
           w-[calc(100%-2rem)] sm:w-full ${sizes[size] ?? sizes.md} animate-scale-in
           flex flex-col max-h-[85vh] md:max-h-[85vh]
         `}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-outline-variant/20 shrink-0">
+        <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-divider shrink-0">
           <h2 className="font-headline text-title-lg md:text-headline-md text-on-surface">{title}</h2>
           <button
             onClick={onClose}

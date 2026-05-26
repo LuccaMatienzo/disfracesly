@@ -113,9 +113,9 @@ export default function AccountModal({ isOpen, onClose }) {
         />
         
         {/* Modal Content */}
-        <div className="relative bg-card-panel border border-outline-variant/20 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in flex flex-col max-h-[90vh]">
+        <div className="relative bg-card-panel border border-divider rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in flex flex-col max-h-[90vh]">
           {/* Header */}
-          <div className="flex items-center justify-between p-5 border-b border-outline-variant/20 shrink-0">
+          <div className="flex items-center justify-between p-5 border-b border-divider shrink-0">
             <h2 className="text-xl font-headline font-semibold text-on-surface">Administrar cuenta</h2>
             <button 
               onClick={onClose}
@@ -129,7 +129,7 @@ export default function AccountModal({ isOpen, onClose }) {
           <div className="p-5 space-y-6 overflow-y-auto">
             {/* Perfil */}
             <section className="space-y-4">
-              <div className="flex items-center gap-2 text-on-surface font-medium border-b border-outline-variant/20 pb-2">
+              <div className="flex items-center gap-2 text-on-surface font-medium border-b border-divider pb-2">
                 <FiUser className="text-primary" />
                 <h3>Perfil</h3>
               </div>
@@ -151,7 +151,7 @@ export default function AccountModal({ isOpen, onClose }) {
                       type="text" 
                       value={nombre}
                       onChange={(e) => setNombre(e.target.value)}
-                      className="w-full bg-surface-container border border-outline-variant/30 text-on-surface rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" 
+                      className="w-full bg-surface-container border border-divider text-on-surface rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" 
                     />
                   </div>
                   <div>
@@ -160,7 +160,7 @@ export default function AccountModal({ isOpen, onClose }) {
                       type="text" 
                       value={apellido}
                       onChange={(e) => setApellido(e.target.value)}
-                      className="w-full bg-surface-container border border-outline-variant/30 text-on-surface rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" 
+                      className="w-full bg-surface-container border border-divider text-on-surface rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" 
                     />
                   </div>
                 </div>
@@ -171,7 +171,7 @@ export default function AccountModal({ isOpen, onClose }) {
                     value={user?.correo || user?.email || ''}
                     readOnly
                     disabled
-                    className="w-full bg-surface-container border border-outline-variant/30 text-on-surface rounded-xl px-4 py-2 opacity-60 cursor-not-allowed" 
+                    className="w-full bg-surface-container border border-divider text-on-surface rounded-xl px-4 py-2 opacity-60 cursor-not-allowed" 
                   />
                 </div>
               </div>
@@ -179,7 +179,7 @@ export default function AccountModal({ isOpen, onClose }) {
 
             {/* Seguridad */}
             <section className="space-y-4">
-              <div className="flex items-center gap-2 text-on-surface font-medium border-b border-outline-variant/20 pb-2">
+              <div className="flex items-center gap-2 text-on-surface font-medium border-b border-divider pb-2">
                 <FiLock className="text-primary" />
                 <h3>Seguridad</h3>
               </div>
@@ -192,7 +192,7 @@ export default function AccountModal({ isOpen, onClose }) {
                     placeholder="••••••••"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full bg-surface-container border border-outline-variant/30 text-on-surface rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" 
+                    className="w-full bg-surface-container border border-divider text-on-surface rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" 
                   />
                 </div>
                 <div>
@@ -202,7 +202,7 @@ export default function AccountModal({ isOpen, onClose }) {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-surface-container border border-outline-variant/30 text-on-surface rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" 
+                    className="w-full bg-surface-container border border-divider text-on-surface rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" 
                   />
                 </div>
                 <div>
@@ -215,7 +215,7 @@ export default function AccountModal({ isOpen, onClose }) {
                     className={`w-full bg-surface-container border text-on-surface rounded-xl px-4 py-2 focus:outline-none focus:ring-2 transition-all ${
                       !isPasswordEmpty && !isPasswordValid
                         ? 'border-red-500/50 focus:ring-red-500/50'
-                        : 'border-outline-variant/30 focus:ring-primary/50'
+                        : 'border-divider focus:ring-primary/50'
                     }`} 
                   />
                   {!isPasswordEmpty && !isPasswordValid && (
@@ -231,7 +231,7 @@ export default function AccountModal({ isOpen, onClose }) {
           </div>
 
           {/* Footer */}
-          <div className="p-5 border-t border-outline-variant/20 flex items-center justify-end gap-3 shrink-0 bg-surface-container-low/50">
+          <div className="p-5 border-t border-divider flex items-center justify-end gap-3 shrink-0 bg-surface-container-low/50">
             <button 
               onClick={onClose}
               disabled={isLoading}
@@ -258,7 +258,7 @@ export default function AccountModal({ isOpen, onClose }) {
       {showConfirm && (
         <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: 70 }}>
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !isLoading && setShowConfirm(false)} />
-          <div className="relative bg-card-panel border border-outline-variant/20 rounded-2xl shadow-2xl w-full max-w-sm p-6 animate-fade-in">
+          <div className="relative bg-card-panel border border-divider rounded-2xl shadow-2xl w-full max-w-sm p-6 animate-fade-in">
             <h3 className="text-lg font-headline font-semibold text-on-surface mb-2">¿Guardar cambios?</h3>
             <p className="text-sm text-on-surface-variant mb-6">
               ¿Estás seguro que deseas aplicar estas modificaciones a tu cuenta?

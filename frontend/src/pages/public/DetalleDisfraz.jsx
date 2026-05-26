@@ -233,7 +233,7 @@ export default function DetalleDisfraz() {
             {/* Incluye */}
             {disfraz.piezas?.length > 0 && (
               <div className="bg-surface-container-low rounded-2xl p-6">
-                <h3 className="text-xs font-label uppercase tracking-widest text-on-surface font-semibold border-b border-outline-variant/20 pb-3 mb-4">
+                <h3 className="text-xs font-label uppercase tracking-widest text-on-surface font-semibold border-b border-divider pb-3 mb-4">
                   Incluye
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

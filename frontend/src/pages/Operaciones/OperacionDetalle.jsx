@@ -406,7 +406,7 @@ export default function OperacionDetalle() {
                 <p className="text-body-md text-on-surface-variant">{clienteNombre}</p>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 border-t border-outline-variant/15 pt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 border-t border-divider pt-4">
               <InfoRow icon="badge" label="Documento" value={clienteDoc} />
               <InfoRow icon="call" label="Teléfono" value={clienteTel} />
               <InfoRow icon="home" label="Domicilio" value={clienteDom} />
@@ -442,7 +442,7 @@ export default function OperacionDetalle() {
                 return (
                   <div
                     key={det.id_operacion_detalle}
-                    className="flex items-center gap-4 p-3 rounded-xl border border-outline-variant/15 hover:bg-surface-container-low/40 transition-colors"
+                    className="flex items-center gap-4 p-3 rounded-xl border border-divider hover:bg-surface-container-low/40 transition-colors"
                   >
                     {/* Thumbnail */}
                     <div className="size-12 rounded-lg bg-surface-container flex items-center justify-center shrink-0 overflow-hidden">
@@ -502,7 +502,7 @@ export default function OperacionDetalle() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-outline-variant/15">
+                    <tr className="border-b border-divider">
                       {['Tipo', 'Método', 'Monto', 'Fecha', 'Responsable', 'Acciones'].map(h => (
                         <th key={h} className={`text-left px-3 py-2.5 text-[10px] font-label font-bold uppercase tracking-widest text-on-surface-variant ${h === 'Acciones' ? 'text-center' : ''}`}>
                           {h}
@@ -514,7 +514,7 @@ export default function OperacionDetalle() {
                     {pagos.map((pago, i) => (
                       <tr
                         key={pago.id_pago_operacion}
-                        className={`border-b border-outline-variant/10 last:border-0 ${i % 2 ? 'bg-surface-container-low/30' : ''}`}
+                        className={`border-b border-divider last:border-0 ${i % 2 ? 'bg-surface-container-low/30' : ''}`}
                       >
                         <td className="px-3 py-2.5">
                           <span className={`text-xs font-semibold uppercase tracking-wider ${
@@ -568,7 +568,7 @@ export default function OperacionDetalle() {
             </div>
 
             {(op.interacciones ?? []).length > 0 ? (
-              <div className="relative pl-6 border-l-2 border-outline-variant/20 space-y-4">
+              <div className="relative pl-6 border-l-2 border-divider space-y-4">
                 {(op.interacciones ?? []).map((inter) => (
                   <div key={inter.id_interaccion_operacion} className="relative">
                     {/* Dot */}
@@ -585,7 +585,7 @@ export default function OperacionDetalle() {
                           {inter.tipo === 'RETIRO' ? 'Entregado por' : inter.tipo === 'DEVOLUCION' ? 'Recibido por' : 'Usuario'}: {inter.usuario?.persona?.nombre} {inter.usuario?.persona?.apellido}
                         </p>
                         {inter.observaciones && (
-                          <p className="text-xs text-on-surface-variant mt-2 italic bg-surface-container-low/50 p-2 rounded-lg border border-outline-variant/10">
+                          <p className="text-xs text-on-surface-variant mt-2 italic bg-surface-container-low/50 p-2 rounded-lg border border-divider">
                             <strong>Observaciones:</strong> {inter.observaciones}
                           </p>
                         )}
@@ -619,15 +619,15 @@ export default function OperacionDetalle() {
       )}
     </div>
     <div className="space-y-3">
-              <div className="flex justify-between items-center py-2 border-b border-outline-variant/15">
+              <div className="flex justify-between items-center py-2 border-b border-divider">
                 <span className="text-sm text-on-surface-variant">Monto total</span>
                 <span className="text-lg font-headline font-black text-on-surface">{fmt(montoTotal)}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-outline-variant/15">
+              <div className="flex justify-between items-center py-2 border-b border-divider">
                 <span className="text-sm text-on-surface-variant">Total pagado</span>
                 <span className="text-sm font-semibold text-primary">{fmt(totalPagado)}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-outline-variant/15">
+              <div className="flex justify-between items-center py-2 border-b border-divider">
                 <span className="text-sm text-on-surface-variant">Saldo pendiente</span>
                 <span className={`text-sm font-semibold ${saldoPendiente > 0 ? 'text-error' : 'text-primary'}`}>
                   {fmt(saldoPendiente)}
@@ -637,7 +637,7 @@ export default function OperacionDetalle() {
               {/* Alquiler-specific deposit info */}
               {isAlquiler && (
                 <>
-                  <div className="mt-2 pt-3 border-t border-outline-variant/15">
+                  <div className="mt-2 pt-3 border-t border-divider">
                     <p className="text-[11px] font-label font-bold uppercase tracking-widest text-on-surface-variant mb-2">
                       Depósito
                     </p>
@@ -666,7 +666,7 @@ export default function OperacionDetalle() {
 
               {/* Venta-specific seña info */}
               {isVenta && senaMonto > 0 && (
-                <div className="mt-2 pt-3 border-t border-outline-variant/15">
+                <div className="mt-2 pt-3 border-t border-divider">
                   <div className="flex justify-between items-center py-1">
                     <span className="text-xs text-on-surface-variant">Seña registrada</span>
                     <span className="text-sm font-medium text-on-surface">{fmt(senaMonto)}</span>

@@ -4,6 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import { MdOutlinePendingActions } from 'react-icons/md';
 import { LuPackageOpen } from 'react-icons/lu';
 import { BsBagCheck } from 'react-icons/bs';
+import KpiDetailsModal from '@/components/ui/KpiDetailsModal';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -33,6 +34,10 @@ const BADGE_ETAPA = {
   'Pendiente': { cls: 'bg-secondary-container text-white' },
   'Por vencer': { cls: 'bg-error/15 text-error' },
   'Entregado': { cls: 'bg-surface-container text-tertiary' },
+  'RETIRADO': { cls: 'bg-primary-container text-primary-on-container' },
+  'RESERVADO': { cls: 'bg-tertiary-container text-on-surface' },
+  'LISTO_PARA_RETIRO': { cls: 'bg-secondary-container text-white' },
+  'LISTO_PARA_ENTREGA': { cls: 'bg-secondary-container text-white' },
 };
 
 const STATUS_CONFIG = {
@@ -106,9 +111,12 @@ function DonutChart({ data }) {
 
 // ─── KPI Top Cards ────────────────────────────────────────────────────────────
 
-function KpiActiveRentals({ data }) {
+function KpiActiveRentals({ data, onClick, onClickOverdue }) {
   return (
-    <div className="bg-card-panel rounded-2xl shadow-card p-4 md:p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
+    <div 
+      onClick={onClick}
+      className="bg-card-panel rounded-2xl shadow-card p-4 md:p-5 hover:-translate-y-1 hover:shadow-lg transition-all duration-200 cursor-pointer overflow-hidden relative flex flex-col justify-start h-full"
+    >
       <div className="absolute top-6 right-4 md:top-8 md:right-6 pointer-events-none opacity-20 text-tertiary">
         <MdOutlinePendingActions size={40} className="md:hidden" />
         <MdOutlinePendingActions size={50} className="hidden md:block" />
@@ -119,7 +127,15 @@ function KpiActiveRentals({ data }) {
       </div>
       <div className="flex flex-wrap gap-2 md:gap-4 mt-2 text-[10px] md:text-xs">
         {data.overdue > 0 && (
-          <span className="text-error font-semibold">Atrasados ({data.overdue})</span>
+          <span 
+            className="text-error font-semibold cursor-pointer hover:underline"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClickOverdue?.();
+            }}
+          >
+            Atrasados ({data.overdue})
+          </span>
         )}
         {data.dueToday > 0 && (
           <span className="text-primary font-semibold">Vencen Hoy ({data.dueToday})</span>
@@ -129,9 +145,12 @@ function KpiActiveRentals({ data }) {
   );
 }
 
-function KpiPreparation({ data }) {
+function KpiPreparation({ data, onClick }) {
   return (
-    <div className="bg-card-panel rounded-2xl shadow-card p-4 md:p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
+    <div 
+      onClick={onClick}
+      className="bg-card-panel rounded-2xl shadow-card p-4 md:p-5 hover:-translate-y-1 hover:shadow-lg transition-all duration-200 cursor-pointer overflow-hidden relative flex flex-col justify-start h-full"
+    >
       <div className="absolute top-6 right-4 md:top-8 md:right-6 pointer-events-none opacity-20 text-tertiary">
         <LuPackageOpen size={40} className="md:hidden" />
         <LuPackageOpen size={50} className="hidden md:block" />
@@ -144,9 +163,12 @@ function KpiPreparation({ data }) {
   );
 }
 
-function KpiReadyForPickup({ data }) {
+function KpiReadyForPickup({ data, onClick }) {
   return (
-    <div className="bg-card-panel rounded-2xl shadow-card p-4 md:p-5 hover:-translate-y-1 transition-transform duration-200 cursor-default overflow-hidden relative flex flex-col justify-start h-full">
+    <div 
+      onClick={onClick}
+      className="bg-card-panel rounded-2xl shadow-card p-4 md:p-5 hover:-translate-y-1 hover:shadow-lg transition-all duration-200 cursor-pointer overflow-hidden relative flex flex-col justify-start h-full"
+    >
       <div className="absolute top-6 right-4 md:top-8 md:right-6 pointer-events-none opacity-20 text-tertiary">
         <BsBagCheck size={40} className="md:hidden" />
         <BsBagCheck size={50} className="hidden md:block" />
@@ -197,7 +219,7 @@ function RecentMovements({ movements }) {
 
   return (
     <div className="bg-card-panel rounded-2xl shadow-card overflow-hidden">
-      <div className="px-4 md:px-6 py-3 md:py-4 border-b border-outline-variant/20 flex items-center justify-between">
+      <div className="px-4 md:px-6 py-3 md:py-4 border-b border-divider flex items-center justify-between">
         <h2 className="font-headline font-semibold text-on-surface text-base md:text-lg">Movimientos Recientes</h2>
         <a href="/admin/operaciones" className="text-xs md:text-sm text-on-surface-variant font-label font-semibold hover:underline">
           Ver Todos
@@ -205,7 +227,7 @@ function RecentMovements({ movements }) {
       </div>
 
       {/* Mobile: stacked cards */}
-      <div className="md:hidden divide-y divide-outline-variant/10">
+      <div className="md:hidden divide-y divide-divider">
         {movements.map((mov) => {
           const cfg = STATUS_CONFIG[mov.status] ?? STATUS_CONFIG.Otra;
           return (
@@ -245,7 +267,7 @@ function RecentMovements({ movements }) {
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-outline-variant/10">
+            <tr className="border-b border-divider">
               {['ESTADO', 'ARTÍCULO', 'CLIENTE', 'EMPLEADO', 'TIEMPO'].map((h) => (
                 <th
                   key={h}
@@ -262,7 +284,7 @@ function RecentMovements({ movements }) {
               return (
                 <tr
                   key={mov.id}
-                  className={`border-b border-outline-variant/10 last:border-0 hover:bg-surface-container-low/60 transition-colors ${i % 2 === 0 ? '' : 'bg-surface-container-low/30'
+                  className={`border-b border-divider last:border-0 hover:bg-surface-container-low/60 transition-colors ${i % 2 === 0 ? '' : 'bg-surface-container-low/30'
                     }`}
                 >
                   <td className="px-6 py-3.5">
@@ -373,7 +395,7 @@ function UpcomingReturns({ returns: list }) {
 
   return (
     <div className="bg-card-panel rounded-2xl shadow-card overflow-hidden">
-      <div className="px-4 md:px-6 py-3 md:py-4 border-b border-outline-variant/20 flex items-center justify-between">
+      <div className="px-4 md:px-6 py-3 md:py-4 border-b border-divider flex items-center justify-between">
         <h2 className="font-headline font-semibold text-on-surface text-base md:text-lg">
           Próximos alquileres a vencer
         </h2>
@@ -386,7 +408,7 @@ function UpcomingReturns({ returns: list }) {
       </div>
 
       {/* Mobile: stacked cards */}
-      <div className="md:hidden divide-y divide-outline-variant/10">
+      <div className="md:hidden divide-y divide-divider">
         {list.map((op) => {
           const badge = BADGE_ETAPA[op.etapa] ?? BADGE_ETAPA.Pendiente;
           return (
@@ -411,7 +433,7 @@ function UpcomingReturns({ returns: list }) {
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-outline-variant/10">
+            <tr className="border-b border-divider">
               {['Cliente', 'Disfraz', 'Retiro', 'Devolución', 'Estado'].map((h) => (
                 <th
                   key={h}
@@ -428,7 +450,7 @@ function UpcomingReturns({ returns: list }) {
               return (
                 <tr
                   key={op.id}
-                  className={`border-b border-outline-variant/10 last:border-0 hover:bg-surface-container-low/60 transition-colors ${i % 2 === 0 ? '' : 'bg-surface-container-low/30'
+                  className={`border-b border-divider last:border-0 hover:bg-surface-container-low/60 transition-colors ${i % 2 === 0 ? '' : 'bg-surface-container-low/30'
                     }`}
                 >
                   <td className="px-6 py-4 font-medium text-on-surface text-sm">{op.cliente}</td>
@@ -469,6 +491,57 @@ export default function Dashboard() {
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // States para modales de KPIs
+  const [activeOpsModalOpen, setActiveOpsModalOpen] = useState(false);
+  const [overdueOpsModalOpen, setOverdueOpsModalOpen] = useState(false);
+  const [prepModalOpen, setPrepModalOpen] = useState(false);
+  const [readyModalOpen, setReadyModalOpen] = useState(false);
+
+  const activeOpsColumns = useMemo(() => [
+    { key: 'cliente', label: 'Cliente' },
+    { key: 'tipo', label: 'Tipo' },
+    { 
+      key: 'etapa', 
+      label: 'Etapa',
+      render: (etapa) => {
+        const badge = BADGE_ETAPA[etapa] ?? BADGE_ETAPA.Pendiente;
+        return (
+          <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${badge.cls}`}>
+            {etapa.replace(/_/g, ' ')}
+          </span>
+        );
+      }
+    },
+    { 
+      key: 'fecha', 
+      label: 'Fecha',
+      getLabel: (row) => row.tipo === 'Alquiler' ? 'Fecha Retiro' : 'Fecha Entrega',
+      render: (fecha) => fecha ? new Date(fecha).toLocaleDateString('es-AR') : '—'
+    }
+  ], []);
+
+  const overdueOpsColumns = useMemo(() => [
+    ...activeOpsColumns,
+    {
+      key: 'causante',
+      label: 'Causante',
+      render: (_, row) => {
+        if (row.etapa === 'RESERVADO') return 'Tienda';
+        return 'Cliente';
+      }
+    },
+    {
+      key: 'motivo',
+      label: 'Motivo',
+      render: (_, row) => {
+        if (row.etapa === 'RESERVADO') return 'Disfraz no terminado';
+        if (row.etapa === 'LISTO_PARA_RETIRO' || row.etapa === 'LISTO_PARA_ENTREGA') return 'No retiró disfraz';
+        if (row.etapa === 'RETIRADO') return 'No devolvió disfraz';
+        return '—';
+      }
+    }
+  ], [activeOpsColumns]);
 
   useEffect(() => {
     async function fetchDashboard() {
@@ -539,9 +612,19 @@ export default function Dashboard() {
 
       {/* ── KPI Cards ─────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
-        <KpiActiveRentals data={activeRentals} />
-        <KpiPreparation data={inPreparation} />
-        <KpiReadyForPickup data={readyForPickup} />
+        <KpiActiveRentals 
+          data={activeRentals} 
+          onClick={() => setActiveOpsModalOpen(true)} 
+          onClickOverdue={() => setOverdueOpsModalOpen(true)}
+        />
+        <KpiPreparation 
+          data={inPreparation} 
+          onClick={() => setPrepModalOpen(true)}
+        />
+        <KpiReadyForPickup 
+          data={readyForPickup} 
+          onClick={() => setReadyModalOpen(true)}
+        />
         <KpiMonthlyRevenue data={monthlyRevenue} />
       </div>
 
@@ -558,6 +641,40 @@ export default function Dashboard() {
 
       {/* ── Upcoming Returns Table ────────────────────────────────────────── */}
       <UpcomingReturns returns={upcomingReturns} />
+
+      <KpiDetailsModal 
+        open={activeOpsModalOpen} 
+        onClose={() => setActiveOpsModalOpen(false)}
+        title="Operaciones Activas"
+        endpoint="/dashboard/active-operations"
+        columns={activeOpsColumns}
+        rowClassName={(row) => row.esAtrasado ? 'text-coral font-medium' : ''}
+      />
+
+      <KpiDetailsModal 
+        open={overdueOpsModalOpen} 
+        onClose={() => setOverdueOpsModalOpen(false)}
+        title="Operaciones Activas Atrasadas"
+        endpoint="/dashboard/active-operations?overdue=true"
+        columns={overdueOpsColumns}
+        rowClassName={() => 'text-coral font-medium'}
+      />
+
+      <KpiDetailsModal 
+        open={prepModalOpen} 
+        onClose={() => setPrepModalOpen(false)}
+        title="En Preparación"
+        endpoint="/dashboard/active-operations?etapa=RESERVADO"
+        columns={activeOpsColumns}
+      />
+
+      <KpiDetailsModal 
+        open={readyModalOpen} 
+        onClose={() => setReadyModalOpen(false)}
+        title="Listos para Retiro"
+        endpoint="/dashboard/active-operations?etapa=LISTO_PARA_RETIRO,LISTO_PARA_ENTREGA"
+        columns={activeOpsColumns}
+      />
 
     </div>
   );

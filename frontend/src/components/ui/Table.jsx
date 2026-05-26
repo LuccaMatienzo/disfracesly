@@ -5,7 +5,7 @@
  * <tr> se convierte en un bloque card con data-label pseudo-elements.
  * En desktop (≥md) mantiene el layout clásico de tabla.
  */
-export default function Table({ columns, data, loading, emptyMessage = 'Sin resultados' }) {
+export default function Table({ columns, data, loading, emptyMessage = 'Sin resultados', rowClassName }) {
   return (
     <div className="w-full md:overflow-x-auto md:rounded-xl" style={{ WebkitOverflowScrolling: 'touch' }}>
       <table className="w-full md:border-collapse text-body-md md:min-w-[540px]">
@@ -48,11 +48,12 @@ export default function Table({ columns, data, loading, emptyMessage = 'Sin resu
               <tr
                 key={row.id ?? i}
                 className={`
-                  block mb-3 last:mb-0 p-4 rounded-xl border border-outline-variant/20
+                  block mb-3 last:mb-0 p-4 rounded-xl border border-divider
                   bg-surface-container-lowest shadow-sm
                   md:table-row md:mb-0 md:p-0 md:rounded-none md:border-0 md:shadow-none
                   ${i % 2 === 0 ? 'md:bg-background' : 'md:bg-surface-container-low'}
                   md:hover:bg-primary/5 transition-colors duration-75
+                  ${rowClassName ? rowClassName(row) : ''}
                 `}
               >
                 {columns.map((col) => {
@@ -67,11 +68,11 @@ export default function Table({ columns, data, loading, emptyMessage = 'Sin resu
                   return (
                     <td
                       key={col.key}
-                      data-label={col.label}
+                      data-label={col.getLabel ? col.getLabel(row) : col.label}
                       className={`
-                        text-on-surface
+                        ${rowClassName ? '' : 'text-on-surface'}
                         ${isActions
-                          ? 'block pt-3 mt-2 border-t border-outline-variant/10 text-center md:table-cell md:border-t-0 md:mt-0 md:pt-0'
+                          ? 'block pt-3 mt-2 border-t border-divider text-center md:table-cell md:border-t-0 md:mt-0 md:pt-0'
                           : `flex justify-between items-center gap-4 py-1.5 text-right
                              before:content-[attr(data-label)] before:font-semibold
                              before:text-on-surface-variant before:uppercase before:text-xs before:tracking-wide

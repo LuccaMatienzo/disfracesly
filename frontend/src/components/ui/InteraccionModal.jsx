@@ -90,7 +90,7 @@ export default function InteraccionModal({ open, onClose, onSubmit, loading, tip
       }
     >
       <form id="interaccion-form" onSubmit={handleSubmit} className="space-y-5">
-        <p className="text-sm text-on-surface-variant bg-surface-container-low p-3 rounded-xl border border-outline-variant/20">
+        <p className="text-sm text-on-surface-variant bg-surface-container-low p-3 rounded-xl border border-divider">
           Esta acción registrará {textoAccion} y avanzará la operación a la siguiente etapa.
         </p>
 
@@ -104,7 +104,7 @@ export default function InteraccionModal({ open, onClose, onSubmit, loading, tip
             <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
               !isNuevaPersona 
                 ? 'border-primary bg-primary/5' 
-                : 'border-outline-variant/30 hover:bg-surface-container-low'
+                : 'border-divider hover:bg-surface-container-low'
             }`}>
               <input
                 type="radio"
@@ -124,7 +124,7 @@ export default function InteraccionModal({ open, onClose, onSubmit, loading, tip
             <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
               isNuevaPersona 
                 ? 'border-primary bg-primary/5' 
-                : 'border-outline-variant/30 hover:bg-surface-container-low'
+                : 'border-divider hover:bg-surface-container-low'
             }`}>
               <input
                 type="radio"
@@ -161,7 +161,7 @@ export default function InteraccionModal({ open, onClose, onSubmit, loading, tip
                   className={`w-full bg-surface-container-lowest border rounded-xl px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-1 transition-all ${
                     errors.documento 
                       ? 'border-error focus:border-error focus:ring-error' 
-                      : 'border-outline-variant/30 focus:border-primary focus:ring-primary'
+                      : 'border-divider focus:border-primary focus:ring-primary'
                   }`}
                   placeholder="Ej: 12345678"
                 />
@@ -184,7 +184,7 @@ export default function InteraccionModal({ open, onClose, onSubmit, loading, tip
                     className={`w-full bg-surface-container-lowest border rounded-xl px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-1 transition-all ${
                       errors.nombre 
                         ? 'border-error focus:border-error focus:ring-error' 
-                        : 'border-outline-variant/30 focus:border-primary focus:ring-primary'
+                        : 'border-divider focus:border-primary focus:ring-primary'
                     }`}
                     placeholder="Nombre"
                   />
@@ -206,7 +206,7 @@ export default function InteraccionModal({ open, onClose, onSubmit, loading, tip
                     className={`w-full bg-surface-container-lowest border rounded-xl px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-1 transition-all ${
                       errors.apellido 
                         ? 'border-error focus:border-error focus:ring-error' 
-                        : 'border-outline-variant/30 focus:border-primary focus:ring-primary'
+                        : 'border-divider focus:border-primary focus:ring-primary'
                     }`}
                     placeholder="Apellido"
                   />
@@ -225,7 +225,7 @@ export default function InteraccionModal({ open, onClose, onSubmit, loading, tip
           <textarea
             value={formData.observaciones}
             onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
-            className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-4 py-3 text-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all min-h-[80px] resize-y"
+            className="w-full bg-surface-container-lowest border border-divider rounded-xl px-4 py-3 text-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all min-h-[80px] resize-y"
             placeholder="Detalles sobre el estado de las prendas, demoras, etc."
           />
         </div>

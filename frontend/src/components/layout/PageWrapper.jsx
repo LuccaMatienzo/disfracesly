@@ -4,6 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import ToastContainer from '@/components/ui/Toast';
 import ProfileDropdown from './ProfileDropdown';
+import NotificationsDropdown from './NotificationsDropdown';
 import SettingsModal from './SettingsModal';
 import AccountModal from './AccountModal';
 
@@ -60,7 +61,7 @@ export default function PageWrapper() {
       <aside
         className={`
           fixed top-0 left-0 h-full
-          flex flex-col bg-card-panel border-r border-outline-variant/20
+          flex flex-col bg-card-panel border-r border-divider
           shadow-glass transition-all duration-300
           
           ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
@@ -73,7 +74,7 @@ export default function PageWrapper() {
       >
         {/* Logo + toggle */}
         <div
-          className={`flex items-center border-b border-outline-variant/20 shrink-0 transition-all duration-300 ${sidebarOpen ? 'gap-3 px-5 py-5 justify-between' : 'flex-col gap-2 px-3 py-4 justify-center'
+          className={`flex items-center border-b border-divider shrink-0 transition-all duration-300 ${sidebarOpen ? 'gap-3 px-5 py-5 justify-between' : 'flex-col gap-2 px-3 py-4 justify-center'
             }`}
         >
           <div
@@ -149,7 +150,7 @@ export default function PageWrapper() {
         </nav>
 
         {/* User footer */}
-        <div className="px-2 pb-4 border-t border-outline-variant/20 pt-3 shrink-0">
+        <div className="px-2 pb-4 border-t border-divider pt-3 shrink-0">
           <div className={`flex items-center gap-3 px-3 py-2 rounded-xl ${!sidebarOpen && 'justify-center'}`}>
             <div className="size-8 rounded-full gradient-secondary flex items-center justify-center text-white text-xs font-bold shrink-0">
               {initials}
@@ -179,7 +180,7 @@ export default function PageWrapper() {
         className={`flex-1 flex flex-col transition-all duration-300 ml-0 min-w-0 ${sidebarOpen ? 'lg:ml-64' : 'lg:ml-[4.5rem]'}`}
       >
         {/* Top header */}
-        <header className="sticky top-0 z-20 bg-card-panel/90 backdrop-blur-md border-b border-outline-variant/20 px-3 md:px-6 py-3 flex items-center gap-3 md:gap-4">
+        <header className="sticky top-0 z-40 bg-card-panel/90 backdrop-blur-md border-b border-divider px-3 md:px-6 py-3 flex items-center gap-3 md:gap-4">
 
           {/* Hamburger — mobile only */}
           <button
@@ -197,10 +198,7 @@ export default function PageWrapper() {
             </span>
 
             {/* Notificaciones */}
-            <button className="relative size-9 rounded-xl hover:bg-surface-container transition-colors flex items-center justify-center" aria-label="Notificaciones">
-              <span className="material-symbols-outlined text-tertiary text-xl">notifications</span>
-              <span className="absolute top-1.5 right-1.5 size-2 bg-secondary-container rounded-full" />
-            </button>
+            <NotificationsDropdown />
 
             {/* Avatar Profile Dropdown */}
             <ProfileDropdown

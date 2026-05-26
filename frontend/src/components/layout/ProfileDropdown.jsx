@@ -47,7 +47,7 @@ export default function ProfileDropdown({ onOpenSettings, onOpenAccount }) {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-72 bg-card-panel rounded-xl shadow-xl border border-outline-variant/20 py-2 z-50 animate-fade-in origin-top-right">
+        <div className="absolute right-0 mt-2 w-72 bg-card-panel rounded-xl shadow-xl border border-divider py-2 z-50 animate-fade-in origin-top-right">
           {/* Header */}
           <div className="p-4 flex flex-col items-center text-center gap-2">
             <div className="size-16 rounded-full gradient-secondary flex items-center justify-center text-white font-headline font-bold text-2xl shadow-sm shrink-0">

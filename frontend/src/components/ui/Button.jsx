@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 
 const variants = {
   primary:   'gradient-primary text-white shadow-card hover:shadow-float hover:brightness-105 active:scale-[0.98]',
-  secondary: 'bg-surface-container-high text-on-surface hover:bg-surface-container-highest border border-outline-variant/30',
+  secondary: 'bg-surface-container-high text-on-surface hover:bg-surface-container-highest border border-divider',
   ghost:     'bg-transparent text-primary hover:bg-primary/10',
   danger:    'bg-error text-error-on hover:brightness-110',
   outline:   'border border-primary text-primary bg-transparent hover:bg-primary/10',

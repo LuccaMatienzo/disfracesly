@@ -12,7 +12,8 @@ import ActionButtons from '@/components/ui/ActionButtons';
 import ConfirmDeleteModal from '@/components/ui/ConfirmDeleteModal';
 import Badge from '@/components/ui/Badge';
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
-import { FiSearch, FiEye, FiEyeOff } from 'react-icons/fi';
+import SortToggle from '@/components/ui/SortToggle';
+import { FiSearch, FiEye, FiEyeOff, FiChevronDown } from 'react-icons/fi';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -35,6 +36,13 @@ export default function UsuariosList() {
   const [includeDeleted, setIncludeDeleted] = useState(false);
   const { showSuccess, showError } = useFeedback();
 
+  const [sort, setSort] = useState({ field: null, direction: null });
+
+  const handleSortChange = (field, direction) => {
+    setSort({ field, direction });
+    reset();
+  };
+
   const [deleteTarget, setDeleteTarget] = useState(null); // { id, nombre }
   const [roleFilter, setRoleFilter] = useState('');
   const [resetModalOpen, setResetModalOpen] = useState(false);
@@ -48,9 +56,19 @@ export default function UsuariosList() {
 
   // ─── Query ────────────────────────────────────────────────────────────────
   const { data, isLoading } = useQuery({
-    queryKey: ['usuarios', { page, limit, search, includeDeleted, roleFilter }],
+    queryKey: ['usuarios', { page, limit, search, includeDeleted, roleFilter, sort }],
     queryFn: () =>
-      api.get('/usuarios', { params: { page, limit, search: search || undefined, include_deleted: includeDeleted, id_rol: roleFilter || undefined } }).then((r) => r.data),
+      api.get('/usuarios', {
+        params: {
+          page,
+          limit,
+          search: search || undefined,
+          include_deleted: includeDeleted,
+          id_rol: roleFilter || undefined,
+          sort_field: sort.field ?? undefined,
+          sort_direction: sort.direction ?? undefined,
+        },
+      }).then((r) => r.data),
   });
 
   // ─── Mutación: soft-delete ────────────────────────────────────────────────
@@ -144,43 +162,91 @@ export default function UsuariosList() {
         </Link>
       </div>
 
-      {/* Buscador */}
-      <div className="bg-surface-container-lowest rounded-2xl shadow-card p-3 md:p-5">
-        <div className="flex flex-col md:flex-row gap-3 md:gap-4 items-center">
-          <div className="flex-1 w-full flex flex-col md:flex-row gap-3">
-            <div className="flex-1">
-              <Input
-                placeholder="Buscar por nombre, apellido o correo…"
-                value={search}
-                onChange={(e) => { setSearch(e.target.value); reset(); }}
-              />
-            </div>
-            <Select
-              value={roleFilter}
-              onChange={(e) => { setRoleFilter(e.target.value); reset(); }}
-              className="w-full md:w-auto"
-            >
-              <option value="">Todos los roles</option>
-              {roles.map(rol => (
-                <option key={rol.id_rol} value={rol.id_rol}>{rol.nombre}</option>
-              ))}
-            </Select>
-          </div>
-          {user?.rol === 'Superadministrador' && (
-            <ToggleSwitch
-              checked={includeDeleted}
-              onChange={(val) => { setIncludeDeleted(val); reset(); }}
-              label="Ver inactivos"
-              id="toggle-inactivos-usuarios"
+      {/* Toolbar */}
+      <div className="bg-surface-container-lowest rounded-2xl shadow-card p-3 lg:p-5 flex flex-col gap-4">
+        {/* Buscador */}
+        <div className="flex flex-row flex-nowrap w-full gap-2 items-center">
+          <div className="flex-1 min-w-0">
+            <Input
+              placeholder="Buscar por nombre, apellido o correo…"
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); reset(); }}
             />
-          )}
+          </div>
           <Button
             onClick={() => reset()}
-            className="h-[48px] w-full md:w-auto px-6 shrink-0"
+            className="h-[48px] shrink-0 px-4 lg:px-6"
           >
-            <span className="material-symbols-outlined text-[20px] mr-2">search</span>
-            Buscar
+            <span className="material-symbols-outlined text-[20px] sm:mr-2">search</span>
+            <span className="hidden sm:inline">Buscar</span>
           </Button>
+        </div>
+
+        {/* Barra de ordenamiento (Cinta Deslizable) */}
+        <div className="flex flex-row flex-nowrap overflow-x-auto whitespace-nowrap gap-3 pb-2 w-full pt-3 border-t border-divider items-center min-w-0 lg:overflow-visible lg:pb-0 lg:justify-start">
+          <div className="flex flex-row items-center gap-3 shrink-0">
+            {user?.rol === 'Superadministrador' && (
+              <>
+                <div className="shrink-0">
+                  <ToggleSwitch
+                    checked={includeDeleted}
+                    onChange={(val) => { setIncludeDeleted(val); reset(); }}
+                    label="Ver inactivos"
+                    id="toggle-inactivos-usuarios"
+                  />
+                </div>
+                <div className="w-px h-6 bg-divider shrink-0"></div>
+              </>
+            )}
+
+            {/* Filtro por Roles (Pill) */}
+            <div className="relative inline-block shrink-0">
+              <select
+                value={roleFilter}
+                onChange={(e) => { setRoleFilter(e.target.value); reset(); }}
+                className="appearance-none text-xs px-2 py-1 max-w-[130px] pr-6 font-medium shrink-0 rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer"
+              >
+                <option value="">Todos los roles</option>
+                {roles.map(rol => (
+                  <option key={rol.id_rol} value={rol.id_rol}>{rol.nombre}</option>
+                ))}
+              </select>
+              <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 size-3.5" />
+            </div>
+
+            <div className="w-px h-6 bg-divider shrink-0 ml-1"></div>
+
+            <span className="text-label-lg font-label font-medium text-on-surface-variant uppercase tracking-wide shrink-0 ml-1">
+              Ordenar:
+            </span>
+          </div>
+          
+          <div className="flex flex-row items-center gap-2 shrink-0 lg:flex-nowrap">
+            <SortToggle
+              label="Nombre"
+              field="nombre"
+              currentSort={sort}
+              onSortChange={handleSortChange}
+            />
+            <SortToggle
+              label="Apellido"
+              field="apellido"
+              currentSort={sort}
+              onSortChange={handleSortChange}
+            />
+            <SortToggle
+              label="Correo"
+              field="correo"
+              currentSort={sort}
+              onSortChange={handleSortChange}
+            />
+            <SortToggle
+              label="Documento"
+              field="documento"
+              currentSort={sort}
+              onSortChange={handleSortChange}
+            />
+          </div>
         </div>
       </div>
 
