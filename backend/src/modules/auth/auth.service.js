@@ -8,6 +8,10 @@ const { withNotDeleted } = require('../../utils/softDelete');
 
 // ─── Schemas Zod ─────────────────────────────────────────────────────────────
 
+/**
+ * Schema de validación para la solicitud de login.
+ * El campo `contrasena` es verificado contra el hash almacenado en BD.
+ */
 const loginSchema = z.object({
   correo: z.string().email('Correo inválido'),
   contrasena: z.string().min(6, 'Contraseña debe tener al menos 6 caracteres'),
@@ -15,6 +19,13 @@ const loginSchema = z.object({
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
+/**
+ * Genera un par de tokens JWT (access + refresh) a partir de un payload.
+ * Los tiempos de expiración se leen desde las variables de entorno.
+ *
+ * @param {{ sub: string, correo: string, rol: string }} payload - Claims del token
+ * @returns {{ accessToken: string, refreshToken: string }}
+ */
 function generateTokens(payload) {
   const accessToken = jwt.sign(payload, env.JWT_SECRET, { expiresIn: env.JWT_EXPIRES_IN });
   const refreshToken = jwt.sign(payload, env.JWT_SECRET, {
@@ -23,6 +34,13 @@ function generateTokens(payload) {
   return { accessToken, refreshToken };
 }
 
+/**
+ * Construye el objeto de usuario seguro que se adjunta a la respuesta de login.
+ * Excluye campos sensibles como la contraseña hasheada.
+ *
+ * @param {object} usuario - Registro de usuario de Prisma con relaciones persona y rol
+ * @returns {{ id_usuario: string, correo: string, rol: string, permisos: string[], persona: object }}
+ */
 function buildUsuarioPayload(usuario) {
   return {
     id_usuario: usuario.id_usuario.toString(),
@@ -38,6 +56,18 @@ function buildUsuarioPayload(usuario) {
 
 // ─── Services ─────────────────────────────────────────────────────────────────
 
+/**
+ * Lógica de negocio del inicio de sesión.
+ *
+ * Busca el usuario por correo (excluyendo eliminados lógicamente), verifica
+ * la contraseña usando bcrypt y emite el par de tokens JWT en caso de éxito.
+ * Se utiliza el mismo mensaje de error para credenciales incorrectas y usuario
+ * no encontrado para evitar enumeración de usuarios (timing-safe).
+ *
+ * @param {{ correo: string, contrasena: string }} credentials
+ * @returns {Promise<{ tokens: { accessToken: string, refreshToken: string }, usuario: object }>}
+ * @throws {ApiError} 401 si las credenciales son inválidas
+ */
 async function loginService({ correo, contrasena }) {
   const usuario = await prisma.usuario.findFirst({
     where: withNotDeleted({ correo }),
@@ -58,6 +88,14 @@ async function loginService({ correo, contrasena }) {
   return { tokens, usuario: buildUsuarioPayload(usuario) };
 }
 
+/**
+ * Renueva el par de tokens a partir de un refresh token válido.
+ * Verifica la firma y expiración del token antes de emitir uno nuevo.
+ *
+ * @param {string} token - Refresh token JWT
+ * @returns {Promise<{ accessToken: string, refreshToken: string }>}
+ * @throws {ApiError} 401 si el token es inválido o ha expirado
+ */
 async function refreshTokenService(token) {
   try {
     const payload = jwt.verify(token, env.JWT_SECRET);
@@ -67,6 +105,13 @@ async function refreshTokenService(token) {
   }
 }
 
+/**
+ * Genera el hash bcrypt de una contraseña en texto plano.
+ * El factor de coste 12 garantiza un tiempo de cómputo seguro contra ataques de fuerza bruta.
+ *
+ * @param {string} plain - Contraseña en texto plano
+ * @returns {Promise<string>} Hash bcrypt
+ */
 async function hashPassword(plain) {
   return bcrypt.hash(plain, 12);
 }

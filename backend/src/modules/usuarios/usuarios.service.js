@@ -1,3 +1,9 @@
+/**
+ * @module modules/usuarios/usuarios.service
+ * @description Lógica de negocio del módulo de Usuarios.
+ * Gestiona el CRUD de usuarios con sus personas asociadas, incluyendo
+ * control de jerarquía de roles, borrado lógico y actualización de perfil.
+ */
 const { z } = require('zod');
 const bcrypt = require('bcryptjs');
 const { prisma } = require('../../config/database');
@@ -6,8 +12,13 @@ const { hashPassword } = require('../auth/auth.service');
 const { withNotDeleted } = require('../../utils/softDelete');
 const { parsePagination, paginatedResponse } = require('../../utils/pagination');
 
-// ─── Schemas ──────────────────────────────────────────────────────────────────
+// ─── Schemas Zod ──────────────────────────────────────────────────────────────
 
+/**
+ * Schema de validación para la creación de un usuario.
+ * Incluye datos del usuario (correo, contraseña, rol) y de su persona (DNI, nombre, apellido).
+ * Las reglas de formato de DNI y nombre son estrictas para garantizar integridad de datos.
+ */
 const createUsuarioSchema = z.object({
   correo: z.string().email(),
   contrasena: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
@@ -19,6 +30,11 @@ const createUsuarioSchema = z.object({
   }),
 });
 
+/**
+ * Schema de validación para la actualización de un usuario.
+ * Todos los campos son opcionales. El modo `.strict()` previene campos
+ * no declarados para evitar actualizaciones masivas no autorizadas.
+ */
 const updateUsuarioSchema = z.object({
   correo: z.string().email().optional(),
   contrasena: z.string().min(8).optional().or(z.literal('')),
@@ -33,6 +49,10 @@ const updateUsuarioSchema = z.object({
     .optional(),
 }).strict("Campos no permitidos en la actualización");
 
+/**
+ * Schema de validación para la auto-actualización del perfil del usuario en sesión.
+ * Permite cambiar nombre, apellido, foto y contraseña (con verificación de la actual).
+ */
 const updateProfileSchema = z.object({
   nombre:   z.string().trim().min(1, 'El nombre no puede estar vacío').max(100).regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s']+$/, "El nombre contiene caracteres inválidos").optional(),
   apellido: z.string().trim().min(1, 'El apellido no puede estar vacío').max(100).regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s']+$/, "El apellido contiene caracteres inválidos").optional(),
@@ -43,6 +63,16 @@ const updateProfileSchema = z.object({
 
 // ─── Utils ────────────────────────────────────────────────────────────────────
 
+/**
+ * Previene la escalada de privilegios verificando que el usuario operador
+ * no intente asignar un rol de mayor jerarquía que el propio.
+ * La jerarquía es: Superadministrador > Jefe > Empleado.
+ *
+ * @param {string} currentUserRoleName - Nombre del rol del usuario que ejecuta la operación
+ * @param {number|undefined} targetRoleId - ID del rol a asignar al nuevo/editado usuario
+ * @returns {Promise<void>}
+ * @throws {ApiError} 403 si se intenta asignar un rol superior al propio
+ */
 async function checkRoleHierarchy(currentUserRoleName, targetRoleId) {
   if (!targetRoleId) return;
   const targetRole = await prisma.rol.findUnique({ where: { id_rol: BigInt(targetRoleId) } });
@@ -60,9 +90,10 @@ async function checkRoleHierarchy(currentUserRoleName, targetRoleId) {
 // ─── Services ─────────────────────────────────────────────────────────────────
 
 /**
- * Campos permitidos para ordenamiento dinamico.
- * Las claves son los nombres publicos que acepta la API;
- * los valores son la ruta Prisma correspondiente.
+ * Mapa de campos permitidos para el ordenamiento dinámico de la lista de usuarios.
+ * Las claves son los nombres públicos que acepta la API y los valores son
+ * las rutas de campo Prisma correspondientes (con `undefined` como placeholder
+ * de dirección que se rellena en `buildOrderBy`).
  */
 const SORT_WHITELIST = {
   nombre:     { persona: { nombre: undefined } },
@@ -73,8 +104,13 @@ const SORT_WHITELIST = {
 };
 
 /**
- * Construye la clausula orderBy a partir de los query params.
- * Devuelve el default (id_usuario desc) cuando no se especifica un campo valido.
+ * Construye la cláusula `orderBy` de Prisma a partir de los parámetros de consulta.
+ * Recorre recursivamente la plantilla del campo para inyectar la dirección de ordenamiento.
+ * Retorna el orden por defecto (`id_usuario DESC`) si el campo no es válido.
+ *
+ * @param {string} sortField     - Nombre del campo de ordenamiento (debe estar en SORT_WHITELIST)
+ * @param {string} sortDirection - Dirección: 'asc' | 'desc'
+ * @returns {object} Cláusula orderBy compatible con Prisma
  */
 function buildOrderBy(sortField, sortDirection) {
   const direction = sortDirection === 'asc' ? 'asc' : 'desc';
@@ -92,6 +128,12 @@ function buildOrderBy(sortField, sortDirection) {
   return applyDirection(template);
 }
 
+/**
+ * Obtiene la lista paginada de usuarios con soporte de búsqueda, filtro y ordenamiento.
+ *
+ * @param {object} query - Parámetros de consulta: { page, limit, search, sort_field, sort_direction, include_deleted, id_rol }
+ * @returns {Promise<{ data: object[], meta: object }>} Respuesta paginada estándar
+ */
 async function getAllUsuarios(query) {
   const { skip, take, page, limit } = parsePagination(query);
   const search = query.search ?? '';
@@ -109,6 +151,7 @@ async function getAllUsuarios(query) {
     where.id_rol = BigInt(id_rol);
   }
 
+  // Solo incluir registros activos a menos que se solicite explícitamente incluir eliminados
   if (!include_deleted) {
     where = withNotDeleted(where);
   }
@@ -140,6 +183,13 @@ async function getAllUsuarios(query) {
   return paginatedResponse(data, total, page, limit);
 }
 
+/**
+ * Obtiene un usuario por su ID, incluyendo sus relaciones de persona, rol y permisos.
+ *
+ * @param {string|number} id - ID del usuario
+ * @returns {Promise<object>} Usuario con persona, rol y permisos
+ * @throws {ApiError} 404 si el usuario no existe o está eliminado
+ */
 async function getUsuarioById(id) {
   const usuario = await prisma.usuario.findFirst({
     where: withNotDeleted({ id_usuario: BigInt(id) }),
@@ -158,6 +208,15 @@ async function getUsuarioById(id) {
   return usuario;
 }
 
+/**
+ * Crea un nuevo usuario junto con su persona asociada en una transacción atómica.
+ * Verifica que el DNI no esté en uso y que la jerarquía de roles sea válida.
+ *
+ * @param {object} data    - Datos validados por createUsuarioSchema
+ * @param {object} reqUser - Usuario operador (req.user) para verificar jerarquía de roles
+ * @returns {Promise<object>} Usuario creado con sus relaciones
+ * @throws {ApiError} 409 si el DNI ya existe | 403 si se intenta escalada de privilegios
+ */
 async function createUsuario(data, reqUser) {
   await checkRoleHierarchy(reqUser?.rol, data.id_rol);
 
@@ -187,6 +246,17 @@ async function createUsuario(data, reqUser) {
   });
 }
 
+/**
+ * Actualiza los datos de un usuario existente.
+ * Si se incluye `persona.documento`, verifica que no pertenezca a otra persona.
+ * La contraseña se re-hashea si se provee un valor no vacío.
+ *
+ * @param {string|number} id   - ID del usuario a actualizar
+ * @param {object}        data - Datos validados por updateUsuarioSchema
+ * @param {object}        reqUser - Usuario operador para verificación de jerarquía
+ * @returns {Promise<object>} Usuario actualizado
+ * @throws {ApiError} 404 | 409 | 403
+ */
 async function updateUsuario(id, data, reqUser) {
   if (data.id_rol) {
     await checkRoleHierarchy(reqUser?.rol, data.id_rol);
@@ -202,6 +272,7 @@ async function updateUsuario(id, data, reqUser) {
 
   return prisma.$transaction(async (tx) => {
     if (persona) {
+      // Verificar unicidad del documento solo si cambió respecto al actual
       if (persona.documento && persona.documento !== usuario.persona.documento) {
         const existingDoc = await tx.persona.findUnique({ where: { documento: persona.documento } });
         if (existingDoc && existingDoc.id_persona !== usuario.id_persona) {
@@ -232,6 +303,13 @@ async function updateUsuario(id, data, reqUser) {
   });
 }
 
+/**
+ * Elimina lógicamente un usuario estableciendo `deleted_at` al momento actual.
+ *
+ * @param {string|number} id - ID del usuario
+ * @returns {Promise<void>}
+ * @throws {ApiError} 404 si el usuario no existe
+ */
 async function deleteUsuario(id) {
   const usuario = await prisma.usuario.findFirst({
     where: withNotDeleted({ id_usuario: BigInt(id) }),
@@ -243,6 +321,13 @@ async function deleteUsuario(id) {
   });
 }
 
+/**
+ * Restaura un usuario previamente eliminado de forma lógica (deleted_at = null).
+ *
+ * @param {string|number} id - ID del usuario
+ * @returns {Promise<void>}
+ * @throws {ApiError} 404 si el usuario no existe
+ */
 async function restoreUsuario(id) {
   const usuario = await prisma.usuario.findFirst({
     where: { id_usuario: BigInt(id) },
@@ -256,40 +341,48 @@ async function restoreUsuario(id) {
 
 /**
  * Actualiza el perfil del usuario autenticado.
- * Permite modificar nombre, foto y/o contraseña.
- * Retorna el usuario actualizado sin la contraseña.
+ *
+ * Permite modificar nombre, apellido, foto_url y contraseña de forma independiente.
+ * Si se envía una nueva contraseña, se exige la contraseña actual para confirmar identidad.
+ * Retorna el perfil actualizado sin incluir el hash de contraseña.
+ *
+ * @param {bigint} id - ID del usuario (obtenido de req.user.id_usuario)
+ * @param {{ nombre?: string, apellido?: string, foto_url?: string|null, password?: string, currentPassword?: string }} params
+ * @returns {Promise<object>} Perfil actualizado (sin contraseña)
+ * @throws {ApiError} 401 si la contraseña actual es incorrecta | 404 si no existe
  */
 async function updateProfile(id, { nombre, apellido, foto_url, password, currentPassword }) {
   const dataUsuario = {};
   const dataPersona = {};
 
   if (foto_url !== undefined && foto_url !== null) dataUsuario.foto_url = foto_url;
-  
+
   if (password && password.trim() !== '') {
     if (!currentPassword) {
       throw ApiError.unauthorized('Debe proveer la contraseña actual para cambiarla');
     }
     const userDb = await prisma.usuario.findUnique({ where: { id_usuario: id } });
     if (!userDb) throw ApiError.notFound('Usuario no encontrado');
-    
+
     const valid = await bcrypt.compare(currentPassword, userDb.contrasena);
     if (!valid) throw ApiError.unauthorized('La contraseña actual es incorrecta');
 
     dataUsuario.contrasena = await hashPassword(password);
   }
-  
+
   if (nombre !== undefined && nombre !== null) {
     if (nombre.trim() === '') throw ApiError.badRequest('El nombre no puede estar vacío');
     dataPersona.nombre = nombre.trim();
   }
-  
+
   if (apellido !== undefined && apellido !== null) {
     if (apellido.trim() === '') throw ApiError.badRequest('El apellido no puede estar vacío');
     dataPersona.apellido = apellido.trim();
   }
 
+  // Construir objeto de actualización; persona se actualiza como relación anidada si hay cambios
   const updateData = { ...dataUsuario };
-  
+
   if (Object.keys(dataPersona).length > 0) {
     updateData.persona = { update: dataPersona };
   }
@@ -318,6 +411,11 @@ async function updateProfile(id, { nombre, apellido, foto_url, password, current
   };
 }
 
+/**
+ * Obtiene todos los roles disponibles ordenados por ID ascendente.
+ *
+ * @returns {Promise<object[]>} Lista de roles
+ */
 async function getRoles() {
   return prisma.rol.findMany({
     orderBy: { id_rol: 'asc' },

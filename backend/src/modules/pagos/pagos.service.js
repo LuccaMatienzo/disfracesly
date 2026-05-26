@@ -1,3 +1,9 @@
+/**
+ * @module modules/pagos/pagos.service
+ * @description Lógica de negocio del módulo de Pagos de Operaciones.
+ * Gestiona el registro, consulta y clasificación de pagos asociados a operaciones.
+ * Distingue ingresos (señas, depósitos, saldos) de egresos (devoluciones de depósito, ajustes negativos).
+ */
 const { z } = require('zod');
 const { prisma } = require('../../config/database');
 const { ApiError } = require('../../utils/ApiError');

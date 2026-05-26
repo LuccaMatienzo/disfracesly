@@ -1,3 +1,9 @@
+/**
+ * @module modules/stock/stock.service
+ * @description Lógica de negocio del módulo de Stock (PiezaStock).
+ * Gestiona el inventario individual de piezas: consultas, creación, actualización,
+ * cambio manual de estado y borrado lógico con validación de uso en operaciones activas.
+ */
 const { z } = require('zod');
 const { prisma } = require('../../config/database');
 const { ApiError } = require('../../utils/ApiError');
@@ -6,8 +12,10 @@ const { parsePagination, paginatedResponse } = require('../../utils/pagination')
 
 // ─── Schemas ──────────────────────────────────────────────────────────────────
 
+/** Estados válidos para una pieza de stock. */
 const ESTADOS = ['DISPONIBLE', 'RESERVADA', 'ALQUILADA', 'VENDIDA', 'FUERA_DE_SERVICIO'];
 
+/** Schema de validación para crear una unidad de stock. */
 const createStockSchema = z.object({
   id_pieza: z.number().int().positive(),
   talle: z.string().max(20).optional(),
@@ -16,8 +24,14 @@ const createStockSchema = z.object({
   estado_pieza_stock: z.enum(ESTADOS).default('DISPONIBLE'),
 });
 
+/** Schema de actualización (todos los campos opcionales). */
 const updateStockSchema = createStockSchema.partial();
 
+/**
+ * Schema para el cambio manual de estado.
+ * Solo permite DISPONIBLE o FUERA_DE_SERVICIO; el resto de transiciones
+ * son gestionadas automáticamente por operaciones.service.js.
+ */
 const cambiarEstadoSchema = z.object({
   estado_pieza_stock: z.enum(['DISPONIBLE', 'FUERA_DE_SERVICIO'], {
     errorMap: () => ({ message: 'Solo se puede cambiar manualmente a DISPONIBLE o FUERA_DE_SERVICIO' })
@@ -25,8 +39,15 @@ const cambiarEstadoSchema = z.object({
   motivo: z.string().optional(),
 });
 
-// ─── Services ─────────────────────────────────────────────────────────────────
+// ─── Services ──────────────────────────────────────────────────────────────────
 
+/**
+ * Lista paginada de stock con filtros opcionales por estado y pieza.
+ * Excluye piezas del catálogo que estén eliminadas (pieza.deleted_at != null).
+ *
+ * @param {object} query - Parámetros: { page, limit, search, estado, id_pieza }
+ * @returns {Promise<{ data: object[], meta: object }>}
+ */
 async function getAllStock(query) {
   const { skip, take, page, limit } = parsePagination(query);
 

@@ -1,3 +1,8 @@
+/**
+ * @module modules/imagenes/imagenes.service
+ * @description Gestión de imágenes: subida de archivos con Multer, registro en BD
+ * y asociación a entidades del catálogo (piezas y unidades de stock).
+ */
 const path = require('path');
 const multer = require('multer');
 const { prisma } = require('../../config/database');
@@ -5,8 +10,12 @@ const { ApiError } = require('../../utils/ApiError');
 const { withNotDeleted } = require('../../utils/softDelete');
 const { env } = require('../../config/env');
 
-// ─── Multer config ────────────────────────────────────────────────────────────
+// ─── Multer config ──────────────────────────────────────────────────────────────────
 
+/**
+ * Configuración de almacenamiento en disco para Multer.
+ * Usa un nombre único basado en timestamp + string aleatorio para evitar colisiones.
+ */
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
     cb(null, path.join(__dirname, '..', '..', '..', env.UPLOAD_DIR));

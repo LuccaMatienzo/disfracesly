@@ -1,3 +1,10 @@
+/**
+ * @module modules/dashboard/dashboard.service
+ * @description Lógica de negocio del Dashboard.
+ * Agrega KPIs operacionales y financieros mediante consultas paralelas.
+ * Las consultas complejas delegan a funciones y vistas PostgreSQL para minimizar
+ * el procesamiento en Node.js y aprovechar los planes de ejecución cacheados.
+ */
 const { prisma } = require('../../config/database');
 
 // ─── KPI: En Preparación ─────────────────────────────────────────────────────

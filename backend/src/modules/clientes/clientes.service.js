@@ -1,11 +1,20 @@
+/**
+ * @module modules/clientes/clientes.service
+ * @description Lógica de negocio del módulo de Clientes.
+ * Gestiona el CRUD de clientes con sus personas asociadas y borrado lógico coordinado.
+ */
 const { z } = require('zod');
 const { prisma } = require('../../config/database');
 const { ApiError } = require('../../utils/ApiError');
 const { withNotDeleted } = require('../../utils/softDelete');
 const { parsePagination, paginatedResponse } = require('../../utils/pagination');
 
-// ─── Schemas ──────────────────────────────────────────────────────────────────
+// ─── Schemas Zod ──────────────────────────────────────────────────────────────
 
+/**
+ * Schema de validación para los datos de la persona asociada a un cliente.
+ * El documento debe tener exactamente 8 dígitos (DNI argentino).
+ */
 const personaSchema = z.object({
   documento: z.string()
     .min(1, "Requerido")
@@ -21,6 +30,10 @@ const personaSchema = z.object({
     .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s']+$/, "El apellido solo puede contener letras y espacios"),
 });
 
+/**
+ * Schema de validación para la creación de un cliente.
+ * El teléfono debe tener exactamente 10 dígitos (formato argentino sin código de país).
+ */
 const createClienteSchema = z.object({
   persona: personaSchema,
   domicilio: z.string().max(255).optional(),
@@ -30,6 +43,10 @@ const createClienteSchema = z.object({
     .regex(/^\d{10}$/, "El teléfono debe contener exactamente 10 números"),
 });
 
+/**
+ * Schema de validación para la actualización de un cliente.
+ * Todos los campos son opcionales para permitir actualizaciones parciales.
+ */
 const updateClienteSchema = z.object({
   persona: personaSchema.partial().optional(),
   domicilio: z.string().max(255).optional(),
@@ -40,9 +57,8 @@ const updateClienteSchema = z.object({
 // ─── Services ─────────────────────────────────────────────────────────────────
 
 /**
- * Campos permitidos para ordenamiento dinamico.
- * Las claves son los nombres publicos que acepta la API;
- * los valores son la ruta Prisma correspondiente.
+ * Mapa de campos permitidos para el ordenamiento dinámico de la lista de clientes.
+ * Sigue el mismo patrón que el módulo de usuarios: claves públicas → rutas Prisma.
  */
 const SORT_WHITELIST = {
   nombre:     { persona: { nombre: undefined } },
@@ -53,8 +69,12 @@ const SORT_WHITELIST = {
 };
 
 /**
- * Construye la clausula orderBy a partir de los query params.
- * Devuelve el default (fecha_alta desc) cuando no se especifica un campo valido.
+ * Construye la cláusula `orderBy` de Prisma a partir de los parámetros de consulta.
+ * Retorna el orden por defecto (`fecha_alta DESC`) si el campo no es válido.
+ *
+ * @param {string} sortField     - Campo de ordenamiento
+ * @param {string} sortDirection - 'asc' | 'desc'
+ * @returns {object} Cláusula orderBy compatible con Prisma
  */
 function buildOrderBy(sortField, sortDirection) {
   const direction = sortDirection === 'asc' ? 'asc' : 'desc';
@@ -72,6 +92,13 @@ function buildOrderBy(sortField, sortDirection) {
   return applyDirection(template);
 }
 
+/**
+ * Obtiene la lista paginada de clientes con búsqueda y ordenamiento.
+ * La búsqueda aplica sobre nombre, apellido y documento de la persona asociada.
+ *
+ * @param {object} query - Parámetros: { page, limit, search, sort_field, sort_direction, include_deleted }
+ * @returns {Promise<{ data: object[], meta: object }>}
+ */
 async function getAllClientes(query) {
   const { skip, take, page, limit } = parsePagination(query);
   const search = query.search ?? '';
@@ -87,6 +114,7 @@ async function getAllClientes(query) {
     },
   };
 
+  // Al excluir eliminados, se filtra tanto el cliente como su persona para coherencia
   if (!include_deleted) {
     where = withNotDeleted(where);
     where.persona.deleted_at = null;
@@ -108,6 +136,13 @@ async function getAllClientes(query) {
   return paginatedResponse(data, total, page, limit);
 }
 
+/**
+ * Obtiene un cliente por su ID junto con sus últimas 10 operaciones activas.
+ *
+ * @param {string|number} id - ID del cliente
+ * @returns {Promise<object>} Cliente con persona y operaciones recientes
+ * @throws {ApiError} 404 si el cliente no existe
+ */
 async function getClienteById(id) {
   const cliente = await prisma.cliente.findFirst({
     where: withNotDeleted({ id_cliente: BigInt(id) }),
@@ -129,6 +164,14 @@ async function getClienteById(id) {
   return cliente;
 }
 
+/**
+ * Crea un nuevo cliente junto con su persona en una transacción atómica.
+ * Verifica que el DNI no esté ya registrado antes de crear.
+ *
+ * @param {object} data - Datos validados por createClienteSchema
+ * @returns {Promise<object>} Cliente creado con su persona
+ * @throws {ApiError} 409 si el documento ya existe
+ */
 async function createCliente(data) {
   const { persona, ...clienteData } = data;
 
@@ -144,6 +187,15 @@ async function createCliente(data) {
   });
 }
 
+/**
+ * Actualiza los datos de un cliente y/o su persona en una transacción atómica.
+ * Solo actualiza la persona si se proveen campos de persona no vacíos.
+ *
+ * @param {string|number} id   - ID del cliente
+ * @param {object}        data - Datos validados por updateClienteSchema
+ * @returns {Promise<object>} Cliente actualizado con su persona
+ * @throws {ApiError} 404 si el cliente no existe
+ */
 async function updateCliente(id, data) {
   const cliente = await prisma.cliente.findFirst({
     where: withNotDeleted({ id_cliente: BigInt(id) }),
@@ -164,6 +216,14 @@ async function updateCliente(id, data) {
   });
 }
 
+/**
+ * Elimina lógicamente el cliente y su persona en una transacción atómica.
+ * Ambos registros comparten el mismo `deleted_at` para mantener consistencia referencial.
+ *
+ * @param {string|number} id - ID del cliente
+ * @returns {Promise<void>}
+ * @throws {ApiError} 404 si el cliente no existe
+ */
 async function deleteCliente(id) {
   const cliente = await prisma.cliente.findFirst({
     where: withNotDeleted({ id_cliente: BigInt(id) }),
@@ -177,6 +237,13 @@ async function deleteCliente(id) {
   });
 }
 
+/**
+ * Restaura un cliente y su persona previamente eliminados de forma lógica.
+ *
+ * @param {string|number} id - ID del cliente
+ * @returns {Promise<void>}
+ * @throws {ApiError} 404 si el cliente no existe
+ */
 async function restoreCliente(id) {
   const cliente = await prisma.cliente.findFirst({
     where: { id_cliente: BigInt(id) },

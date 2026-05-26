@@ -1,7 +1,17 @@
 const { z } = require('zod');
 require('dotenv').config();
 
-// Schema de validación de variables de entorno
+/**
+ * @module config/env
+ * @description Valida y exporta las variables de entorno de la aplicación
+ * usando un schema Zod. Si alguna variable requerida está ausente o es inválida,
+ * el proceso termina inmediatamente con código de salida 1 (fail-fast).
+ */
+
+/**
+ * Schema de validación de variables de entorno.
+ * Las variables opcionales tienen valores por defecto seguros para desarrollo.
+ */
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z
@@ -23,17 +33,18 @@ const envSchema = z.object({
 const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
-  console.error('\n❌ Error en variables de entorno:');
+  console.error('[Config] Error en la validacion de variables de entorno:');
   const errors = parsed.error.format();
   Object.entries(errors).forEach(([key, val]) => {
     if (key !== '_errors') {
-      console.error(`  • ${key}: ${val._errors.join(', ')}`);
+      console.error(`  [Config]   ${key}: ${val._errors.join(', ')}`);
     }
   });
-  console.error('\n💡 Asegurate de tener un archivo .env en la raíz del proyecto.');
+  console.error('[Config] Asegurese de tener un archivo .env valido en la raiz del proyecto.');
   process.exit(1);
 }
 
+/** @type {z.infer<typeof envSchema>} Variables de entorno validadas y tipadas */
 const env = parsed.data;
 
 module.exports = { env };

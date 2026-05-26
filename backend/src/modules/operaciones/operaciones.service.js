@@ -1,3 +1,10 @@
+/**
+ * @module modules/operaciones/operaciones.service
+ * @description Lógica de negocio del módulo de Operaciones (Alquileres y Ventas).
+ * Gestiona el ciclo de vida completo: creación, avance de etapas, interacciones,
+ * actualización de montos y piezas. Todas las operaciones de escritura son transaccionales
+ * para garantizar la consistencia entre la operación y el estado de sus piezas de stock.
+ */
 const { z } = require('zod');
 const { prisma } = require('../../config/database');
 const { ApiError } = require('../../utils/ApiError');
@@ -103,8 +110,14 @@ const INCLUDE_OPERACION_FULL = {
 };
 
 /**
- * Verifica que todas las piezas estén DISPONIBLE.
- * Lanza ApiError si alguna no lo está.
+ * Verifica que todas las piezas de stock indicadas estén en estado DISPONIBLE.
+ * Se ejecuta dentro de una transacción para garantizar que el estado no cambie
+ * entre la verificación y la creación de la operación (previene race conditions).
+ *
+ * @param {object}   tx  - Cliente de transacción de Prisma
+ * @param {bigint[]} ids - IDs de las piezas de stock a verificar
+ * @returns {Promise<void>}
+ * @throws {ApiError} 404 si alguna pieza no existe | 409 si alguna no está disponible
  */
 async function verificarDisponibilidad(tx, ids) {
   const piezas = await tx.piezaStock.findMany({
@@ -125,6 +138,13 @@ async function verificarDisponibilidad(tx, ids) {
 
 // ─── Services ─────────────────────────────────────────────────────────────────
 
+/**
+ * Obtiene la lista paginada de operaciones con filtros por tipo, etapa, cliente y búsqueda.
+ * La búsqueda soporta ID numérico exacto o texto libre sobre nombre/apellido del cliente.
+ *
+ * @param {object} query - Parámetros: { page, limit, tipo, etapa, id_cliente, search }
+ * @returns {Promise<{ data: object[], meta: object }>}
+ */
 async function getAllOperaciones(query) {
   const { skip, take, page, limit } = parsePagination(query);
   const tipo = query.tipo; // 'alquiler' | 'venta' | undefined
@@ -204,6 +224,14 @@ async function getAllOperaciones(query) {
   return paginatedResponse(data, total, page, limit);
 }
 
+/**
+ * Obtiene el detalle completo de una operación incluyendo el estado financiero
+ * calculado por la función SQL `fn_obtener_estado_financiero`.
+ *
+ * @param {string|number} id - ID de la operación
+ * @returns {Promise<object>} Operación con alquiler/venta, pagos, interacciones y estado financiero
+ * @throws {ApiError} 404 si la operación no existe
+ */
 async function getOperacionById(id) {
   const op = await prisma.operacion.findFirst({
     where: withNotDeleted({ id_operacion: BigInt(id) }),
@@ -416,6 +444,16 @@ async function deleteOperacion(id) {
   await prisma.operacion.update({ where: { id_operacion: BigInt(id) }, data: { deleted_at: new Date() } });
 }
 
+/**
+ * Registra una interacción (retiro, devolución u otra) en una operación.
+ * Si la persona no existe por DNI, la crea dentro de la misma transacción.
+ * Reutiliza la persona si el DNI ya existe en la BD.
+ *
+ * @param {string|number} id_operacion - ID de la operación
+ * @param {bigint}        id_usuario   - ID del usuario que registra la interacción
+ * @param {object}        data         - Datos validados por createInteraccionSchema
+ * @returns {Promise<object>} Interacción creada con usuario y persona
+ */
 async function createInteraccion(id_operacion, id_usuario, data) {
   return prisma.$transaction(async (tx) => {
     let idPersona = data.persona.id_persona ? BigInt(data.persona.id_persona) : null;
@@ -454,6 +492,15 @@ async function createInteraccion(id_operacion, id_usuario, data) {
   });
 }
 
+/**
+ * Actualiza los montos de una operación (monto_total, deposito_monto, sena_monto).
+ * Valida que el depósito o la seña no superen el monto total antes de actualizar.
+ *
+ * @param {string|number} id   - ID de la operación
+ * @param {object}        data - Datos validados por updateMontosSchema
+ * @returns {Promise<object>} Operación actualizada con estado financiero
+ * @throws {ApiError} 400 si algún monto parcial supera el total
+ */
 async function updateOperacionMontos(id, data) {
   const operacion = await prisma.operacion.findFirst({
     where: withNotDeleted({ id_operacion: BigInt(id) }),
@@ -503,6 +550,17 @@ async function updateOperacionMontos(id, data) {
   return getOperacionById(id);
 }
 
+/**
+ * Actualiza el conjunto de piezas de stock de una operación activa.
+ *
+ * El proceso es: (1) liberar piezas removidas → (2) verificar disponibilidad
+ * de piezas nuevas → (3) recrear detalles → (4) aplicar el estado esperado
+ * a todas las piezas según la etapa actual de la operación.
+ *
+ * @param {string|number} id   - ID de la operación
+ * @param {object}        data - Datos validados por updatePiezasSchema
+ * @returns {Promise<object>} Operación actualizada
+ */
 async function updateOperacionPiezas(id, data) {
   const operacion = await prisma.operacion.findFirst({
     where: withNotDeleted({ id_operacion: BigInt(id) }),
