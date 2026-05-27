@@ -76,7 +76,7 @@ export default function ClienteViewModal({ id, open, onClose }) {
                       <div className="flex items-center gap-3 shrink-0">
                         {etapa && <Badge value={etapa} />}
                         <span className="text-body-md font-label font-medium text-on-surface">
-                          ${parseFloat(op.monto_total).toLocaleString('es-AR')}
+                          ${parseFloat(op.monto_total).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                         </span>
                       </div>
                     </div>

@@ -149,7 +149,7 @@ export default function VentaForm() {
                 label="Monto total ($)" 
                 type="number" 
                 min="0" 
-                step="0.01" 
+                step="1" 
                 error={errors.monto_total?.message}
                 onKeyDown={handlePositiveNumbersOnly}
                 {...register('monto_total', {
@@ -160,7 +160,7 @@ export default function VentaForm() {
                 label="Seña ($)" 
                 type="number" 
                 min="0" 
-                step="0.01" 
+                step="1" 
                 error={errors.sena_monto?.message}
                 onKeyDown={handlePositiveNumbersOnly}
                 {...register('sena_monto', {

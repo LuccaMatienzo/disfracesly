@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Modal from './Modal';
 import Button from './Button';
 import Input, { Select } from './Input';
@@ -16,12 +16,54 @@ const METODO_OPTIONS = [
   { value: 'TRANSFERENCIA', label: 'Transferencia' },
 ];
 
-export default function PagoFormModal({ open, onClose, onSubmit, loading, initialData }) {
+export default function PagoFormModal({ open, onClose, onSubmit, loading, initialData, operacion }) {
   const [formData, setFormData] = useState({
     tipo: 'SALDO',
     metodo: 'EFECTIVO',
     monto: '',
   });
+
+  const availableOptions = useMemo(() => {
+    if (!operacion) return TIPO_PAGO_OPTIONS;
+    
+    const options = [];
+    const isAlquiler = !!operacion.alquiler;
+    const isVenta = !!operacion.venta;
+    const saldoPendiente = operacion.estado_financiero?.saldo_pendiente ?? 0;
+    
+    if (isAlquiler) {
+      const depositoPactado = parseFloat(operacion.alquiler.deposito_monto ?? 0);
+      const depositoPagado = operacion.estado_financiero?.deposito_garantia ?? 0;
+      const depositoPendiente = Math.max(0, depositoPactado - depositoPagado);
+
+      if (depositoPendiente > 0 || (initialData && initialData.tipo === 'DEPOSITO')) {
+        options.push({ value: 'DEPOSITO', label: 'Depósito' });
+      }
+      
+      if (saldoPendiente > 0 || (initialData && initialData.tipo === 'SALDO')) {
+        options.push({ value: 'SALDO', label: 'Saldo' });
+      }
+      
+      options.push({ value: 'DEVOLUCION_DEPOSITO', label: 'Devolución Depósito' });
+      options.push({ value: 'AJUSTE', label: 'Ajuste' });
+    } else if (isVenta) {
+      const senaPactada = parseFloat(operacion.venta.sena_monto ?? 0);
+      const senaPagada = operacion.estado_financiero?.sena_pagada ?? 0;
+      const senaPendiente = Math.max(0, senaPactada - senaPagada);
+
+      if (senaPendiente > 0 || (initialData && initialData.tipo === 'SENA')) {
+         options.push({ value: 'SENA', label: 'Seña' });
+      }
+
+      if (saldoPendiente > 0 || (initialData && initialData.tipo === 'SALDO')) {
+        options.push({ value: 'SALDO', label: 'Saldo' });
+      }
+
+      options.push({ value: 'AJUSTE', label: 'Ajuste' });
+    }
+
+    return options;
+  }, [operacion, initialData]);
 
   useEffect(() => {
     if (initialData) {
@@ -30,14 +72,14 @@ export default function PagoFormModal({ open, onClose, onSubmit, loading, initia
         metodo: initialData.metodo,
         monto: initialData.monto,
       });
-    } else {
+    } else if (open) {
       setFormData({
-        tipo: 'SALDO',
+        tipo: availableOptions.find(o => o.value === 'SALDO') ? 'SALDO' : (availableOptions[0]?.value ?? 'SALDO'),
         metodo: 'EFECTIVO',
         monto: '',
       });
     }
-  }, [initialData, open]);
+  }, [initialData, open, availableOptions]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -46,6 +88,16 @@ export default function PagoFormModal({ open, onClose, onSubmit, loading, initia
       monto: parseFloat(formData.monto),
     });
   };
+
+  const handlePositiveNumbersOnly = (e) => {
+    if (['e', 'E', '+', '-', '.', ','].includes(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const montoNum = parseFloat(formData.monto);
+  const isMontoValid = formData.monto !== '' && !isNaN(montoNum) && Number.isInteger(montoNum) && montoNum > 0;
+  const montoError = (formData.monto !== '' && !isMontoValid) ? 'El monto debe ser un entero positivo' : undefined;
 
   return (
     <Modal
@@ -57,7 +109,7 @@ export default function PagoFormModal({ open, onClose, onSubmit, loading, initia
           <Button variant="secondary" onClick={onClose} disabled={loading}>
             Cancelar
           </Button>
-          <Button onClick={handleSubmit} loading={loading}>
+          <Button onClick={handleSubmit} loading={loading} disabled={!isMontoValid || loading}>
             {initialData ? 'Guardar Cambios' : 'Registrar Pago'}
           </Button>
         </div>
@@ -71,7 +123,7 @@ export default function PagoFormModal({ open, onClose, onSubmit, loading, initia
             onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
             required
           >
-            {TIPO_PAGO_OPTIONS.map((opt) => (
+            {availableOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
               </option>
@@ -95,11 +147,14 @@ export default function PagoFormModal({ open, onClose, onSubmit, loading, initia
         <Input
           label="Monto"
           type="number"
-          step="100"
+          min="1"
+          step="1"
           placeholder="0"
           value={formData.monto}
           onChange={(e) => setFormData({ ...formData, monto: e.target.value })}
+          onKeyDown={handlePositiveNumbersOnly}
           required
+          error={montoError}
         />
       </form>
     </Modal>

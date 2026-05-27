@@ -248,10 +248,11 @@ async function getOperacionById(id) {
       total_pagado: Number(estado.total_pagado),
       saldo_pendiente: Number(estado.saldo_pendiente),
       deposito_garantia: Number(estado.deposito_garantia),
-      deposito_devuelto: Number(estado.deposito_devuelto)
+      deposito_devuelto: Number(estado.deposito_devuelto),
+      sena_pagada: Number(estado.sena_pagada)
     };
   } else {
-    op.estado_financiero = { monto_total: 0, total_pagado: 0, saldo_pendiente: 0, deposito_garantia: 0, deposito_devuelto: 0 };
+    op.estado_financiero = { monto_total: 0, total_pagado: 0, saldo_pendiente: 0, deposito_garantia: 0, deposito_devuelto: 0, sena_pagada: 0 };
   }
 
   return op;

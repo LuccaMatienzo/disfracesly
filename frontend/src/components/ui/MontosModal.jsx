@@ -40,7 +40,7 @@ export default function MontosModal({ open, onClose, onSubmit, isAlquiler, isVen
         <Input
           label="Monto Total ($)"
           type="number"
-          step="0.01"
+          step="1"
           min="0"
           {...register('monto_total', { required: 'El monto total es requerido' })}
           error={errors.monto_total?.message}
@@ -49,7 +49,7 @@ export default function MontosModal({ open, onClose, onSubmit, isAlquiler, isVen
           <Input
             label="Monto de Depósito ($)"
             type="number"
-            step="0.01"
+            step="1"
             min="0"
             {...register('deposito_monto')}
             error={errors.deposito_monto?.message}
@@ -59,7 +59,7 @@ export default function MontosModal({ open, onClose, onSubmit, isAlquiler, isVen
           <Input
             label="Monto de Seña ($)"
             type="number"
-            step="0.01"
+            step="1"
             min="0"
             {...register('sena_monto')}
             error={errors.sena_monto?.message}

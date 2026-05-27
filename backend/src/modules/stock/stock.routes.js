@@ -7,7 +7,7 @@ const { createStockSchema, updateStockSchema, cambiarEstadoSchema } = require('.
 const { requireRol } = require('../../middleware/rbac.middleware');
 
 router.use(authenticate);
-router.use(requireRol('Superadministrador', 'Jefe'));
+router.use(requireRol('Administrador', 'Jefe'));
 
 router.get('/stats', ctrl.getStats);
 router.get('/', ctrl.getAll);

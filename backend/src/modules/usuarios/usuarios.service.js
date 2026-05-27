@@ -66,7 +66,7 @@ const updateProfileSchema = z.object({
 /**
  * Previene la escalada de privilegios verificando que el usuario operador
  * no intente asignar un rol de mayor jerarquía que el propio.
- * La jerarquía es: Superadministrador > Jefe > Empleado.
+ * La jerarquía es: Administrador > Jefe > Empleado.
  *
  * @param {string} currentUserRoleName - Nombre del rol del usuario que ejecuta la operación
  * @param {number|undefined} targetRoleId - ID del rol a asignar al nuevo/editado usuario
@@ -78,7 +78,7 @@ async function checkRoleHierarchy(currentUserRoleName, targetRoleId) {
   const targetRole = await prisma.rol.findUnique({ where: { id_rol: BigInt(targetRoleId) } });
   if (!targetRole) throw ApiError.badRequest('Rol inválido');
 
-  const hierarchy = { 'Superadministrador': 3, 'Jefe': 2, 'Empleado': 1 };
+  const hierarchy = { 'Administrador': 3, 'Jefe': 2, 'Empleado': 1 };
   const userWeight = hierarchy[currentUserRoleName] || 0;
   const targetWeight = hierarchy[targetRole.nombre] || 0;
 

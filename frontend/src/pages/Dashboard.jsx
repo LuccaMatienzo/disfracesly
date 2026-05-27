@@ -522,11 +522,12 @@ export default function Dashboard() {
   const [readyModalOpen, setReadyModalOpen] = useState(false);
 
   const activeOpsColumns = useMemo(() => [
-    { key: 'cliente', label: 'Cliente' },
-    { key: 'tipo', label: 'Tipo' },
+    { key: 'cliente', label: 'Cliente', align: 'center' },
+    { key: 'tipo', label: 'Tipo', align: 'center' },
     { 
       key: 'etapa', 
       label: 'Etapa',
+      align: 'center',
       render: (etapa) => {
         const badge = BADGE_ETAPA[etapa] ?? BADGE_ETAPA.Pendiente;
         return (
@@ -539,6 +540,7 @@ export default function Dashboard() {
     { 
       key: 'fecha', 
       label: 'Fecha',
+      align: 'center',
       getLabel: (row) => row.tipo === 'Alquiler' ? 'Fecha Retiro' : 'Fecha Entrega',
       render: (fecha) => fecha ? new Date(fecha).toLocaleDateString('es-AR') : '—'
     }
@@ -549,6 +551,7 @@ export default function Dashboard() {
     {
       key: 'causante',
       label: 'Causante',
+      align: 'center',
       render: (_, row) => {
         if (row.etapa === 'RESERVADO') return 'Tienda';
         return 'Cliente';
@@ -557,6 +560,8 @@ export default function Dashboard() {
     {
       key: 'motivo',
       label: 'Motivo',
+      align: 'center',
+      width: '140px',
       render: (_, row) => {
         if (row.etapa === 'RESERVADO') return 'Disfraz no terminado';
         if (row.etapa === 'LISTO_PARA_RETIRO' || row.etapa === 'LISTO_PARA_ENTREGA') return 'No retiró disfraz';
@@ -677,7 +682,7 @@ export default function Dashboard() {
       <KpiDetailsModal 
         open={overdueOpsModalOpen} 
         onClose={() => setOverdueOpsModalOpen(false)}
-        title="Operaciones Activas Atrasadas"
+        title="Operaciones Atrasadas"
         endpoint="/dashboard/active-operations?overdue=true"
         columns={overdueOpsColumns}
         rowClassName={() => 'text-coral font-medium'}

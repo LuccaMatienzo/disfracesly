@@ -12,6 +12,7 @@ import Input, { Select } from '@/components/ui/Input';
 import ActionButtons from '@/components/ui/ActionButtons';
 import ConfirmDeleteModal from '@/components/ui/ConfirmDeleteModal';
 import OperacionViewModal from '@/components/ui/OperacionViewModal';
+import { useAuth } from '@/context/AuthContext';
 
 export default function OperacionesList() {
   const queryClient = useQueryClient();
@@ -24,6 +25,7 @@ export default function OperacionesList() {
   const [appliedFilters, setAppliedFilters] = useState({ search: '', tipo: 'alquiler', etapa: '' });
 
   const { showSuccess, showError } = useFeedback();
+  const { hasRol } = useAuth();
 
   const [deleteTarget, setDeleteTarget] = useState(null); // { id, label }
   const [viewId, setViewId] = useState(null);             // id de operación en modal Ver
@@ -84,7 +86,7 @@ export default function OperacionesList() {
     {
       key: 'monto_total',
       label: 'Monto',
-      render: (v) => `$${parseFloat(v).toLocaleString('es-AR')}`,
+      render: (v) => `$${parseFloat(v).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
     },
     {
       key: 'fecha_constitucion',
@@ -161,12 +163,14 @@ export default function OperacionesList() {
         </div>
 
         {/* CTA */}
-        <Link to={`/admin/operaciones/${activeTab === 'alquiler' ? 'alquiler' : 'venta'}/nuevo`}>
-          <Button className="h-11 px-4 flex items-center justify-center gap-2 whitespace-nowrap flex-shrink-0">
-            <span className="material-symbols-outlined text-[18px]">add</span>
-            Nuevo
-          </Button>
-        </Link>
+        {!hasRol('Empleado') && (
+          <Link to={`/admin/operaciones/${activeTab === 'alquiler' ? 'alquiler' : 'venta'}/nuevo`}>
+            <Button className="h-11 px-4 flex items-center justify-center gap-2 whitespace-nowrap flex-shrink-0">
+              <span className="material-symbols-outlined text-[18px]">add</span>
+              Nuevo
+            </Button>
+          </Link>
+        )}
       </div>
 
       {/* Filtros */}

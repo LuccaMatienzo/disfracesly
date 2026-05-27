@@ -10,8 +10,8 @@ router.use(authenticate);
 // Perfil de usuario (cualquier rol autenticado)
 router.patch('/profile', validate(updateProfileSchema), ctrl.updateProfile);
 
-// Resto de rutas requieren rol Superadministrador
-router.use(requireRol('Superadministrador'));
+// Resto de rutas requieren rol Administrador
+router.use(requireRol('Administrador'));
 
 router.get('/', ctrl.getAll);
 router.get('/roles', ctrl.getRoles);

@@ -1,13 +1,13 @@
 /**
  * @module modules/clientes/clientes.controller
  * @description Controladores del módulo de Clientes.
- * La visibilidad de clientes eliminados está restringida al Superadministrador.
+ * La visibilidad de clientes eliminados está restringida al Administrador.
  */
 const svc = require('./clientes.service');
 
 /**
  * Obtiene la lista paginada de clientes.
- * El parámetro `include_deleted` solo tiene efecto si el usuario es Superadministrador.
+ * El parámetro `include_deleted` solo tiene efecto si el usuario es Administrador.
  *
  * @route  GET /api/clientes
  * @param  {import('express').Request}  req - Query: { page, limit, search, sort_field, sort_direction, include_deleted }
@@ -16,7 +16,7 @@ const svc = require('./clientes.service');
  */
 async function getAll(req, res, next) {
   try {
-    const include_deleted = req.user.rol === 'Superadministrador' && req.query.include_deleted === 'true';
+    const include_deleted = req.user.rol === 'Administrador' && req.query.include_deleted === 'true';
     res.json(await svc.getAllClientes({ ...req.query, include_deleted }));
   } catch (e) { next(e); }
 }

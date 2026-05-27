@@ -14,7 +14,7 @@ function fmt(date) {
 
 function currency(v) {
   if (v === null || v === undefined) return null;
-  return `$${parseFloat(v).toLocaleString('es-AR')}`;
+  return `$${parseFloat(v).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
 export default function OperacionViewModal({ id, open, onClose }) {

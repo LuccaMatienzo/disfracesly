@@ -171,7 +171,7 @@ export default function ClientesList() {
         {/* Barra de ordenamiento (Cinta Deslizable) */}
         <div className="flex flex-row flex-nowrap overflow-x-auto whitespace-nowrap gap-3 pb-2 w-full pt-3 border-t border-divider items-center min-w-0 lg:overflow-visible lg:pb-0 lg:justify-start">
           <div className="flex flex-row items-center gap-3 shrink-0">
-            {user?.rol === 'Superadministrador' && (
+            {user?.rol === 'Administrador' && (
               <>
                 <div className="shrink-0">
                   <ToggleSwitch

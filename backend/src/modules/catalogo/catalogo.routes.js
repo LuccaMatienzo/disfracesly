@@ -14,7 +14,7 @@ router.get('/categorias/publico', ctrl.getAllCategoriasPublico);
 const { requireRol } = require('../../middleware/rbac.middleware');
 
 router.use(authenticate);
-router.use(requireRol('Superadministrador', 'Jefe'));
+router.use(requireRol('Administrador', 'Jefe'));
 
 // Piezas
 router.get('/piezas', ctrl.getAllPiezas);

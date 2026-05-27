@@ -113,7 +113,7 @@ export function AuthProvider({ children }) {
   /**
    * Verifica si el usuario en sesión tiene un rol específico.
    *
-   * @param {string} rol - Nombre del rol (p. ej. 'Superadministrador', 'Jefe', 'Empleado')
+   * @param {string} rol - Nombre del rol (p. ej. 'Administrador', 'Jefe', 'Empleado')
    * @returns {boolean}
    */
   const hasRol = useCallback(

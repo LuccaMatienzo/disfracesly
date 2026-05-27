@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useOperacion, useAvanzarEtapaAlquiler, useAvanzarEtapaVenta, useCreateInteraccion, useUpdateOperacionMontos, useUpdateOperacionPiezas } from '@/hooks/useOperaciones';
 import { usePagos } from '@/hooks/usePagos';
 import { useFeedback } from '@/context/FeedbackContext';
@@ -16,7 +16,7 @@ import PiezasModal from '@/components/ui/PiezasModal';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function fmt(v) {
-  return `$${parseFloat(v ?? 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
+  return `$${parseFloat(v ?? 0).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
 function fmtDate(d, opts = { day: 'numeric', month: 'long', year: 'numeric' }) {
@@ -229,18 +229,30 @@ export default function OperacionDetalle() {
   const saldoPendiente = op.estado_financiero?.saldo_pendiente ?? 0;
 
   // Alquiler specific
-  const depositoMonto = isAlquiler ? (op.estado_financiero?.deposito_garantia ?? parseFloat(op.alquiler.deposito_monto ?? 0)) : 0;
+  const depositoPactado = isAlquiler ? parseFloat(op.alquiler.deposito_monto ?? 0) : 0;
+  const depositoPagado = isAlquiler ? (op.estado_financiero?.deposito_garantia ?? 0) : 0;
+  const depositoPendiente = Math.max(0, depositoPactado - depositoPagado);
   const depositoDevuelto = isAlquiler ? (op.estado_financiero?.deposito_devuelto ?? parseFloat(op.alquiler.deposito_devuelto_monto ?? 0)) : 0;
-  const depositoRetenido = Math.max(0, depositoMonto - depositoDevuelto);
 
   // Venta specific
-  const senaMonto = isVenta ? parseFloat(op.venta.sena_monto ?? 0) : 0;
+  const senaPactada = isVenta ? parseFloat(op.venta.sena_monto ?? 0) : 0;
+  const senaPagada = isVenta ? (op.estado_financiero?.sena_pagada ?? 0) : 0;
+  const senaPendiente = Math.max(0, senaPactada - senaPagada);
 
   const currentMontos = {
     monto_total: montoTotal,
     deposito_monto: isAlquiler ? parseFloat(op.alquiler.deposito_monto ?? 0) : 0,
     sena_monto: isVenta ? parseFloat(op.venta.sena_monto ?? 0) : 0,
   };
+
+  const isTotalPagado = saldoPendiente <= 0;
+  let isCerrada = false;
+  if (isAlquiler) {
+    const isDepositoCerrado = depositoPagado >= depositoPactado && (depositoPactado === 0 || depositoDevuelto >= depositoPagado || !!op.alquiler.deposito_motivo_retencion);
+    isCerrada = isTotalPagado && isDepositoCerrado;
+  } else if (isVenta) {
+    isCerrada = isTotalPagado && senaPagada >= senaPactada;
+  }
 
   async function handleAdvance() {
     if (!transition) return;
@@ -492,10 +504,12 @@ export default function OperacionDetalle() {
                   <p className="text-body-md text-on-surface-variant">Historial de pagos registrados</p>
                 </div>
               </div>
-              <Button size="sm" onClick={() => setPagoModal({ open: true, data: null })}>
-                <span className="material-symbols-outlined text-base">add</span>
-                Nuevo Pago
-              </Button>
+              {!isCerrada && (
+                <Button size="sm" onClick={() => setPagoModal({ open: true, data: null })}>
+                  <span className="material-symbols-outlined text-base">add</span>
+                  Nuevo Pago
+                </Button>
+              )}
             </div>
 
             {pagos.length > 0 ? (
@@ -643,18 +657,22 @@ export default function OperacionDetalle() {
                     </p>
                     <div className="flex justify-between items-center py-1">
                       <span className="text-xs text-on-surface-variant">Monto depósito</span>
-                      <span className="text-sm font-medium text-on-surface">{fmt(depositoMonto)}</span>
+                      <span className="text-sm font-medium text-on-surface">{fmt(depositoPactado)}</span>
                     </div>
+                    <div className="flex justify-between items-center py-1">
+                      <span className="text-xs text-on-surface-variant">Total pagado</span>
+                      <span className="text-sm font-medium text-primary">{fmt(depositoPagado)}</span>
+                    </div>
+                    {depositoPendiente > 0 && (
+                      <div className="flex justify-between items-center py-1">
+                        <span className="text-xs text-on-surface-variant">Depósito pendiente</span>
+                        <span className="text-sm font-medium text-error">{fmt(depositoPendiente)}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between items-center py-1">
                       <span className="text-xs text-on-surface-variant">Devuelto</span>
                       <span className="text-sm font-medium text-primary">{fmt(depositoDevuelto)}</span>
                     </div>
-                    {depositoRetenido > 0 && (
-                      <div className="flex justify-between items-center py-1">
-                        <span className="text-xs text-on-surface-variant">Retenido</span>
-                        <span className="text-sm font-medium text-error">{fmt(depositoRetenido)}</span>
-                      </div>
-                    )}
                     {op.alquiler.deposito_motivo_retencion && (
                       <p className="text-xs text-on-surface-variant mt-1 bg-error/5 p-2 rounded-lg">
                         Motivo: {op.alquiler.deposito_motivo_retencion}
@@ -665,12 +683,25 @@ export default function OperacionDetalle() {
               )}
 
               {/* Venta-specific seña info */}
-              {isVenta && senaMonto > 0 && (
+              {isVenta && (
                 <div className="mt-2 pt-3 border-t border-divider">
+                  <p className="text-[11px] font-label font-bold uppercase tracking-widest text-on-surface-variant mb-2">
+                    Seña
+                  </p>
                   <div className="flex justify-between items-center py-1">
-                    <span className="text-xs text-on-surface-variant">Seña registrada</span>
-                    <span className="text-sm font-medium text-on-surface">{fmt(senaMonto)}</span>
+                    <span className="text-xs text-on-surface-variant">Monto seña</span>
+                    <span className="text-sm font-medium text-on-surface">{fmt(senaPactada)}</span>
                   </div>
+                  <div className="flex justify-between items-center py-1">
+                    <span className="text-xs text-on-surface-variant">Total pagado</span>
+                    <span className="text-sm font-medium text-primary">{fmt(senaPagada)}</span>
+                  </div>
+                  {senaPendiente > 0 && (
+                    <div className="flex justify-between items-center py-1">
+                      <span className="text-xs text-on-surface-variant">Seña pendiente</span>
+                      <span className="text-sm font-medium text-error">{fmt(senaPendiente)}</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -731,6 +762,7 @@ export default function OperacionDetalle() {
         onSubmit={handlePagoSubmit}
         loading={createPago.isPending || updatePago.isPending}
         initialData={pagoModal.data}
+        operacion={op}
       />
 
       {/* Pago Confirm Delete */}

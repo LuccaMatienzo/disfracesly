@@ -11,7 +11,7 @@ import Badge from '@/components/ui/Badge';
 import { FiSearch } from 'react-icons/fi';
 import { MdTrendingUp, MdTrendingDown, MdAccountBalanceWallet, MdOutlineSwapHoriz } from 'react-icons/md';
 
-const formatCurrency = (val) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(val);
+const formatCurrency = (val) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(val);
 
 function KpiCard({ title, amount, icon: Icon, colorClass, isNegative = false, onClick }) {
   return (

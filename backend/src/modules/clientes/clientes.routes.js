@@ -7,7 +7,7 @@ const { createClienteSchema, updateClienteSchema } = require('./clientes.service
 const { requireRol } = require('../../middleware/rbac.middleware');
 
 router.use(authenticate);
-router.use(requireRol('Superadministrador', 'Jefe'));
+router.use(requireRol('Administrador', 'Jefe'));
 
 router.get('/', ctrl.getAll);
 router.get('/:id', ctrl.getById);

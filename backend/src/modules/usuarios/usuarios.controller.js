@@ -7,7 +7,7 @@ const svc = require('./usuarios.service');
 
 /**
  * Obtiene la lista paginada de usuarios.
- * Solo el Superadministrador puede incluir usuarios eliminados lógicamente (include_deleted=true).
+ * Solo el Administrador puede incluir usuarios eliminados lógicamente (include_deleted=true).
  *
  * @route  GET /api/usuarios
  * @param  {import('express').Request}  req - Query: { page, limit, search, sort_field, sort_direction, include_deleted, id_rol }
@@ -16,9 +16,9 @@ const svc = require('./usuarios.service');
  */
 async function getAll(req, res, next) {
   try {
-    if (req.query.include_deleted === 'true' && req.user.rol !== 'Superadministrador') {
+    if (req.query.include_deleted === 'true' && req.user.rol !== 'Administrador') {
       const { ApiError } = require('../../utils/ApiError');
-      throw ApiError.forbidden('Solo el Superadministrador puede consultar usuarios inactivos');
+      throw ApiError.forbidden('Solo el Administrador puede consultar usuarios inactivos');
     }
     const include_deleted = req.query.include_deleted === 'true';
     res.json(await svc.getAllUsuarios({ ...req.query, include_deleted }));

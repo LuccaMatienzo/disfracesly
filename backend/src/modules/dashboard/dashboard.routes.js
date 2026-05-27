@@ -8,7 +8,7 @@ router.use(authenticate);
 router.get('/', ctrl.getDashboard);
 
 // GET /api/dashboard/active-operations — details of active operations
-router.get('/active-operations', ctrl.getActiveOperationsDetails);
+router.get('/active-operations', ctrl.getActiveOperations);
 
 // GET /api/dashboard/notifications
 router.get('/notifications', ctrl.getNotifications);
