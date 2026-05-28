@@ -18,6 +18,7 @@ const operacionRoutes = require('./modules/operaciones/operaciones.routes');
 const pagoRoutes      = require('./modules/pagos/pagos.routes');
 const imagenRoutes    = require('./modules/imagenes/imagenes.routes');
 const dashboardRoutes = require('./modules/dashboard/dashboard.routes');
+const personaRoutes   = require('./modules/personas/personas.routes');
 
 const app = express();
 
@@ -109,6 +110,7 @@ app.use('/api/operaciones',apiLimiter,  operacionRoutes);
 app.use('/api/pagos',      apiLimiter,  pagoRoutes);
 app.use('/api/imagenes',   apiLimiter,  imagenRoutes);
 app.use('/api/dashboard',  apiLimiter,  dashboardRoutes);
+app.use('/api/personas',   apiLimiter,  personaRoutes);
 
 // ─── 404 – Ruta no encontrada ─────────────────────────────────────────────────
 app.use((_req, res) => {

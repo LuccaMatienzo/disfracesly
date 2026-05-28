@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Modal from './Modal';
 import Button from './Button';
+import api from '../../api/axios.instance';
 
 export default function InteraccionModal({ open, onClose, onSubmit, loading, tipo, operacion }) {
   const isRetiro = tipo === 'RETIRO';
@@ -15,6 +16,42 @@ export default function InteraccionModal({ open, onClose, onSubmit, loading, tip
     apellido: '',
   });
   const [errors, setErrors] = useState({});
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Efecto de Debounce para búsqueda
+  useEffect(() => {
+    if (!isNuevaPersona) return;
+    const q = formData.documento.trim();
+    if (q.length < 5) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const { data } = await api.get(`/personas/buscar?q=${q}`);
+        setSuggestions(data);
+        setShowSuggestions(true);
+      } catch (error) {
+        console.error('Error buscando persona:', error);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [formData.documento, isNuevaPersona]);
+
+  const handleSelectSuggestion = (persona) => {
+    setFormData({
+      ...formData,
+      documento: persona.documento,
+      nombre: persona.nombre,
+      apellido: persona.apellido,
+    });
+    setShowSuggestions(false);
+    setErrors({});
+  };
 
   // Reset al abrir
   useEffect(() => {
@@ -27,6 +64,8 @@ export default function InteraccionModal({ open, onClose, onSubmit, loading, tip
         apellido: '',
       });
       setErrors({});
+      setSuggestions([]);
+      setShowSuggestions(false);
     }
   }, [open]);
 
@@ -149,22 +188,46 @@ export default function InteraccionModal({ open, onClose, onSubmit, loading, tip
                 <label className={`block text-xs font-label font-bold uppercase tracking-wider mb-1.5 ${errors.documento ? 'text-error' : 'text-on-surface-variant'}`}>
                   Documento
                 </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.documento}
-                  onChange={(e) => {
-                    setFormData({ ...formData, documento: e.target.value });
-                    if (errors.documento) setErrors({ ...errors, documento: '' });
-                  }}
-                  onBlur={validate}
-                  className={`w-full bg-surface-container-lowest border rounded-xl px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-1 transition-all ${
-                    errors.documento 
-                      ? 'border-error focus:border-error focus:ring-error' 
-                      : 'border-divider focus:border-primary focus:ring-primary'
-                  }`}
-                  placeholder="Ej: 12345678"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    required
+                    value={formData.documento}
+                    onChange={(e) => {
+                      setFormData({ ...formData, documento: e.target.value });
+                      if (errors.documento) setErrors({ ...errors, documento: '' });
+                    }}
+                    onBlur={() => {
+                      setTimeout(() => {
+                        setShowSuggestions(false);
+                        validate();
+                      }, 200);
+                    }}
+                    onFocus={() => {
+                      if (suggestions.length > 0) setShowSuggestions(true);
+                    }}
+                    className={`w-full bg-surface-container-lowest border rounded-xl px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-1 transition-all ${
+                      errors.documento 
+                        ? 'border-error focus:border-error focus:ring-error' 
+                        : 'border-divider focus:border-primary focus:ring-primary'
+                    }`}
+                    placeholder="Ej: 12345678"
+                    autoComplete="off"
+                  />
+                  {showSuggestions && suggestions.length > 0 && (
+                    <ul className="absolute z-50 w-full mt-1 bg-surface-container-lowest border border-divider rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                      {suggestions.map((sug) => (
+                        <li 
+                          key={sug.id_persona}
+                          onMouseDown={() => handleSelectSuggestion(sug)}
+                          className="px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low cursor-pointer transition-colors border-b border-divider last:border-b-0"
+                        >
+                          <span className="font-semibold">{sug.documento}</span> - {sug.nombre} {sug.apellido}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
                 {errors.documento && <span className="text-error text-xs font-medium mt-1 block">{errors.documento}</span>}
               </div>
               <div className="grid grid-cols-2 gap-4">

@@ -105,7 +105,7 @@ export default function CatalogoPublico() {
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <section className="pt-28 pb-8 px-6 md:px-10 bg-surface-container-low">
         <div className="max-w-7xl mx-auto">
-          <h1 
+          <h1
             className="font-headline font-semibold text-4xl text-on-surface mb-3 cursor-pointer hover:opacity-80 transition-opacity inline-block"
             onClick={() => {
               setSearch('');
