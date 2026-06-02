@@ -14,26 +14,37 @@ router.get('/categorias/publico', ctrl.getAllCategoriasPublico);
 const { requireRol } = require('../../middleware/rbac.middleware');
 
 router.use(authenticate);
-router.use(requireRol('Administrador', 'Jefe'));
 
+// ─── Rutas de lectura (Disponibles para Empleado, Jefe, Admin) ──────────────
 // Piezas
 router.get('/piezas', ctrl.getAllPiezas);
 router.get('/piezas/:id', ctrl.getPiezaById);
-router.post('/piezas', validate(piezaSchema), ctrl.createPieza);
-router.put('/piezas/:id', validate(piezaSchema.partial()), ctrl.updatePieza);
-router.delete('/piezas/:id', ctrl.deletePieza);
 
 // Categorías
 router.get('/categorias', ctrl.getAllCategorias);
+
+// Disfraces
+router.get('/disfraces', ctrl.getAllDisfraces);
+router.get('/disfraces/:id', ctrl.getDisfrazById);
+
+// ─── Rutas de escritura (Restringidas a Jefe, Admin) ──────────────────────────
+router.use(requireRol('Administrador', 'Jefe'));
+
+// Piezas (escritura)
+router.post('/piezas', validate(piezaSchema), ctrl.createPieza);
+router.put('/piezas/:id', validate(piezaSchema.partial()), ctrl.updatePieza);
+router.delete('/piezas/:id', ctrl.deletePieza);
+router.patch('/piezas/:id/restore', requireRol('Administrador'), ctrl.restorePieza);
+
+// Categorías (escritura)
 router.post('/categorias', validate(categoriaSchema), ctrl.createCategoria);
 router.put('/categorias/:id', validate(categoriaSchema.partial()), ctrl.updateCategoria);
 router.delete('/categorias/:id', ctrl.deleteCategoria);
 
-// Disfraces (admin)
-router.get('/disfraces', ctrl.getAllDisfraces);
-router.get('/disfraces/:id', ctrl.getDisfrazById);
+// Disfraces (escritura)
 router.post('/disfraces', validate(disfrazSchema), ctrl.createDisfraz);
 router.put('/disfraces/:id', validate(disfrazSchema.partial()), ctrl.updateDisfraz);
 router.delete('/disfraces/:id', ctrl.deleteDisfraz);
+router.patch('/disfraces/:id/restore', requireRol('Administrador'), ctrl.restoreDisfraz);
 
 module.exports = router;

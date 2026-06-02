@@ -32,8 +32,7 @@ async function getInPreparation() {
     prisma.venta.count({
       where: {
         etapa: 'RESERVADO',
-        fecha_entrega_estimada: { gte: tomorrowStart, lte: tomorrowEnd },
-        operacion: { deleted_at: null },
+        operacion: { deleted_at: null, fecha_retiro: { gte: tomorrowStart, lte: tomorrowEnd } },
       },
     }),
   ]);
@@ -204,11 +203,11 @@ async function getDashboardData() {
   };
 }
 
-async function getActiveOperationsDetails() {
+async function getActiveOperationsDetails(filters = {}) {
   const rows = await prisma.$queryRaw`
     SELECT * FROM gestion.v_active_operations_details ORDER BY fecha ASC
   `;
-  return rows.map((r) => ({
+  let result = rows.map((r) => ({
     id: r.id_operacion.toString(),
     cliente: r.cliente,
     tipo: r.tipo,
@@ -216,6 +215,17 @@ async function getActiveOperationsDetails() {
     fecha: r.fecha,
     esAtrasado: r.es_atrasado,
   }));
+
+  if (filters.etapa) {
+    const etapas = filters.etapa.split(',');
+    result = result.filter(r => etapas.includes(r.etapa));
+  }
+  
+  if (filters.overdue === 'true') {
+    result = result.filter(r => r.esAtrasado);
+  }
+
+  return result;
 }
 
 async function getNotifications() {

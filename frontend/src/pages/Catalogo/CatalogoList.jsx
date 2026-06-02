@@ -11,7 +11,9 @@ import ActionButtons from '@/components/ui/ActionButtons';
 import ConfirmDeleteModal from '@/components/ui/ConfirmDeleteModal';
 import PiezaViewModal from '@/components/ui/PiezaViewModal';
 import DisfrazViewModal from '@/components/ui/DisfrazViewModal';
-import { FiSearch } from 'react-icons/fi';
+import { FiSearch, FiChevronDown } from 'react-icons/fi';
+import { useAuth } from '@/context/AuthContext';
+import ToggleSwitch from '@/components/ui/ToggleSwitch';
 
 
 export default function CatalogoList() {
@@ -22,9 +24,12 @@ export default function CatalogoList() {
   const [categoria, setCategoria] = useState('');
   const [tempSearch, setTempSearch] = useState('');
   const [tempCategoria, setTempCategoria] = useState('');
+  const [includeDeleted, setIncludeDeleted] = useState(false);
+  
   
   const [tab, setTab] = useState('piezas');
   const { showSuccess, showError } = useFeedback();
+  const { hasRol } = useAuth();
 
   const [deleteTarget, setDeleteTarget] = useState(null); // { id, nombre, tipo }
   const [viewId, setViewId] = useState(null);             // id de pieza en modal Ver
@@ -38,16 +43,16 @@ export default function CatalogoList() {
   const categorias = categoriasData?.data || [];
 
   const { data: piezas, isLoading: loadingPiezas } = useQuery({
-    queryKey: ['piezas', { page, limit, search, categoria }],
+    queryKey: ['piezas', { page, limit, search, categoria, include_deleted: includeDeleted }],
     queryFn: () =>
-      api.get('/catalogo/piezas', { params: { page, limit, search: search || undefined, categoria: categoria || undefined } }).then((r) => r.data),
+      api.get('/catalogo/piezas', { params: { page, limit, search: search || undefined, categoria: categoria || undefined, include_deleted: includeDeleted } }).then((r) => r.data),
     enabled: tab === 'piezas',
   });
 
   const { data: disfraces, isLoading: loadingDisfraces } = useQuery({
-    queryKey: ['disfraces', { page, limit, search, categoria }],
+    queryKey: ['disfraces', { page, limit, search, categoria, include_deleted: includeDeleted }],
     queryFn: () =>
-      api.get('/catalogo/disfraces', { params: { page, limit, search: search || undefined, categoria: categoria || undefined } }).then((r) => r.data),
+      api.get('/catalogo/disfraces', { params: { page, limit, search: search || undefined, categoria: categoria || undefined, include_deleted: includeDeleted } }).then((r) => r.data),
     enabled: tab === 'disfraces',
   });
 
@@ -78,6 +83,28 @@ export default function CatalogoList() {
     },
   });
 
+  const restorePiezaMutation = useMutation({
+    mutationFn: (id) => api.patch(`/catalogo/piezas/${id}/restore`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['piezas'] });
+      showSuccess('Pieza restaurada correctamente');
+    },
+    onError: (err) => {
+      showError(err?.response?.data?.message ?? 'Error al restaurar la pieza');
+    },
+  });
+
+  const restoreDisfrazMutation = useMutation({
+    mutationFn: (id) => api.patch(`/catalogo/disfraces/${id}/restore`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['disfraces'] });
+      showSuccess('Disfraz restaurado correctamente');
+    },
+    onError: (err) => {
+      showError(err?.response?.data?.message ?? 'Error al restaurar el disfraz');
+    },
+  });
+
   const activeMutation = tab === 'piezas' ? deletePiezaMutation : deleteDisfrazMutation;
 
   // ─── Columnas: Piezas ─────────────────────────────────────────────────────
@@ -102,13 +129,21 @@ export default function CatalogoList() {
       label: 'Acciones',
       width: '140px',
       align: 'center',
-      render: (_, r) => (
-        <ActionButtons
-          onView={() => setViewId(r.id_pieza)}
-          onEdit={() => navigate(`/admin/catalogo/piezas/${r.id_pieza}/editar`)}
-          onDelete={() => setDeleteTarget({ id: r.id_pieza, nombre: r.nombre, tipo: 'pieza' })}
-        />
-      ),
+      render: (_, r) => {
+        const isDeleted = !!r.deleted_at;
+        return (
+          <ActionButtons
+            onView={() => setViewId(r.id_pieza)}
+            {...(!hasRol('Empleado') && !isDeleted && {
+              onEdit: () => navigate(`/admin/catalogo/piezas/${r.id_pieza}/editar`),
+              onDelete: () => setDeleteTarget({ id: r.id_pieza, nombre: r.nombre, tipo: 'pieza' }),
+            })}
+            {...(hasRol('Administrador') && isDeleted && {
+              onRestore: () => restorePiezaMutation.mutate(r.id_pieza)
+            })}
+          />
+        );
+      },
     },
   ];
 
@@ -136,13 +171,21 @@ export default function CatalogoList() {
       label: 'Acciones',
       width: '140px',
       align: 'center',
-      render: (_, r) => (
-        <ActionButtons
-          onView={() => setViewDisfrazId(r.id_disfraz)}
-          onEdit={() => navigate(`/admin/catalogo/disfraces/${r.id_disfraz}/editar`)}
-          onDelete={() => setDeleteTarget({ id: r.id_disfraz, nombre: r.nombre, tipo: 'disfraz' })}
-        />
-      ),
+      render: (_, r) => {
+        const isDeleted = !!r.deleted_at;
+        return (
+          <ActionButtons
+            onView={() => setViewDisfrazId(r.id_disfraz)}
+            {...(!hasRol('Empleado') && !isDeleted && {
+              onEdit: () => navigate(`/admin/catalogo/disfraces/${r.id_disfraz}/editar`),
+              onDelete: () => setDeleteTarget({ id: r.id_disfraz, nombre: r.nombre, tipo: 'disfraz' }),
+            })}
+            {...(hasRol('Administrador') && isDeleted && {
+              onRestore: () => restoreDisfrazMutation.mutate(r.id_disfraz)
+            })}
+          />
+        );
+      },
     },
   ];
 
@@ -203,18 +246,21 @@ export default function CatalogoList() {
         </div>
 
         {/* CTA */}
-        <Link to={tab === 'piezas' ? '/admin/catalogo/piezas/nueva' : '/admin/catalogo/disfraces/nuevo'}>
-          <Button className="h-11 px-4 flex items-center justify-center gap-2 whitespace-nowrap flex-shrink-0">
-            <span className="material-symbols-outlined text-[18px]">add</span>
-            Nuevo
-          </Button>
-        </Link>
+        {!hasRol('Empleado') && (
+          <Link to={tab === 'piezas' ? '/admin/catalogo/piezas/nueva' : '/admin/catalogo/disfraces/nuevo'}>
+            <Button className="h-11 px-4 flex items-center justify-center gap-2 whitespace-nowrap flex-shrink-0">
+              <span className="material-symbols-outlined text-[18px]">add</span>
+              Nuevo
+            </Button>
+          </Link>
+        )}
       </div>
 
       {/* Buscador y Filtros */}
-      <div className="bg-surface-container-lowest rounded-2xl shadow-card p-3 md:p-5">
-        <div className="flex flex-col md:flex-row gap-3 md:gap-4">
-          <div className="flex-1">
+      <div className="bg-surface-container-lowest rounded-2xl shadow-card p-3 lg:p-5 flex flex-col gap-4">
+        {/* Buscador */}
+        <div className="flex flex-row flex-nowrap w-full gap-2 items-center">
+          <div className="flex-1 min-w-0">
             <Input
               placeholder={`Buscar ${tab}…`}
               value={tempSearch}
@@ -228,30 +274,57 @@ export default function CatalogoList() {
               }}
             />
           </div>
-          <div className="w-full md:w-56">
-            <Select
-              value={tempCategoria}
-              onChange={(e) => setTempCategoria(e.target.value)}
-            >
-              <option value="">Todas las categorías</option>
-              {categorias.map((c) => (
-                <option key={c.id_categoria_motivo} value={c.id_categoria_motivo}>
-                  {c.nombre}
-                </option>
-              ))}
-            </Select>
-          </div>
           <Button
             onClick={() => {
               setSearch(tempSearch);
               setCategoria(tempCategoria);
               reset();
             }}
-            className="h-[48px] w-full md:w-auto px-6 shrink-0"
+            className="h-[48px] shrink-0 px-4 lg:px-6"
           >
-            <span className="material-symbols-outlined text-[20px] mr-2">search</span>
-            Buscar
+            <span className="material-symbols-outlined text-[20px] sm:mr-2">search</span>
+            <span className="hidden sm:inline">Buscar</span>
           </Button>
+        </div>
+
+        {/* Barra inferior */}
+        <div className="flex flex-row flex-nowrap overflow-x-auto whitespace-nowrap gap-3 pb-2 w-full pt-3 border-t border-divider items-center min-w-0 lg:overflow-visible lg:pb-0 lg:justify-start">
+          <div className="flex flex-row items-center gap-3 shrink-0">
+            {hasRol('Administrador') && (
+              <>
+                <div className="shrink-0">
+                  <ToggleSwitch
+                    checked={includeDeleted}
+                    onChange={(val) => { setIncludeDeleted(val); reset(); }}
+                    label="Ver inactivos"
+                    id={`toggle-inactivos-${tab}`}
+                  />
+                </div>
+                <div className="w-px h-6 bg-divider shrink-0"></div>
+              </>
+            )}
+
+            {/* Filtro por Categoría (Nativo) */}
+            <div className="relative inline-block shrink-0">
+              <select
+                value={tempCategoria}
+                onChange={(e) => {
+                  setTempCategoria(e.target.value);
+                  setCategoria(e.target.value);
+                  reset();
+                }}
+                className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent text-gray-700 dark:text-gray-200 cursor-pointer focus:outline-none"
+              >
+                <option value="" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Todas las categorías</option>
+                {categorias.map((c) => (
+                  <option key={c.id_categoria_motivo} value={c.id_categoria_motivo} className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">
+                    {c.nombre}
+                  </option>
+                ))}
+              </select>
+              <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 size-3.5" />
+            </div>
+          </div>
         </div>
       </div>
 

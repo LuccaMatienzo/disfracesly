@@ -51,17 +51,23 @@ const cambiarEstadoSchema = z.object({
 async function getAllStock(query) {
   const { skip, take, page, limit } = parsePagination(query);
 
-  const where = withNotDeleted({
+  let baseWhere = {
     ...(query.estado && { estado_pieza_stock: query.estado }),
     ...(query.id_pieza && { id_pieza: BigInt(query.id_pieza) }),
+    ...(query.talle && { talle: { contains: query.talle, mode: 'insensitive' } }),
     pieza: query.search
-      ? { nombre: { contains: query.search, mode: 'insensitive' }, deleted_at: null }
-      : { deleted_at: null },
-  });
+      ? { nombre: { contains: query.search, mode: 'insensitive' } }
+      : {},
+  };
+
+  if (query.include_deleted !== 'true' && query.include_deleted !== true) {
+    baseWhere = withNotDeleted(baseWhere);
+    baseWhere.pieza.deleted_at = null;
+  }
 
   const [data, total] = await prisma.$transaction([
     prisma.piezaStock.findMany({
-      where,
+      where: baseWhere,
       skip,
       take,
       include: {
@@ -70,7 +76,7 @@ async function getAllStock(query) {
       },
       orderBy: { id_pieza_stock: 'desc' },
     }),
-    prisma.piezaStock.count({ where }),
+    prisma.piezaStock.count({ where: baseWhere }),
   ]);
 
   return paginatedResponse(data, total, page, limit);
@@ -158,6 +164,12 @@ async function deleteStock(id) {
   await prisma.piezaStock.update({ where: { id_pieza_stock: BigInt(id) }, data: { deleted_at: new Date() } });
 }
 
+async function restoreStock(id) {
+  const item = await prisma.piezaStock.findFirst({ where: { id_pieza_stock: BigInt(id), deleted_at: { not: null } } });
+  if (!item) throw ApiError.notFound('Pieza de stock eliminada no encontrada');
+  await prisma.piezaStock.update({ where: { id_pieza_stock: BigInt(id) }, data: { deleted_at: null } });
+}
+
 module.exports = {
   createStockSchema,
   updateStockSchema,
@@ -169,4 +181,5 @@ module.exports = {
   updateStock,
   cambiarEstado,
   deleteStock,
+  restoreStock,
 };

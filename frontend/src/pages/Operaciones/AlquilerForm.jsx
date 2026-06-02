@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
 import { useCreateAlquiler } from '@/hooks/useOperaciones';
@@ -11,6 +11,7 @@ import { Select } from '@/components/ui/Input';
 import Badge from '@/components/ui/Badge';
 import ToastContainer from '@/components/ui/Toast';
 import { useState, useEffect } from 'react';
+import ClienteCombobox from '@/components/ui/ClienteCombobox';
 
 // Formato datetime-local: YYYY-MM-DDThh:mm
 const getLocalDatetimeStr = (date) => {
@@ -42,11 +43,6 @@ export default function AlquilerForm() {
   const { showSuccess, showError } = useFeedback();
   const [stockSearch, setStockSearch] = useState('');
 
-  const { data: clientesData } = useQuery({
-    queryKey: ['clientes-all'],
-    queryFn: () => api.get('/clientes', { params: { limit: 200 } }).then((r) => r.data),
-  });
-
   const { data: stockData } = useQuery({
     queryKey: ['stock-disponible', stockSearch],
     queryFn: () =>
@@ -57,6 +53,7 @@ export default function AlquilerForm() {
 
   const {
     register,
+    control,
     handleSubmit,
     watch,
     setValue,
@@ -139,7 +136,6 @@ export default function AlquilerForm() {
     }
   };
 
-  const clientes = clientesData?.data ?? [];
   const stockItems = stockData?.data ?? [];
 
   return (
@@ -160,18 +156,14 @@ export default function AlquilerForm() {
             {/* Cliente */}
             <div className="bg-surface-container-lowest rounded-2xl shadow-card p-5">
               <h2 className="font-headline text-title-md text-on-surface mb-4">Cliente</h2>
-              <Select
-                label="Cliente"
-                error={errors.id_cliente?.message}
-                {...register('id_cliente', { required: 'Seleccioná un cliente' })}
-              >
-                <option value="">Seleccionar cliente…</option>
-                {clientes.map((c) => (
-                  <option key={c.id_cliente} value={c.id_cliente}>
-                    {c.persona?.nombre} {c.persona?.apellido} — {c.persona?.documento}
-                  </option>
-                ))}
-              </Select>
+              <Controller
+                name="id_cliente"
+                control={control}
+                rules={{ required: 'Seleccioná un cliente' }}
+                render={({ field: { onChange, value }, fieldState: { error } }) => (
+                  <ClienteCombobox value={value} onChange={onChange} error={error?.message} />
+                )}
+              />
             </div>
 
             {/* Piezas */}

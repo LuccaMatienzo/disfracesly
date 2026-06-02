@@ -510,7 +510,7 @@ function SkeletonCard() {
  * @returns {JSX.Element}
  */
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, hasRol } = useAuth();
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -639,7 +639,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── KPI Cards ─────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 ${hasRol('Empleado') ? 'xl:grid-cols-3' : 'xl:grid-cols-4'} gap-3 md:gap-4`}>
         <KpiActiveRentals 
           data={activeRentals} 
           onClick={() => setActiveOpsModalOpen(true)} 
@@ -653,7 +653,7 @@ export default function Dashboard() {
           data={readyForPickup} 
           onClick={() => setReadyModalOpen(true)}
         />
-        <KpiMonthlyRevenue data={monthlyRevenue} />
+        {!hasRol('Empleado') && <KpiMonthlyRevenue data={monthlyRevenue} />}
       </div>
 
       {/* ── Bento: Movements + Cash/Stock ─────────────────────────────────── */}
@@ -662,7 +662,7 @@ export default function Dashboard() {
           <RecentMovements movements={recentMovements} />
         </div>
         <div className="flex flex-col gap-4 md:gap-6">
-          <CashFlow data={cashFlowWeekly} />
+          {!hasRol('Empleado') && <CashFlow data={cashFlowWeekly} />}
           <StockStatusCard data={stockStatus} />
         </div>
       </div>

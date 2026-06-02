@@ -46,9 +46,13 @@ async function getAllPiezas(query) {
   const { skip, take, page, limit } = parsePagination(query);
   const search = query.search ?? '';
 
-  const where = withNotDeleted({
+  let where = {
     nombre: { contains: search, mode: 'insensitive' },
-  });
+  };
+
+  if (query.include_deleted !== 'true' && query.include_deleted !== true) {
+    where = withNotDeleted(where);
+  }
 
   if (query.categoria) {
     where.categorias = { some: { id_categoria_motivo: BigInt(query.categoria) } };
@@ -167,6 +171,19 @@ async function deletePieza(id) {
   await prisma.pieza.update({ where: { id_pieza: BigInt(id) }, data: { deleted_at: new Date() } });
 }
 
+/**
+ * Restaura lógicamente una pieza del catálogo.
+ *
+ * @param {string|number} id - ID de la pieza
+ * @returns {Promise<void>}
+ * @throws {ApiError} 404 si la pieza no existe
+ */
+async function restorePieza(id) {
+  const pieza = await prisma.pieza.findFirst({ where: { id_pieza: BigInt(id), deleted_at: { not: null } } });
+  if (!pieza) throw ApiError.notFound('Pieza eliminada no encontrada');
+  await prisma.pieza.update({ where: { id_pieza: BigInt(id) }, data: { deleted_at: null } });
+}
+
 // ─── Categoria Services ───────────────────────────────────────────────────────
 
 /**
@@ -237,7 +254,11 @@ async function deleteCategoria(id) {
  */
 async function getAllDisfraces(query) {
   const { skip, take, page, limit } = parsePagination(query);
-  const where = withNotDeleted({ nombre: { contains: query.search ?? '', mode: 'insensitive' } });
+  let where = { nombre: { contains: query.search ?? '', mode: 'insensitive' } };
+
+  if (query.include_deleted !== 'true' && query.include_deleted !== true) {
+    where = withNotDeleted(where);
+  }
 
   if (query.categoria) {
     // Filtro por categoría: busca disfraces que contengan al menos una pieza de dicha categoría
@@ -392,6 +413,19 @@ async function deleteDisfraz(id) {
   const disfraz = await prisma.disfraz.findFirst({ where: withNotDeleted({ id_disfraz: BigInt(id) }) });
   if (!disfraz) throw ApiError.notFound('Disfraz no encontrado');
   await prisma.disfraz.update({ where: { id_disfraz: BigInt(id) }, data: { deleted_at: new Date() } });
+}
+
+/**
+ * Restaura lógicamente un disfraz.
+ *
+ * @param {string|number} id - ID del disfraz
+ * @returns {Promise<void>}
+ * @throws {ApiError} 404 si el disfraz no existe
+ */
+async function restoreDisfraz(id) {
+  const disfraz = await prisma.disfraz.findFirst({ where: { id_disfraz: BigInt(id), deleted_at: { not: null } } });
+  if (!disfraz) throw ApiError.notFound('Disfraz eliminado no encontrado');
+  await prisma.disfraz.update({ where: { id_disfraz: BigInt(id) }, data: { deleted_at: null } });
 }
 
 // ─── Endpoints Públicos (sin autenticación) ───────────────────────────────────
@@ -585,8 +619,8 @@ module.exports = {
   piezaSchema,
   disfrazSchema,
   categoriaSchema,
-  getAllPiezas, getPiezaById, createPieza, updatePieza, deletePieza,
+  getAllPiezas, getPiezaById, createPieza, updatePieza, deletePieza, restorePieza,
   getAllCategorias, createCategoria, updateCategoria, deleteCategoria,
-  getAllDisfraces, getDisfrazById, createDisfraz, updateDisfraz, deleteDisfraz,
+  getAllDisfraces, getDisfrazById, createDisfraz, updateDisfraz, deleteDisfraz, restoreDisfraz,
   getDisfracesPúblico, getDisfrazByIdPublico, getDisfracesPopularesPublico,
 };

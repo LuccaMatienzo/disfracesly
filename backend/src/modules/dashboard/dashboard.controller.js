@@ -19,7 +19,7 @@ async function getDashboard(req, res, next) {
  * @route GET /api/dashboard/operaciones-activas
  */
 async function getActiveOperations(req, res, next) {
-  try { res.json(await svc.getActiveOperationsDetails()); } catch (e) { next(e); }
+  try { res.json(await svc.getActiveOperationsDetails(req.query)); } catch (e) { next(e); }
 }
 
 /**

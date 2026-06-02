@@ -65,6 +65,14 @@ async function remove(req, res, next) {
 }
 
 /**
+ * Restaura una operación eliminada.
+ * @route PATCH /api/operaciones/:id/restore
+ */
+async function restore(req, res, next) {
+  try { await svc.restoreOperacion(req.params.id); res.json({ message: 'Operación restaurada' }); } catch (e) { next(e); }
+}
+
+/**
  * Registra una nueva interacción (retiro, devolución u otra) en una operación.
  * Busca o crea la persona interviniente dentro de la transacción.
  * @route POST /api/operaciones/:id/interacciones
@@ -91,4 +99,4 @@ async function updatePiezas(req, res, next) {
   try { res.json(await svc.updateOperacionPiezas(req.params.id, req.body)); } catch (e) { next(e); }
 }
 
-module.exports = { getAll, getById, newAlquiler, newVenta, avanzarAlquiler, avanzarVenta, remove, newInteraccion, updateMontos, updatePiezas };
+module.exports = { getAll, getById, newAlquiler, newVenta, avanzarAlquiler, avanzarVenta, remove, restore, newInteraccion, updateMontos, updatePiezas };

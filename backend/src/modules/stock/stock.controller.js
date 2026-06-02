@@ -63,4 +63,12 @@ async function remove(req, res, next) {
   try { await svc.deleteStock(req.params.id); res.json({ message: 'Stock eliminado' }); } catch (e) { next(e); }
 }
 
-module.exports = { getAll, getById, getStats, create, update, cambiarEstado, remove };
+/**
+ * Restaura lógicamente una unidad de stock.
+ * @route PATCH /api/stock/:id/restore
+ */
+async function restore(req, res, next) {
+  try { await svc.restoreStock(req.params.id); res.json({ message: 'Stock restaurado' }); } catch (e) { next(e); }
+}
+
+module.exports = { getAll, getById, getStats, create, update, cambiarEstado, remove, restore };

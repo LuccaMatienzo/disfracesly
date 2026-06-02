@@ -731,9 +731,7 @@ export default function OperacionDetalle() {
                   }
                 />
               )}
-              {isVenta && op.venta.fecha_entrega_estimada && (
-                <InfoRow icon="event_upcoming" label="Entrega estimada" value={fmtDate(op.venta.fecha_entrega_estimada)} />
-              )}
+
               {isVenta && op.venta.especificaciones_medidas && (
                 <InfoRow icon="straighten" label="Especificaciones medidas" value={op.venta.especificaciones_medidas} />
               )}

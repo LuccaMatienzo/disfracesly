@@ -49,6 +49,14 @@ async function deletePieza(req, res, next) {
   try { await svc.deletePieza(req.params.id); res.json({ message: 'Pieza eliminada' }); } catch (e) { next(e); }
 }
 
+/**
+ * Restaura lógicamente una pieza del catálogo.
+ * @route PATCH /api/catalogo/piezas/:id/restore
+ */
+async function restorePieza(req, res, next) {
+  try { await svc.restorePieza(req.params.id); res.json({ message: 'Pieza restaurada' }); } catch (e) { next(e); }
+}
+
 // ─── Categorías ────────────────────────────────────────────────────────────────
 
 /**
@@ -126,6 +134,14 @@ async function deleteDisfraz(req, res, next) {
   try { await svc.deleteDisfraz(req.params.id); res.json({ message: 'Disfraz eliminado' }); } catch (e) { next(e); }
 }
 
+/**
+ * Restaura lógicamente un disfraz.
+ * @route PATCH /api/catalogo/disfraces/:id/restore
+ */
+async function restoreDisfraz(req, res, next) {
+  try { await svc.restoreDisfraz(req.params.id); res.json({ message: 'Disfraz restaurado' }); } catch (e) { next(e); }
+}
+
 // ─── Endpoints Públicos (sin autenticación) ───────────────────────────────────
 
 /**
@@ -165,8 +181,8 @@ async function getAllCategoriasPublico(req, res, next) {
 }
 
 module.exports = {
-  getAllPiezas, getPiezaById, createPieza, updatePieza, deletePieza,
+  getAllPiezas, getPiezaById, createPieza, updatePieza, deletePieza, restorePieza,
   getAllCategorias, createCategoria, updateCategoria, deleteCategoria,
-  getAllDisfraces, getDisfrazById, createDisfraz, updateDisfraz, deleteDisfraz,
+  getAllDisfraces, getDisfrazById, createDisfraz, updateDisfraz, deleteDisfraz, restoreDisfraz,
   getDisfracesPúblico, getDisfrazByIdPublico, getAllCategoriasPublico, getDisfracesPopularesPublico,
 };

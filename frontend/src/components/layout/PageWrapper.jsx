@@ -23,8 +23,8 @@ import AccountModal from './AccountModal';
 const NAV_ITEMS = [
   { to: '/admin', label: 'Panel General', icon: 'grid_view', end: true, roles: ['Administrador', 'Jefe', 'Empleado'] },
   { to: '/admin/operaciones', label: 'Operaciones', icon: 'calendar_today', end: false, roles: ['Administrador', 'Jefe', 'Empleado'] },
-  { to: '/admin/stock', label: 'Stock', icon: 'inventory_2', end: false, roles: ['Administrador', 'Jefe'] },
-  { to: '/admin/catalogo', label: 'Catálogo', icon: 'apparel', end: false, roles: ['Administrador', 'Jefe'] },
+  { to: '/admin/stock', label: 'Stock', icon: 'inventory_2', end: false, roles: ['Administrador', 'Jefe', 'Empleado'] },
+  { to: '/admin/catalogo', label: 'Catálogo', icon: 'apparel', end: false, roles: ['Administrador', 'Jefe', 'Empleado'] },
   { to: '/admin/clientes', label: 'Clientes', icon: 'people', end: false, roles: ['Administrador', 'Jefe'] },
   { to: '/admin/usuarios', label: 'Usuarios', icon: 'manage_accounts', end: false, roles: ['Administrador'] },
   { to: '/admin/finanzas', label: 'Finanzas', icon: 'query_stats', end: false, roles: ['Administrador', 'Jefe'] },

@@ -285,7 +285,6 @@ model Venta {
   id_venta                 BigInt     @id @default(autoincrement())
   id_operacion             BigInt     @unique
   etapa                    EtapaVenta @default(RESERVADO)
-  fecha_entrega_estimada   DateTime?
   especificaciones_medidas String?
   sena_monto               Decimal    @default(0) @db.Decimal(12, 2)
 

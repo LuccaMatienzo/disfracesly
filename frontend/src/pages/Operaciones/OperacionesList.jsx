@@ -13,6 +13,9 @@ import ActionButtons from '@/components/ui/ActionButtons';
 import ConfirmDeleteModal from '@/components/ui/ConfirmDeleteModal';
 import OperacionViewModal from '@/components/ui/OperacionViewModal';
 import { useAuth } from '@/context/AuthContext';
+import ToggleSwitch from '@/components/ui/ToggleSwitch';
+import SortToggle from '@/components/ui/SortToggle';
+import { FiChevronDown } from 'react-icons/fi';
 
 export default function OperacionesList() {
   const queryClient = useQueryClient();
@@ -21,6 +24,13 @@ export default function OperacionesList() {
   const [tipo, setTipo] = useState('alquiler');
   const [searchQuery, setSearchQuery] = useState('');
   const [etapa, setEtapa] = useState('');
+  const [includeDeleted, setIncludeDeleted] = useState(false);
+  const [sort, setSort] = useState({ field: null, direction: null });
+
+  const handleSortChange = (field, direction) => {
+    setSort({ field, direction });
+    reset();
+  };
 
   const [appliedFilters, setAppliedFilters] = useState({ search: '', tipo: 'alquiler', etapa: '' });
 
@@ -36,7 +46,10 @@ export default function OperacionesList() {
     limit,
     tipo: appliedFilters.tipo || undefined,
     search: appliedFilters.search || undefined,
-    etapa: appliedFilters.etapa || undefined
+    etapa: appliedFilters.etapa || undefined,
+    include_deleted: includeDeleted,
+    sort_field: sort.field ?? undefined,
+    sort_direction: sort.direction ?? undefined,
   });
 
   const handleSearch = () => {
@@ -57,6 +70,79 @@ export default function OperacionesList() {
       setDeleteTarget(null);
     },
   });
+
+  // ─── Mutación: restore ────────────────────────────────────────────────────
+  const restoreMutation = useMutation({
+    mutationFn: (id) => api.patch(`/operaciones/${id}/restore`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['operaciones'] });
+      showSuccess('Operación restaurada correctamente');
+    },
+    onError: (err) => {
+      showError(err?.response?.data?.message ?? 'Error al restaurar la operación');
+    },
+  });
+
+  const handlePrint = (operacion) => {
+    const newWin = window.open('', '_blank');
+    if (!newWin) return;
+    const isAlquiler = !!operacion.alquiler;
+    const details = operacion.alquiler || operacion.venta || {};
+    
+    newWin.document.write(`
+      <html>
+        <head>
+          <title>Imprimir Operación #${operacion.id_operacion}</title>
+          <style>
+            body { font-family: sans-serif; padding: 20px; color: #333; }
+            .header { display: flex; align-items: center; gap: 10px; border-bottom: 2px solid #ccc; padding-bottom: 10px; margin-bottom: 20px; }
+            .logo { height: 40px; }
+            h1 { margin: 0; color: #4caf50; font-size: 24px; }
+            .info { margin-bottom: 10px; line-height: 1.5; font-size: 14px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f5f5f5; }
+            h2, h3 { margin-bottom: 10px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <img src="${window.location.origin}/logo_svg_verdelima.svg" class="logo" alt="Logo" />
+            <h1>DisfracesLy</h1>
+          </div>
+          <h2>Operación de ${isAlquiler ? 'Alquiler' : 'Venta'} #${operacion.id_operacion}</h2>
+          <div class="info"><strong>Cliente:</strong> ${operacion.cliente?.persona?.nombre ?? ''} ${operacion.cliente?.persona?.apellido ?? ''}</div>
+          <div class="info"><strong>Monto Total:</strong> $${operacion.monto_total}</div>
+          ${isAlquiler ? `<div class="info"><strong>Depósito:</strong> $${details.deposito_monto ?? 0}</div>` : ''}
+          <div class="info">
+            <strong>Fechas:</strong><br/>
+            Constitución: ${new Date(operacion.fecha_constitucion).toLocaleDateString()}<br/>
+            ${isAlquiler && details.fecha_retiro ? `Retiro: ${new Date(details.fecha_retiro).toLocaleDateString()}<br/>` : ''} 
+            ${isAlquiler && details.fecha_devolucion ? `Devolución: ${new Date(details.fecha_devolucion).toLocaleDateString()}` : ''}
+            ${!isAlquiler && operacion.fecha_retiro ? `Entrega: ${new Date(operacion.fecha_retiro).toLocaleDateString()}` : ''}
+          </div>
+          <div class="info"><strong>Observaciones:</strong> ${operacion.observaciones || 'Sin observaciones'}</div>
+          
+          <h3>Piezas</h3>
+          ${operacion.detalles && operacion.detalles.length > 0 ? `
+          <table>
+            <tr><th>Pieza</th><th>Talle</th></tr>
+            ${operacion.detalles.map(d => {
+              const nombre = d.piezaStock?.pieza?.nombre ?? 'Desconocida';
+              const talle = d.piezaStock?.talle ?? 'Único';
+              return `<tr><td>${nombre}</td><td>${talle}</td></tr>`;
+            }).join('')}
+          </table>
+          ` : '<p>Sin piezas registradas</p>'}
+          
+          <script>
+            window.onload = () => { window.print(); };
+          </script>
+        </body>
+      </html>
+    `);
+    newWin.document.close();
+  };
 
   // ─── Columnas ─────────────────────────────────────────────────────────────
   const columns = [
@@ -102,16 +188,22 @@ export default function OperacionesList() {
       render: (_, r) => {
         const tipoLabel = r.alquiler ? 'alquiler' : 'venta';
         const clienteNombre = `${r.cliente?.persona?.nombre ?? ''} ${r.cliente?.persona?.apellido ?? ''}`.trim();
+        const isDeleted = !!r.deleted_at;
         return (
           <ActionButtons
             onView={() => setViewId(r.id_operacion)}
             onDetail={() => navigate(`/admin/operaciones/${r.id_operacion}`)}
-            onDelete={() =>
-              setDeleteTarget({
-                id: r.id_operacion,
-                label: `${tipoLabel} de ${clienteNombre}`,
-              })
-            }
+            onPrint={() => handlePrint(r)}
+            {...(!hasRol('Empleado') && !isDeleted && {
+              onDelete: () =>
+                setDeleteTarget({
+                  id: r.id_operacion,
+                  label: `${tipoLabel} de ${clienteNombre}`,
+                }),
+            })}
+            {...(hasRol('Administrador') && isDeleted && {
+              onRestore: () => restoreMutation.mutate(r.id_operacion)
+            })}
           />
         );
       },
@@ -174,9 +266,10 @@ export default function OperacionesList() {
       </div>
 
       {/* Filtros */}
-      <div className="bg-surface-container-lowest rounded-2xl shadow-card p-5">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
+      <div className="bg-surface-container-lowest rounded-2xl shadow-card p-3 lg:p-5 flex flex-col gap-4">
+        {/* Buscador */}
+        <div className="flex flex-row flex-nowrap w-full gap-2 items-center">
+          <div className="flex-1 min-w-0">
             <Input
               placeholder="Buscar por ID o Nombre de cliente…"
               value={searchQuery}
@@ -184,22 +277,79 @@ export default function OperacionesList() {
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             />
           </div>
-
-          <div className="w-full md:w-56">
-            <Select value={etapa} onChange={(e) => setEtapa(e.target.value)}>
-              <option value="">Todas las etapas</option>
-              <option value="RESERVADO">Reservado</option>
-              <option value="LISTO_PARA_RETIRO">Listo para retiro</option>
-              <option value="RETIRADO">Retirado</option>
-              <option value="VENDIDO">Vendido</option>
-              <option value="DEVUELTO">Devuelto</option>
-              <option value="CANCELADO">Cancelado</option>
-            </Select>
-          </div>
-          <Button onClick={handleSearch} className="h-[48px] w-full md:w-auto px-6 shrink-0">
-            <span className="material-symbols-outlined text-[20px] mr-2">search</span>
-            Buscar
+          <Button onClick={handleSearch} className="h-[48px] shrink-0 px-4 lg:px-6">
+            <span className="material-symbols-outlined text-[20px] sm:mr-2">search</span>
+            <span className="hidden sm:inline">Buscar</span>
           </Button>
+        </div>
+
+        {/* Barra de ordenamiento y toggle */}
+        <div className="flex flex-row flex-nowrap overflow-x-auto whitespace-nowrap gap-3 pb-2 w-full pt-3 border-t border-divider items-center min-w-0 lg:overflow-visible lg:pb-0 lg:justify-start">
+          <div className="flex flex-row items-center gap-3 shrink-0">
+            {hasRol('Administrador') && (
+              <>
+                <div className="shrink-0">
+                  <ToggleSwitch
+                    checked={includeDeleted}
+                    onChange={(val) => { setIncludeDeleted(val); reset(); }}
+                    label="Ver inactivos"
+                    id="toggle-inactivos-operaciones"
+                  />
+                </div>
+                <div className="w-px h-6 bg-divider shrink-0"></div>
+              </>
+            )}
+
+            {/* Filtro por Etapas (Nativo) */}
+            <div className="relative inline-block shrink-0">
+              <select
+                value={etapa}
+                onChange={(e) => {
+                  setEtapa(e.target.value);
+                  reset();
+                }}
+                className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent text-gray-700 dark:text-gray-200 cursor-pointer focus:outline-none"
+              >
+                <option value="" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Todas las etapas</option>
+                <option value="RESERVADO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Reservado</option>
+                <option value="LISTO_PARA_RETIRO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Listo para retiro</option>
+                <option value="RETIRADO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Retirado</option>
+                <option value="VENDIDO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Vendido</option>
+                <option value="DEVUELTO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Devuelto</option>
+                <option value="CANCELADO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Cancelado</option>
+              </select>
+              <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 size-3.5" />
+            </div>
+
+            <div className="w-px h-6 bg-divider shrink-0 ml-1"></div>
+
+            <span className="text-label-lg font-label font-medium text-on-surface-variant uppercase tracking-wide shrink-0 ml-1">
+              Ordenar:
+            </span>
+          </div>
+          
+          <div className="flex flex-row items-center gap-2 shrink-0 lg:flex-nowrap">
+            <SortToggle
+              label="Fecha Const."
+              field="fecha_constitucion"
+              currentSort={sort}
+              onSortChange={handleSortChange}
+            />
+            <SortToggle
+              label={activeTab === 'alquiler' ? "Fecha Retiro" : "Fecha Entrega"}
+              field="fecha_retiro"
+              currentSort={sort}
+              onSortChange={handleSortChange}
+            />
+            {activeTab === 'alquiler' && (
+              <SortToggle
+                label="Fecha Devolución"
+                field="fecha_devolucion"
+                currentSort={sort}
+                onSortChange={handleSortChange}
+              />
+            )}
+          </div>
         </div>
       </div>
 

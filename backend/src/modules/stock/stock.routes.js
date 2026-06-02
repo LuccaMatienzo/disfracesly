@@ -7,14 +7,18 @@ const { createStockSchema, updateStockSchema, cambiarEstadoSchema } = require('.
 const { requireRol } = require('../../middleware/rbac.middleware');
 
 router.use(authenticate);
-router.use(requireRol('Administrador', 'Jefe'));
 
+// Empleado puede visualizar y buscar (y los demás también)
 router.get('/stats', ctrl.getStats);
 router.get('/', ctrl.getAll);
 router.get('/:id', ctrl.getById);
+
+// Administrador y Jefe pueden crear, modificar y borrar
+router.use(requireRol('Administrador', 'Jefe'));
 router.post('/', validate(createStockSchema), ctrl.create);
 router.put('/:id', validate(updateStockSchema), ctrl.update);
 router.patch('/:id/estado', validate(cambiarEstadoSchema), ctrl.cambiarEstado);
 router.delete('/:id', ctrl.remove);
+router.patch('/:id/restore', requireRol('Administrador'), ctrl.restore);
 
 module.exports = router;

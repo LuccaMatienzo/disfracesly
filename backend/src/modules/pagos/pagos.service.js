@@ -31,7 +31,58 @@ async function getPagosByOperacion(id_operacion) {
   });
 }
 
+async function validarMontoPago(id_operacion, tipo, monto, idPagoIgnorar = null) {
+  // Solo validamos estos tipos
+  if (!['DEVOLUCION_DEPOSITO', 'DEPOSITO', 'SENA', 'SALDO'].includes(tipo)) return;
+
+  const operacion = await prisma.operacion.findFirst({
+    where: { id_operacion: BigInt(id_operacion) },
+    include: { alquiler: true, venta: true }
+  });
+  if (!operacion) return;
+
+  const res = await prisma.$queryRaw`SELECT * FROM gestion.fn_obtener_estado_financiero(${BigInt(id_operacion)})`;
+  if (!res || res.length === 0) return;
+  const estado = res[0];
+
+  let montoActual = 0;
+  if (idPagoIgnorar) {
+    const pagoAnterior = await prisma.pagoOperacion.findFirst({
+      where: { id_pago_operacion: BigInt(idPagoIgnorar) }
+    });
+    if (pagoAnterior && pagoAnterior.tipo === tipo) {
+      montoActual = Number(pagoAnterior.monto);
+    }
+  }
+
+  if (tipo === 'DEVOLUCION_DEPOSITO') {
+    const maxPermitido = Number(estado.deposito_garantia) - Number(estado.deposito_devuelto) + montoActual;
+    if (monto > maxPermitido) {
+      throw ApiError.badRequest(`No se puede devolver más del depósito disponible ($${maxPermitido}).`);
+    }
+  } else if (tipo === 'DEPOSITO' && operacion.alquiler) {
+    const pactado = Number(operacion.alquiler.deposito_monto);
+    const maxPermitido = Math.max(0, pactado - Number(estado.deposito_garantia) + montoActual);
+    if (monto > maxPermitido) {
+      throw ApiError.badRequest(`El depósito no puede superar el monto acordado ($${maxPermitido} restantes).`);
+    }
+  } else if (tipo === 'SENA' && operacion.venta) {
+    const pactado = Number(operacion.venta.sena_monto);
+    const maxPermitido = Math.max(0, pactado - Number(estado.sena_pagada) + montoActual);
+    if (monto > maxPermitido) {
+      throw ApiError.badRequest(`La seña no puede superar el monto acordado ($${maxPermitido} restantes).`);
+    }
+  } else if (tipo === 'SALDO') {
+    const maxPermitido = Number(estado.saldo_pendiente) + montoActual;
+    if (monto > maxPermitido) {
+      throw ApiError.badRequest(`El saldo a pagar no puede superar el monto total pendiente de la operación ($${maxPermitido} restantes).`);
+    }
+  }
+}
+
 async function createPago(data, req_user) {
+  await validarMontoPago(data.id_operacion, data.tipo, data.monto);
+
   return prisma.pagoOperacion.create({
     data: {
       id_operacion: BigInt(data.id_operacion),
@@ -47,6 +98,11 @@ async function createPago(data, req_user) {
 async function updatePago(id, data) {
   const pago = await prisma.pagoOperacion.findFirst({ where: withNotDeleted({ id_pago_operacion: BigInt(id) }) });
   if (!pago) throw ApiError.notFound('Pago no encontrado');
+
+  const nuevoTipo = data.tipo || pago.tipo;
+  const nuevoMonto = data.monto !== undefined ? data.monto : Number(pago.monto);
+
+  await validarMontoPago(pago.id_operacion, nuevoTipo, nuevoMonto, pago.id_pago_operacion);
 
   return prisma.pagoOperacion.update({
     where: { id_pago_operacion: BigInt(id) },

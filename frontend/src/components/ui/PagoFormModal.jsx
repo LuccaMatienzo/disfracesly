@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import Modal from './Modal';
 import Button from './Button';
 import Input, { Select } from './Input';
+import ConfirmActionModal from './ConfirmActionModal';
 
 const TIPO_PAGO_OPTIONS = [
   { value: 'SENA', label: 'Seña' },
@@ -22,6 +23,7 @@ export default function PagoFormModal({ open, onClose, onSubmit, loading, initia
     metodo: 'EFECTIVO',
     monto: '',
   });
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const availableOptions = useMemo(() => {
     if (!operacion) return TIPO_PAGO_OPTIONS;
@@ -81,23 +83,70 @@ export default function PagoFormModal({ open, onClose, onSubmit, loading, initia
     }
   }, [initialData, open, availableOptions]);
 
+  const montoNum = parseFloat(formData.monto);
+  let isMontoValid = formData.monto !== '' && !isNaN(montoNum) && Number.isInteger(montoNum) && montoNum > 0;
+  let montoError = (formData.monto !== '' && !isMontoValid) ? 'El monto debe ser un entero positivo' : undefined;
+
+  // Validaciones de montos máximos según tipo
+  if (isMontoValid && operacion) {
+    const ef = operacion.estado_financiero;
+    
+    if (formData.tipo === 'DEVOLUCION_DEPOSITO' && ef) {
+      let maxPermitido = ef.deposito_garantia - ef.deposito_devuelto;
+      if (initialData && initialData.tipo === 'DEVOLUCION_DEPOSITO') maxPermitido += initialData.monto;
+      
+      if (montoNum > maxPermitido) {
+        isMontoValid = false;
+        montoError = `No podés devolver más del depósito disponible ($${maxPermitido})`;
+      }
+    }
+    else if (formData.tipo === 'DEPOSITO' && operacion.alquiler && ef) {
+      const pactado = parseFloat(operacion.alquiler.deposito_monto ?? 0);
+      let pagado = ef.deposito_garantia;
+      if (initialData && initialData.tipo === 'DEPOSITO') pagado -= initialData.monto;
+      
+      const maxPermitido = Math.max(0, pactado - pagado);
+      
+      if (montoNum > maxPermitido) {
+        isMontoValid = false;
+        montoError = `El depósito no puede superar el monto acordado ($${maxPermitido} restantes)`;
+      }
+    }
+    else if (formData.tipo === 'SENA' && operacion.venta && ef) {
+      const pactado = parseFloat(operacion.venta.sena_monto ?? 0);
+      let pagado = ef.sena_pagada;
+      if (initialData && initialData.tipo === 'SENA') pagado -= initialData.monto;
+      
+      const maxPermitido = Math.max(0, pactado - pagado);
+      
+      if (montoNum > maxPermitido) {
+        isMontoValid = false;
+        montoError = `La seña no puede superar el monto acordado ($${maxPermitido} restantes)`;
+      }
+    }
+    else if (formData.tipo === 'SALDO' && ef) {
+      let maxPermitido = ef.saldo_pendiente;
+      if (initialData && initialData.tipo === 'SALDO') maxPermitido += initialData.monto;
+
+      if (montoNum > maxPermitido) {
+        isMontoValid = false;
+        montoError = `El saldo no puede superar el monto total de la operación ($${maxPermitido} restantes)`;
+      }
+    }
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (isMontoValid) setConfirmOpen(true);
+  };
+
+  const handleConfirm = () => {
+    setConfirmOpen(false);
     onSubmit({
       ...formData,
-      monto: parseFloat(formData.monto),
+      monto: montoNum,
     });
   };
-
-  const handlePositiveNumbersOnly = (e) => {
-    if (['e', 'E', '+', '-', '.', ','].includes(e.key)) {
-      e.preventDefault();
-    }
-  };
-
-  const montoNum = parseFloat(formData.monto);
-  const isMontoValid = formData.monto !== '' && !isNaN(montoNum) && Number.isInteger(montoNum) && montoNum > 0;
-  const montoError = (formData.monto !== '' && !isMontoValid) ? 'El monto debe ser un entero positivo' : undefined;
 
   return (
     <Modal
@@ -152,11 +201,28 @@ export default function PagoFormModal({ open, onClose, onSubmit, loading, initia
           placeholder="0"
           value={formData.monto}
           onChange={(e) => setFormData({ ...formData, monto: e.target.value })}
-          onKeyDown={handlePositiveNumbersOnly}
+          onKeyDown={(e) => {
+            if (['e', 'E', '+', '-', '.', ','].includes(e.key)) e.preventDefault();
+          }}
           required
           error={montoError}
         />
       </form>
+
+      <ConfirmActionModal
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={handleConfirm}
+        title={initialData ? 'Confirmar edición de pago' : 'Confirmar nuevo pago'}
+        message={
+          initialData
+            ? '¿Estás seguro que querés guardar los cambios de este pago?'
+            : `¿Confirmás el registro de este pago por $${montoNum || 0}?`
+        }
+        confirmText="Confirmar"
+        confirmVariant="primary"
+        loading={loading}
+      />
     </Modal>
   );
 }

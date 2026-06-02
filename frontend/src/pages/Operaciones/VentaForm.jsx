@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
 import { useCreateVenta } from '@/hooks/useOperaciones';
@@ -11,6 +11,7 @@ import { Select } from '@/components/ui/Input';
 import Badge from '@/components/ui/Badge';
 import ToastContainer from '@/components/ui/Toast';
 import { useState } from 'react';
+import ClienteCombobox from '@/components/ui/ClienteCombobox';
 
 const handlePositiveNumbersOnly = (e) => {
   if (['-', '+', 'e', 'E'].includes(e.key)) {
@@ -25,20 +26,15 @@ export default function VentaForm() {
   const { showSuccess, showError } = useFeedback();
   const [stockSearch, setStockSearch] = useState('');
 
-  const { data: clientesData } = useQuery({
-    queryKey: ['clientes-all'],
-    queryFn: () => api.get('/clientes', { params: { limit: 200 } }).then((r) => r.data),
-  });
-
   const { data: stockData } = useQuery({
     queryKey: ['stock-disponible', stockSearch],
     queryFn: () =>
       api.get('/stock', { params: { estado: 'DISPONIBLE', search: stockSearch, limit: 30 } }).then((r) => r.data),
   });
 
-  const { register, handleSubmit, watch, formState: { errors, isSubmitting, isValid } } = useForm({
+  const { register, control, handleSubmit, watch, formState: { errors, isSubmitting, isValid } } = useForm({
     mode: 'onChange',
-    defaultValues: { id_cliente: '', sena_monto: 0, monto_total: 0, especificaciones_medidas: '', observaciones: '' },
+    defaultValues: { id_cliente: '', sena_monto: 0, monto_total: 0, fecha_retiro: '', especificaciones_medidas: '', observaciones: '' },
   });
 
   // Mapa de piezas seleccionadas: id → objeto pieza completo
@@ -64,6 +60,7 @@ export default function VentaForm() {
         ...data,
         id_cliente: Number(data.id_cliente),
         pieza_stock_ids: [...selectedPiezas.keys()].map(Number),
+        ...(data.fecha_retiro ? { fecha_retiro: new Date(data.fecha_retiro).toISOString() } : {}),
         sena_monto: Number(data.sena_monto),
         monto_total: Number(data.monto_total),
         especificaciones_medidas: data.especificaciones_medidas || undefined,
@@ -80,7 +77,6 @@ export default function VentaForm() {
     }
   };
 
-  const clientes = clientesData?.data ?? [];
   const stockItems = stockData?.data ?? [];
 
   return (
@@ -98,12 +94,14 @@ export default function VentaForm() {
           <div className="xl:col-span-2 flex flex-col gap-6">
             <div className="bg-surface-container-lowest rounded-2xl shadow-card p-5">
               <h2 className="font-headline text-title-md text-on-surface mb-4">Cliente</h2>
-              <Select label="Cliente" error={errors.id_cliente?.message} {...register('id_cliente', { required: 'Seleccioná un cliente' })}>
-                <option value="">Seleccionar cliente…</option>
-                {clientes.map((c) => (
-                  <option key={c.id_cliente} value={c.id_cliente}>{c.persona?.nombre} {c.persona?.apellido} — {c.persona?.documento}</option>
-                ))}
-              </Select>
+              <Controller
+                name="id_cliente"
+                control={control}
+                rules={{ required: 'Seleccioná un cliente' }}
+                render={({ field: { onChange, value }, fieldState: { error } }) => (
+                  <ClienteCombobox value={value} onChange={onChange} error={error?.message} />
+                )}
+              />
             </div>
 
             <div className="bg-surface-container-lowest rounded-2xl shadow-card p-5 flex flex-col h-full">
@@ -155,6 +153,12 @@ export default function VentaForm() {
             <div className="bg-surface-container-lowest rounded-2xl shadow-card p-5">
               <h2 className="font-headline text-title-md text-on-surface mb-4">Detalles de la venta</h2>
               <div className="flex flex-col gap-4">
+                <Input
+                  label="Fecha de entrega"
+                  type="datetime-local"
+                  error={errors.fecha_retiro?.message}
+                  {...register('fecha_retiro')}
+                />
                 <Input 
                   label="Monto total ($)" 
                   type="number" 

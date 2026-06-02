@@ -83,7 +83,7 @@ export default function OperacionViewModal({ id, open, onClose }) {
           {!esAlquiler && data?.venta && (
             <Section title="Detalles de la venta">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                <Field label="Fecha entrega estimada" value={fmt(data.venta?.fecha_entrega_estimada)} />
+                <Field label="Fecha entrega estimada" value={fmt(data.fecha_retiro)} />
                 <Field label="Seña" value={currency(data.venta?.sena_monto)} />
                 <Field
                   label="Especificaciones / Medidas"

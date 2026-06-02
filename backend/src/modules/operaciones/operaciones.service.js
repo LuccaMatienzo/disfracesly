@@ -33,7 +33,7 @@ const createAlquilerSchema = z.object({
 const createVentaSchema = z.object({
   id_cliente: z.number().int().positive(),
   pieza_stock_ids: z.array(z.number().int().positive()).min(1),
-  fecha_entrega_estimada: z.string().datetime({ offset: true }).optional(),
+  fecha_retiro: z.string().datetime({ offset: true }).optional(),
   especificaciones_medidas: z.string().optional(),
   sena_monto: z.number().nonnegative('La seña no puede ser negativa').default(0),
   monto_total: z.number().nonnegative('El monto total no puede ser negativo').default(0),
@@ -201,9 +201,22 @@ async function getAllOperaciones(query) {
     baseConditions.push({ OR: searchConditions });
   }
 
-  const where = withNotDeleted(
-    baseConditions.length > 0 ? { AND: baseConditions } : {}
-  );
+  let where = baseConditions.length > 0 ? { AND: baseConditions } : {};
+  if (query.include_deleted !== 'true' && query.include_deleted !== true) {
+    where = withNotDeleted(where);
+  }
+
+  let orderBy = { fecha_constitucion: 'desc' };
+  if (query.sort_field) {
+    const direction = query.sort_direction === 'asc' ? 'asc' : 'desc';
+    if (query.sort_field === 'fecha_constitucion') {
+      orderBy = { fecha_constitucion: direction };
+    } else if (query.sort_field === 'fecha_retiro') {
+      orderBy = { fecha_retiro: direction };
+    } else if (query.sort_field === 'fecha_devolucion') {
+      orderBy = { alquiler: { fecha_devolucion: direction } };
+    }
+  }
 
   const [data, total] = await prisma.$transaction([
     prisma.operacion.findMany({
@@ -216,7 +229,7 @@ async function getAllOperaciones(query) {
         venta: true,
         detalles: { include: { piezaStock: { include: { pieza: true } } } },
       },
-      orderBy: { fecha_constitucion: 'desc' },
+      orderBy,
     }),
     prisma.operacion.count({ where }),
   ]);
@@ -316,6 +329,7 @@ async function createVenta(data) {
     const operacion = await tx.operacion.create({
       data: {
         id_cliente: BigInt(data.id_cliente),
+        ...(data.fecha_retiro && { fecha_retiro: new Date(data.fecha_retiro) }),
         monto_total: data.monto_total,
         observaciones: data.observaciones,
         detalles: { create: bigIds.map((id) => ({ id_pieza_stock: id })) },
@@ -325,7 +339,6 @@ async function createVenta(data) {
     const venta = await tx.venta.create({
       data: {
         id_operacion: operacion.id_operacion,
-        ...(data.fecha_entrega_estimada && { fecha_entrega_estimada: new Date(data.fecha_entrega_estimada) }),
         especificaciones_medidas: data.especificaciones_medidas,
         sena_monto: data.sena_monto,
       },
@@ -443,6 +456,12 @@ async function deleteOperacion(id) {
   const op = await prisma.operacion.findFirst({ where: withNotDeleted({ id_operacion: BigInt(id) }) });
   if (!op) throw ApiError.notFound('Operación no encontrada');
   await prisma.operacion.update({ where: { id_operacion: BigInt(id) }, data: { deleted_at: new Date() } });
+}
+
+async function restoreOperacion(id) {
+  const op = await prisma.operacion.findFirst({ where: { id_operacion: BigInt(id), deleted_at: { not: null } } });
+  if (!op) throw ApiError.notFound('Operación eliminada no encontrada');
+  await prisma.operacion.update({ where: { id_operacion: BigInt(id) }, data: { deleted_at: null } });
 }
 
 /**
@@ -641,4 +660,5 @@ module.exports = {
   updatePiezasSchema,
   updateOperacionMontos,
   updateOperacionPiezas,
+  restoreOperacion,
 };
