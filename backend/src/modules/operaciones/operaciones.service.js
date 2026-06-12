@@ -453,15 +453,62 @@ async function avanzarEtapaVenta(id, data) {
 }
 
 async function deleteOperacion(id) {
-  const op = await prisma.operacion.findFirst({ where: withNotDeleted({ id_operacion: BigInt(id) }) });
+  const op = await prisma.operacion.findFirst({ 
+    where: withNotDeleted({ id_operacion: BigInt(id) }),
+    include: { detalles: true }
+  });
   if (!op) throw ApiError.notFound('Operación no encontrada');
-  await prisma.operacion.update({ where: { id_operacion: BigInt(id) }, data: { deleted_at: new Date() } });
+
+  const piezaIds = op.detalles.map((d) => d.id_pieza_stock);
+
+  await prisma.$transaction(async (tx) => {
+    if (piezaIds.length > 0) {
+      await tx.piezaStock.updateMany({
+        where: { id_pieza_stock: { in: piezaIds } },
+        data: { estado_pieza_stock: 'DISPONIBLE' },
+      });
+    }
+
+    await tx.operacion.update({ 
+      where: { id_operacion: BigInt(id) }, 
+      data: { deleted_at: new Date() } 
+    });
+  });
 }
 
 async function restoreOperacion(id) {
-  const op = await prisma.operacion.findFirst({ where: { id_operacion: BigInt(id), deleted_at: { not: null } } });
+  const op = await prisma.operacion.findFirst({ 
+    where: { id_operacion: BigInt(id), deleted_at: { not: null } },
+    include: { detalles: true, alquiler: true, venta: true }
+  });
   if (!op) throw ApiError.notFound('Operación eliminada no encontrada');
-  await prisma.operacion.update({ where: { id_operacion: BigInt(id) }, data: { deleted_at: null } });
+
+  const piezaIds = op.detalles.map((d) => d.id_pieza_stock);
+
+  // Determinar el estado esperado según la etapa
+  let estadoEsperado = 'RESERVADA';
+  if (op.alquiler) {
+    if (op.alquiler.etapa === 'RETIRADO') estadoEsperado = 'ALQUILADA';
+    else if (op.alquiler.etapa === 'DEVUELTO' || op.alquiler.etapa === 'CANCELADO') estadoEsperado = 'DISPONIBLE';
+  } else if (op.venta) {
+    if (op.venta.etapa === 'VENDIDO') estadoEsperado = 'VENDIDA';
+    else if (op.venta.etapa === 'CANCELADO') estadoEsperado = 'DISPONIBLE';
+  }
+
+  await prisma.$transaction(async (tx) => {
+    if (estadoEsperado !== 'DISPONIBLE' && piezaIds.length > 0) {
+      // Intentar reservar las piezas nuevamente, pero solo si están DISPONIBLE
+      await tx.piezaStock.updateMany({
+        where: { id_pieza_stock: { in: piezaIds }, estado_pieza_stock: 'DISPONIBLE' },
+        data: { estado_pieza_stock: estadoEsperado },
+      });
+    }
+
+    await tx.operacion.update({ 
+      where: { id_operacion: BigInt(id) }, 
+      data: { deleted_at: null } 
+    });
+  });
 }
 
 /**

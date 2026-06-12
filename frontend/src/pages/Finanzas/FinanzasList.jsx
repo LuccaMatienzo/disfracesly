@@ -42,7 +42,7 @@ export default function FinanzasList() {
 
   // ─── Queries ────────────────────────────────────────────────────────────────
   const { data: statsData, isLoading: isLoadingStats } = useQuery({
-    queryKey: ['pagos-stats'],
+    queryKey: ['pagos', 'stats'],
     queryFn: () => api.get('/pagos/stats').then((r) => r.data),
   });
 

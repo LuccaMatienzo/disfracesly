@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
 import { useOperaciones } from '@/hooks/useOperaciones';
 import { usePagination } from '@/hooks/usePagination';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useFeedback } from '@/context/FeedbackContext';
 import Table, { Pagination } from '@/components/ui/Table';
 import Badge from '@/components/ui/Badge';
@@ -23,6 +24,7 @@ export default function OperacionesList() {
   const { page, limit, goToPage, reset } = usePagination();
   const [tipo, setTipo] = useState('alquiler');
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [etapa, setEtapa] = useState('');
   const [includeDeleted, setIncludeDeleted] = useState(false);
   const [sort, setSort] = useState({ field: null, direction: null });
@@ -32,7 +34,9 @@ export default function OperacionesList() {
     reset();
   };
 
-  const [appliedFilters, setAppliedFilters] = useState({ search: '', tipo: 'alquiler', etapa: '' });
+  useEffect(() => {
+    reset();
+  }, [debouncedSearchQuery, etapa, tipo, includeDeleted, reset]);
 
   const { showSuccess, showError } = useFeedback();
   const { hasRol } = useAuth();
@@ -44,18 +48,13 @@ export default function OperacionesList() {
   const { data, isLoading } = useOperaciones({
     page,
     limit,
-    tipo: appliedFilters.tipo || undefined,
-    search: appliedFilters.search || undefined,
-    etapa: appliedFilters.etapa || undefined,
+    tipo,
+    search: debouncedSearchQuery || undefined,
+    etapa: etapa || undefined,
     include_deleted: includeDeleted,
     sort_field: sort.field ?? undefined,
     sort_direction: sort.direction ?? undefined,
   });
-
-  const handleSearch = () => {
-    setAppliedFilters({ search: searchQuery, tipo, etapa });
-    reset();
-  };
 
   // ─── Mutación: soft-delete ────────────────────────────────────────────────
   const deleteMutation = useMutation({
@@ -150,13 +149,13 @@ export default function OperacionesList() {
     {
       key: 'cliente',
       label: 'Cliente',
-      render: (_, r) => `${r.cliente?.persona?.nombre ?? ''} ${r.cliente?.persona?.apellido ?? ''}`,
+      render: (_, r) => <span className={r.deleted_at ? 'text-coral font-medium' : ''}>{`${r.cliente?.persona?.nombre ?? ''} ${r.cliente?.persona?.apellido ?? ''}`}</span>,
     },
     {
       key: 'tipo',
       label: 'Tipo',
       render: (_, r) => (
-        <span className={`font-label font-semibold text-body-md ${r.alquiler ? 'text-primary' : 'text-secondary'}`}>
+        <span className={`font-label font-semibold text-body-md ${r.deleted_at ? 'text-coral' : r.alquiler ? 'text-primary' : 'text-secondary'}`}>
           {r.alquiler ? 'Alquiler' : 'Venta'}
         </span>
       ),
@@ -166,19 +165,20 @@ export default function OperacionesList() {
       label: 'Etapa',
       render: (_, r) => {
         const etapa = r.alquiler?.etapa ?? r.venta?.etapa;
+        if (r.deleted_at) return <Badge variant="deleted">DE BAJA</Badge>;
         return etapa ? <Badge value={etapa} /> : '—';
       },
     },
     {
       key: 'monto_total',
       label: 'Monto',
-      render: (v) => `$${parseFloat(v).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+      render: (v, r) => <span className={r.deleted_at ? 'text-coral' : ''}>${parseFloat(v).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>,
     },
     {
       key: 'fecha_constitucion',
       label: 'Fecha',
-      render: (v) =>
-        new Date(v).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: '2-digit' }),
+      render: (v, r) =>
+        <span className={r.deleted_at ? 'text-coral' : ''}>{new Date(v).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: '2-digit' })}</span>,
     },
     {
       key: 'acciones',
@@ -191,9 +191,11 @@ export default function OperacionesList() {
         const isDeleted = !!r.deleted_at;
         return (
           <ActionButtons
-            onView={() => setViewId(r.id_operacion)}
-            onDetail={() => navigate(`/admin/operaciones/${r.id_operacion}`)}
-            onPrint={() => handlePrint(r)}
+            onView={!isDeleted ? () => setViewId(r.id_operacion) : undefined}
+            {...(!isDeleted && {
+              onDetail: () => navigate(`/admin/operaciones/${r.id_operacion}`),
+              onPrint: () => handlePrint(r),
+            })}
             {...(!hasRol('Empleado') && !isDeleted && {
               onDelete: () =>
                 setDeleteTarget({
@@ -216,8 +218,7 @@ export default function OperacionesList() {
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setTipo(tab);
-    setAppliedFilters((prev) => ({ ...prev, tipo: tab }));
-    reset();
+    setEtapa('');
   };
 
   return (
@@ -269,18 +270,15 @@ export default function OperacionesList() {
       <div className="bg-surface-container-lowest rounded-2xl shadow-card p-3 lg:p-5 flex flex-col gap-4">
         {/* Buscador */}
         <div className="flex flex-row flex-nowrap w-full gap-2 items-center">
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 relative">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none text-[20px]">search</span>
             <Input
               placeholder="Buscar por ID o Nombre de cliente…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              className="pl-10"
             />
           </div>
-          <Button onClick={handleSearch} className="h-[48px] shrink-0 px-4 lg:px-6">
-            <span className="material-symbols-outlined text-[20px] sm:mr-2">search</span>
-            <span className="hidden sm:inline">Buscar</span>
-          </Button>
         </div>
 
         {/* Barra de ordenamiento y toggle */}
@@ -291,7 +289,7 @@ export default function OperacionesList() {
                 <div className="shrink-0">
                   <ToggleSwitch
                     checked={includeDeleted}
-                    onChange={(val) => { setIncludeDeleted(val); reset(); }}
+                    onChange={(val) => setIncludeDeleted(val)}
                     label="Ver inactivos"
                     id="toggle-inactivos-operaciones"
                   />
@@ -304,18 +302,23 @@ export default function OperacionesList() {
             <div className="relative inline-block shrink-0">
               <select
                 value={etapa}
-                onChange={(e) => {
-                  setEtapa(e.target.value);
-                  reset();
-                }}
+                onChange={(e) => setEtapa(e.target.value)}
                 className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent text-gray-700 dark:text-gray-200 cursor-pointer focus:outline-none"
               >
                 <option value="" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Todas las etapas</option>
                 <option value="RESERVADO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Reservado</option>
-                <option value="LISTO_PARA_RETIRO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Listo para retiro</option>
-                <option value="RETIRADO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Retirado</option>
-                <option value="VENDIDO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Vendido</option>
-                <option value="DEVUELTO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Devuelto</option>
+                {activeTab === 'alquiler' ? (
+                  <>
+                    <option value="LISTO_PARA_RETIRO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Listo para retiro</option>
+                    <option value="RETIRADO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Retirado</option>
+                    <option value="DEVUELTO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Devuelto</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="LISTO_PARA_ENTREGA" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Listo para entrega</option>
+                    <option value="VENDIDO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Vendido</option>
+                  </>
+                )}
                 <option value="CANCELADO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Cancelado</option>
               </select>
               <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 size-3.5" />

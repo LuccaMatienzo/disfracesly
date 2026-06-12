@@ -3,24 +3,25 @@
  * Implementa el sistema de colores del design system Stitch.
  */
 
-const config = {
+export const badgeConfig = {
   // Estado pieza_stock
   DISPONIBLE: { label: 'Disponible', cls: 'bg-primary-container text-primary-on-container' },
-  RESERVADA: { label: 'Reservada', cls: 'bg-secondary-container/30 text-secondary' },
-  ALQUILADA: { label: 'Alquilada', cls: 'bg-secondary-container text-secondary-on-container' },
-  VENDIDA: { label: 'Vendida', cls: 'bg-on-surface/10 text-on-surface-variant' },
-  FUERA_DE_SERVICIO: { label: 'Fuera de servicio', cls: 'bg-tertiary-container text-tertiary-on-container' },
+  RESERVADA: { label: 'Reservada', cls: 'bg-secondary-container text-secondary-on-container' },
+  ALQUILADA: { label: 'Alquilada', cls: 'bg-tertiary-container text-tertiary-on-container' },
+  VENDIDA: { label: 'Vendida', cls: 'bg-primary-container text-primary-on-container' },
+  FUERA_DE_SERVICIO: { label: 'Fuera de servicio', cls: 'bg-error-container text-error-on-container' },
+  DE_BAJA: { label: 'De baja', cls: 'bg-transparent border border-coral text-coral' },
 
   // Etapa alquiler
-  RESERVADO: { label: 'Reservado', cls: 'bg-secondary-container/30 text-secondary' },
-  LISTO_PARA_RETIRO: { label: 'Listo para retiro', cls: 'bg-primary/10 text-primary' },
-  RETIRADO: { label: 'Retirado', cls: 'bg-secondary-container text-secondary-on-container' },
+  RESERVADO: { label: 'Reservado', cls: 'bg-secondary-container text-secondary-on-container' },
+  LISTO_PARA_RETIRO: { label: 'Listo para retiro', cls: 'bg-warning-container text-warning-on-container' },
+  RETIRADO: { label: 'Retirado', cls: 'bg-tertiary-container text-tertiary-on-container' },
   DEVUELTO: { label: 'Devuelto', cls: 'bg-primary-container text-primary-on-container' },
   CANCELADO: { label: 'Cancelado', cls: 'bg-error-container text-error-on-container' },
 
   // Etapa venta
-  LISTO_PARA_ENTREGA: { label: 'Listo para entrega', cls: 'bg-primary/10 text-primary' },
-  VENDIDO: { label: 'Vendido', cls: 'bg-on-surface/10 text-on-surface-variant' },
+  LISTO_PARA_ENTREGA: { label: 'Listo para entrega', cls: 'bg-warning-container text-warning-on-container' },
+  VENDIDO: { label: 'Vendido', cls: 'bg-primary-container text-primary-on-container' },
 
   // Pagos: Tipo
   SENA: { label: 'Seña', cls: 'bg-secondary-container/30 text-secondary' },
@@ -31,7 +32,7 @@ const config = {
 
   // Pagos: Método
   EFECTIVO: { label: 'Efectivo', cls: 'bg-primary-container text-primary-on-container' },
-  TRANSFERENCIA: { label: 'Transferencia', cls: 'bg-secondary-container text-secondary-on-container' },
+  TRANSFERENCIA: { label: 'Transferencia', cls: 'bg-tertiary-container text-tertiary-on-container' },
 };
 
 const variantClasses = {
@@ -39,6 +40,7 @@ const variantClasses = {
   secondary: 'bg-secondary-container text-secondary-on-container',
   error: 'bg-error-container text-error-on-container',
   neutral: 'bg-surface-container text-on-surface-variant',
+  deleted: 'bg-transparent border border-coral text-coral',
 };
 
 export default function Badge({ value, variant, children, className = '' }) {
@@ -57,7 +59,7 @@ export default function Badge({ value, variant, children, className = '' }) {
     );
   }
 
-  const { label, cls } = config[value] ?? { label: value, cls: 'bg-surface-container text-on-surface-variant' };
+  const { label, cls } = badgeConfig[value] ?? { label: value, cls: 'bg-surface-container text-on-surface-variant' };
   return (
     <span
       className={`

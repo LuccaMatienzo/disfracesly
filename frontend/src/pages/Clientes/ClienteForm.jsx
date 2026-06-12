@@ -52,11 +52,14 @@ export default function ClienteForm() {
 
   return (
     <div className="w-full">
-      <div className="mb-6">
-        <button onClick={() => navigate(-1)} className="text-body-md text-primary hover:underline font-label mb-2">← Volver</button>
-        <h1 className="font-display text-headline-md font-semibold text-on-surface">
+      <div className="mb-4 md:mb-5 shrink-0 flex items-center justify-between w-full gap-3">
+        <h1 className="font-display text-title-lg md:text-headline-sm font-semibold text-on-surface m-0">
           {isEditing ? 'Editar cliente' : 'Nuevo cliente'}
         </h1>
+        <button onClick={() => navigate(-1)} className="text-body-md text-primary hover:bg-primary/10 p-2 rounded-xl transition-colors font-label inline-flex items-center gap-1 shrink-0">
+          <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+          <span className="hidden sm:inline">Volver</span>
+        </button>
       </div>
       <div className="bg-surface-container-lowest rounded-2xl shadow-card p-6">
         <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="flex flex-col gap-5">

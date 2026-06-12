@@ -85,8 +85,8 @@ export function useAvanzarEtapaAlquiler() {
   return useMutation({
     mutationFn: ({ id, ...data }) =>
       api.patch(`/operaciones/${id}/alquiler/etapa`, data).then((r) => r.data),
-    onSuccess: (_, { id }) => {
-      qc.invalidateQueries({ queryKey: [...OPS_KEY, id] });
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: OPS_KEY });
       qc.invalidateQueries({ queryKey: ['stock'] });
     },
   });
@@ -102,8 +102,8 @@ export function useAvanzarEtapaVenta() {
   return useMutation({
     mutationFn: ({ id, ...data }) =>
       api.patch(`/operaciones/${id}/venta/etapa`, data).then((r) => r.data),
-    onSuccess: (_, { id }) => {
-      qc.invalidateQueries({ queryKey: [...OPS_KEY, id] });
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: OPS_KEY });
       qc.invalidateQueries({ queryKey: ['stock'] });
     },
   });
@@ -121,7 +121,7 @@ export function useCreateInteraccion(id_operacion) {
     mutationFn: (data) =>
       api.post(`/operaciones/${id_operacion}/interacciones`, data).then((r) => r.data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: [...OPS_KEY, id_operacion] });
+      qc.invalidateQueries({ queryKey: OPS_KEY });
     },
   });
 }
@@ -138,7 +138,7 @@ export function useUpdateOperacionMontos(id_operacion) {
     mutationFn: (data) =>
       api.patch(`/operaciones/${id_operacion}/montos`, data).then((r) => r.data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: [...OPS_KEY, id_operacion] });
+      qc.invalidateQueries({ queryKey: OPS_KEY });
     },
   });
 }
@@ -156,7 +156,7 @@ export function useUpdateOperacionPiezas(id_operacion) {
     mutationFn: (data) =>
       api.patch(`/operaciones/${id_operacion}/piezas`, data).then((r) => r.data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: [...OPS_KEY, id_operacion] });
+      qc.invalidateQueries({ queryKey: OPS_KEY });
       qc.invalidateQueries({ queryKey: ['stock'] });
     },
   });

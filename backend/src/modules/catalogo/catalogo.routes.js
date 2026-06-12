@@ -40,6 +40,7 @@ router.patch('/piezas/:id/restore', requireRol('Administrador'), ctrl.restorePie
 router.post('/categorias', validate(categoriaSchema), ctrl.createCategoria);
 router.put('/categorias/:id', validate(categoriaSchema.partial()), ctrl.updateCategoria);
 router.delete('/categorias/:id', ctrl.deleteCategoria);
+router.patch('/categorias/:id/restore', requireRol('Administrador'), ctrl.restoreCategoria);
 
 // Disfraces (escritura)
 router.post('/disfraces', validate(disfrazSchema), ctrl.createDisfraz);

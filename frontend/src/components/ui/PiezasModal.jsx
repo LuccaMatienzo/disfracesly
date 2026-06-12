@@ -24,7 +24,7 @@ export default function PiezasModal({ open, onClose, onSubmit, currentDetalles, 
   }, [open, currentDetalles]);
 
   const { data: stockData } = useQuery({
-    queryKey: ['stock-disponible', stockSearch],
+    queryKey: ['stock', 'disponible', stockSearch],
     queryFn: () =>
       api.get('/stock', { params: { estado: 'DISPONIBLE', search: stockSearch, limit: 30 } }).then((r) => r.data),
     enabled: open,

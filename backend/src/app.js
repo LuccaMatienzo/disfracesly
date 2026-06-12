@@ -4,6 +4,7 @@ const helmet  = require('helmet');
 const morgan  = require('morgan');
 const rateLimit = require('express-rate-limit');
 const path    = require('path');
+const cookieParser = require('cookie-parser');
 
 const { env }             = require('./config/env');
 const { errorMiddleware } = require('./middleware/error.middleware');
@@ -62,6 +63,7 @@ const authLimiter = rateLimit({
 // ─── Parsing ──────────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cookieParser());
 
 // ─── Logging HTTP ─────────────────────────────────────────────────────────────
 // Se omite en el entorno de test para mantener la salida limpia en CI.

@@ -5,17 +5,36 @@ import { useAuth } from '@/context/AuthContext';
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ correo: '', contrasena: '' });
+  // Inicializar estado leyendo el correo guardado (si existe)
+  const savedEmail = localStorage.getItem('rememberedEmail') || '';
+  const [form, setForm] = useState({ 
+    correo: savedEmail, 
+    contrasena: '', 
+    rememberMe: !!savedEmail 
+  });
+  const [touched, setTouched] = useState({ correo: false, contrasena: false });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPass, setShowPass] = useState(false);
+
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.correo);
+  const isPasswordValid = form.contrasena.length >= 6;
+  const isFormValid = isEmailValid && isPasswordValid;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      await login(form.correo, form.contrasena);
+      await login(form.correo, form.contrasena, form.rememberMe);
+      
+      // Guardar de forma no crítica el correo para pre-llenarlo la próxima vez
+      if (form.rememberMe) {
+        localStorage.setItem('rememberedEmail', form.correo);
+      } else {
+        localStorage.removeItem('rememberedEmail');
+      }
+
       navigate('/admin');
     } catch (err) {
       setError(err.response?.data?.error ?? 'Credenciales inválidas. Verificá tu correo y contraseña.');
@@ -57,7 +76,7 @@ export default function Login() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
 
           {/* Correo */}
           <div>
@@ -75,10 +94,17 @@ export default function Login() {
                 placeholder="empleado@disfracesly.ar"
                 value={form.correo}
                 onChange={(e) => setForm((p) => ({ ...p, correo: e.target.value }))}
+                onBlur={() => setTouched((p) => ({ ...p, correo: true }))}
                 required
                 className="w-full pl-12 pr-4 py-4 rounded-xl bg-surface-container-low border border-divider text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
               />
             </div>
+            {touched.correo && form.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.correo) && (
+              <p className="text-red-500 text-sm mt-1">Correo inválido</p>
+            )}
+            {touched.correo && !form.correo && (
+              <p className="text-red-500 text-sm mt-1">El correo es obligatorio</p>
+            )}
           </div>
 
           {/* Contraseña */}
@@ -97,6 +123,7 @@ export default function Login() {
                 placeholder="••••••••••"
                 value={form.contrasena}
                 onChange={(e) => setForm((p) => ({ ...p, contrasena: e.target.value }))}
+                onBlur={() => setTouched((p) => ({ ...p, contrasena: true }))}
                 required
                 className="w-full pl-12 pr-12 py-4 rounded-xl bg-surface-container-low border border-divider text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
               />
@@ -111,6 +138,12 @@ export default function Login() {
                 </span>
               </button>
             </div>
+            {touched.contrasena && form.contrasena.length > 0 && form.contrasena.length < 6 && (
+              <p className="text-red-500 text-sm mt-1">La contraseña debe tener al menos 6 caracteres</p>
+            )}
+            {touched.contrasena && !form.contrasena && (
+              <p className="text-red-500 text-sm mt-1">La contraseña es obligatoria</p>
+            )}
           </div>
 
           {/* Remember workstation */}
@@ -119,13 +152,15 @@ export default function Login() {
               type="checkbox"
               className="size-4 rounded accent-primary"
               id="remember"
+              checked={form.rememberMe}
+              onChange={(e) => setForm(p => ({ ...p, rememberMe: e.target.checked }))}
             />
             <span className="text-sm text-on-surface-variant">
               Recordar este equipo
             </span>
           </label>
 
-          {/* Error */}
+          {/* Error general */}
           {error && (
             <div className="bg-error/10 text-error text-sm rounded-xl px-4 py-3 flex items-start gap-3 animate-slide-up">
               <span className="material-symbols-outlined text-xl mt-0.5 shrink-0">error_outline</span>
@@ -137,7 +172,11 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-4 rounded-xl editorial-gradient text-white font-headline font-bold text-base shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed mt-2"
+            className={`w-full py-4 rounded-xl editorial-gradient text-white font-headline font-bold text-base shadow-lg transition-all flex items-center justify-center gap-3 mt-2 ${
+              loading
+                ? 'opacity-50 cursor-not-allowed' 
+                : 'hover:scale-[1.02] active:scale-95'
+            }`}
           >
             {loading ? (
               <>

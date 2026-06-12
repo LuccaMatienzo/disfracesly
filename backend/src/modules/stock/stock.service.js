@@ -55,9 +55,10 @@ async function getAllStock(query) {
     ...(query.estado && { estado_pieza_stock: query.estado }),
     ...(query.id_pieza && { id_pieza: BigInt(query.id_pieza) }),
     ...(query.talle && { talle: { contains: query.talle, mode: 'insensitive' } }),
-    pieza: query.search
-      ? { nombre: { contains: query.search, mode: 'insensitive' } }
-      : {},
+    pieza: {
+      ...(query.search && { nombre: { contains: query.search, mode: 'insensitive' } }),
+      ...(query.categoria && { categorias: { some: { id_categoria_motivo: parseInt(query.categoria) } } })
+    },
   };
 
   if (query.include_deleted !== 'true' && query.include_deleted !== true) {
@@ -86,7 +87,7 @@ async function getStockById(id) {
   const item = await prisma.piezaStock.findFirst({
     where: withNotDeleted({ id_pieza_stock: BigInt(id) }),
     include: {
-      pieza: true,
+      pieza: { include: { categorias: { include: { categoriaMotivo: true } } } },
       imagenes: { include: { imagen: true }, orderBy: { orden: 'asc' } },
     },
   });
@@ -161,13 +162,19 @@ async function deleteStock(id) {
   });
   if (enUso) throw ApiError.conflict('No se puede eliminar: la pieza está en una operación activa');
 
-  await prisma.piezaStock.update({ where: { id_pieza_stock: BigInt(id) }, data: { deleted_at: new Date() } });
+  await prisma.piezaStock.update({ 
+    where: { id_pieza_stock: BigInt(id) }, 
+    data: { deleted_at: new Date(), estado_pieza_stock: 'DE_BAJA' } 
+  });
 }
 
 async function restoreStock(id) {
   const item = await prisma.piezaStock.findFirst({ where: { id_pieza_stock: BigInt(id), deleted_at: { not: null } } });
   if (!item) throw ApiError.notFound('Pieza de stock eliminada no encontrada');
-  await prisma.piezaStock.update({ where: { id_pieza_stock: BigInt(id) }, data: { deleted_at: null } });
+  await prisma.piezaStock.update({ 
+    where: { id_pieza_stock: BigInt(id) }, 
+    data: { deleted_at: null, estado_pieza_stock: 'DISPONIBLE' } 
+  });
 }
 
 module.exports = {

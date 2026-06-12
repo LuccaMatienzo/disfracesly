@@ -91,6 +91,14 @@ async function deleteCategoria(req, res, next) {
   try { await svc.deleteCategoria(req.params.id); res.json({ message: 'Categoría eliminada' }); } catch (e) { next(e); }
 }
 
+/**
+ * Restaura lógicamente una categoría.
+ * @route PATCH /api/catalogo/categorias/:id/restore
+ */
+async function restoreCategoria(req, res, next) {
+  try { await svc.restoreCategoria(req.params.id); res.json({ message: 'Categoría restaurada' }); } catch (e) { next(e); }
+}
+
 // ─── Disfraces ────────────────────────────────────────────────────────────────
 
 /**
@@ -182,7 +190,7 @@ async function getAllCategoriasPublico(req, res, next) {
 
 module.exports = {
   getAllPiezas, getPiezaById, createPieza, updatePieza, deletePieza, restorePieza,
-  getAllCategorias, createCategoria, updateCategoria, deleteCategoria,
+  getAllCategorias, createCategoria, updateCategoria, deleteCategoria, restoreCategoria,
   getAllDisfraces, getDisfrazById, createDisfraz, updateDisfraz, deleteDisfraz, restoreDisfraz,
   getDisfracesPúblico, getDisfrazByIdPublico, getAllCategoriasPublico, getDisfracesPopularesPublico,
 };

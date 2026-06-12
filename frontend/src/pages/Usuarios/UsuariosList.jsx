@@ -116,7 +116,7 @@ export default function UsuariosList() {
       label: 'Rol',
       render: (_, r) => {
         const rol = r.rol?.nombre;
-        if (r.deleted_at) return <span className="text-coral font-medium uppercase text-xs tracking-wider">{rol}</span>;
+        if (r.deleted_at) return <Badge variant="deleted">{rol}</Badge>;
         if (rol === 'Administrador') return <Badge variant="primary">{rol}</Badge>;
         if (rol === 'Jefe') return <Badge variant="secondary">{rol}</Badge>;
         return <Badge variant="neutral">{rol}</Badge>;

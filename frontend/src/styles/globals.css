@@ -30,6 +30,11 @@
   --color-on-error: #ffffff;
   --color-on-error-container: #93000a;
 
+  --color-warning: #d97706;
+  --color-warning-container: #fde68a;
+  --color-on-warning: #ffffff;
+  --color-on-warning-container: #78350f;
+
   /* ── Surfaces ──────────────────────────────────────────────────────────── */
   --color-background: #fafaeb;
   --color-on-background: #1b1c14;
@@ -122,6 +127,11 @@
     --color-error-container: #93000a;
     --color-on-error: #690005;
     --color-on-error-container: #ffdad6;
+
+    --color-warning: #fbbf24;
+    --color-warning-container: #78350f;
+    --color-on-warning: #451a03;
+    --color-on-warning-container: #fde68a;
 
     /* ── Surfaces ────────────────────────────────────────────────────────── */
     --color-background: #131410;

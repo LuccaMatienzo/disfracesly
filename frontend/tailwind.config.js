@@ -96,6 +96,13 @@ export default {
           'on-container':      'var(--color-on-error-container)',
         },
 
+        warning: {
+          DEFAULT:             'var(--color-warning)',
+          container:           'var(--color-warning-container)',
+          on:                  'var(--color-on-warning)',
+          'on-container':      'var(--color-on-warning-container)',
+        },
+
         // Color de acento complementario para badges y elementos decorativos.
         coral: 'var(--color-coral)',
 

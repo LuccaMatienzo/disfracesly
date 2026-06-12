@@ -241,6 +241,19 @@ async function deleteCategoria(id) {
   await prisma.categoriaMotivo.update({ where: { id_categoria_motivo: BigInt(id) }, data: { deleted_at: new Date() } });
 }
 
+/**
+ * Restaura lógicamente una categoría de motivo.
+ *
+ * @param {string|number} id - ID de la categoría
+ * @returns {Promise<void>}
+ * @throws {ApiError} 404 si la categoría no existe
+ */
+async function restoreCategoria(id) {
+  const cat = await prisma.categoriaMotivo.findFirst({ where: { id_categoria_motivo: BigInt(id), deleted_at: { not: null } } });
+  if (!cat) throw ApiError.notFound('Categoría eliminada no encontrada');
+  await prisma.categoriaMotivo.update({ where: { id_categoria_motivo: BigInt(id) }, data: { deleted_at: null } });
+}
+
 // ─── Disfraz Services ─────────────────────────────────────────────────────────
 
 /**
@@ -620,7 +633,7 @@ module.exports = {
   disfrazSchema,
   categoriaSchema,
   getAllPiezas, getPiezaById, createPieza, updatePieza, deletePieza, restorePieza,
-  getAllCategorias, createCategoria, updateCategoria, deleteCategoria,
+  getAllCategorias, createCategoria, updateCategoria, deleteCategoria, restoreCategoria,
   getAllDisfraces, getDisfrazById, createDisfraz, updateDisfraz, deleteDisfraz, restoreDisfraz,
   getDisfracesPúblico, getDisfrazByIdPublico, getDisfracesPopularesPublico,
 };

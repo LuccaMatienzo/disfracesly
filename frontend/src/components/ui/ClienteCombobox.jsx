@@ -14,7 +14,7 @@ export default function ClienteCombobox({ error, value, onChange }) {
   const navigate = useNavigate();
 
   const { data: clientesData, isLoading } = useQuery({
-    queryKey: ['clientes-search', debouncedSearch],
+    queryKey: ['clientes', 'search', debouncedSearch],
     queryFn: () => api.get('/clientes', { params: { limit: 10, search: debouncedSearch } }).then((r) => r.data),
     enabled: isOpen, // Solo buscamos si el dropdown está abierto
   });

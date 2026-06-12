@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
 import { useStock } from '@/hooks/useStock';
 import { usePagination } from '@/hooks/usePagination';
 import { useFeedback } from '@/context/FeedbackContext';
 import Table, { Pagination } from '@/components/ui/Table';
-import Badge from '@/components/ui/Badge';
+import Badge, { badgeConfig } from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { Select } from '@/components/ui/Input';
@@ -26,6 +26,7 @@ export default function StockList() {
   const [search, setSearch] = useState('');
   const [estado, setEstado] = useState('');
   const [talle, setTalle] = useState('');
+  const [categoria, setCategoria] = useState('');
   const [includeDeleted, setIncludeDeleted] = useState(false);
   const { showSuccess, showError } = useFeedback();
   const { hasRol } = useAuth();
@@ -40,8 +41,15 @@ export default function StockList() {
     search: search || undefined,
     estado: estado || undefined,
     talle: talle || undefined,
+    categoria: categoria || undefined,
     include_deleted: includeDeleted,
   });
+
+  const { data: categoriasData } = useQuery({
+    queryKey: ['categorias', 'all'],
+    queryFn: () => api.get('/catalogo/categorias', { params: { limit: 500 } }).then((r) => r.data),
+  });
+  const categoriasOptions = categoriasData?.data ?? [];
 
   // ─── Mutación: soft-delete ────────────────────────────────────────────────
   const deleteMutation = useMutation({
@@ -72,14 +80,35 @@ export default function StockList() {
   // ─── Columnas ─────────────────────────────────────────────────────────────
   const columns = [
     { key: 'id_pieza_stock', label: '#', width: '60px' },
-    { key: 'pieza', label: 'Pieza', render: (_, r) => r.pieza?.nombre ?? '—' },
-    { key: 'talle', label: 'Talle', align: 'center', render: (v) => v ?? '—' },
+    { 
+      key: 'pieza', 
+      label: 'Pieza', 
+      render: (_, r) => <span className={r.deleted_at ? 'text-coral font-medium' : ''}>{r.pieza?.nombre ?? '—'}</span>
+    },
+    { 
+      key: 'talle', 
+      label: 'Talle', 
+      align: 'center', 
+      render: (_, r) => <span className={r.deleted_at ? 'text-coral' : ''}>{r.talle ?? '—'}</span>
+    },
+    {
+      key: 'categorias',
+      label: 'Categorías',
+      render: (_, r) => {
+        const cats = r.pieza?.categorias?.map(c => c.categoriaMotivo?.nombre).filter(Boolean).join(', ') || '—';
+        return <span className={r.deleted_at ? 'text-coral' : ''}>{cats}</span>;
+      }
+    },
     {
       key: 'estado_pieza_stock',
       label: 'Estado',
-      render: (v) => <Badge value={v} />,
+      render: (_, r) => <Badge value={r.deleted_at ? 'DE_BAJA' : r.estado_pieza_stock} />,
     },
-    { key: 'descripcion', label: 'Descripción', render: (v) => v ?? '—' },
+    { 
+      key: 'descripcion', 
+      label: 'Descripción', 
+      render: (_, r) => <span className={r.deleted_at ? 'text-coral' : ''}>{r.descripcion ?? '—'}</span>
+    },
     {
       key: 'acciones',
       label: 'Acciones',
@@ -89,7 +118,7 @@ export default function StockList() {
         const isDeleted = !!r.deleted_at;
         return (
           <ActionButtons
-            onView={() => setViewId(r.id_pieza_stock)}
+            onView={!isDeleted ? () => setViewId(r.id_pieza_stock) : undefined}
             {...(!hasRol('Empleado') && !isDeleted && {
               onEdit: () => navigate(`/admin/stock/${r.id_pieza_stock}/editar`),
               onDelete: () =>
@@ -178,6 +207,26 @@ export default function StockList() {
               />
             </div>
             
+            {/* Filtro por Categoría */}
+            <div className="relative inline-block shrink-0">
+              <select
+                value={categoria}
+                onChange={(e) => {
+                  setCategoria(e.target.value);
+                  reset();
+                }}
+                className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent text-gray-700 dark:text-gray-200 cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary max-w-[200px] truncate"
+              >
+                <option value="" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Todas las categorías</option>
+                {categoriasOptions.map(cat => (
+                  <option key={cat.id_categoria_motivo} value={cat.id_categoria_motivo} className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">
+                    {cat.nombre}
+                  </option>
+                ))}
+              </select>
+              <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 size-3.5" />
+            </div>
+            
             {/* Filtro por Etapas (Nativo) */}
             <div className="relative inline-block shrink-0">
               <select
@@ -190,7 +239,9 @@ export default function StockList() {
               >
                 <option value="" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Todos los estados</option>
                 {ESTADOS.filter(e => e !== '').map(e => (
-                  <option key={e} value={e} className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">{e}</option>
+                  <option key={e} value={e} className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">
+                    {badgeConfig[e]?.label ?? e}
+                  </option>
                 ))}
               </select>
               <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 size-3.5" />

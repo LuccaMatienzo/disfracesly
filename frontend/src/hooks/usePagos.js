@@ -27,19 +27,28 @@ export function usePagos(operacionId) {
    */
   const createMutation = useMutation({
     mutationFn: (data) => api.post('/pagos', { ...data, id_operacion: parseInt(operacionId) }).then((r) => r.data),
-    onSuccess: () => qc.invalidateQueries({ queryKey }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey });
+      qc.invalidateQueries({ queryKey: ['pagos'] });
+    },
   });
 
   /** Actualiza los datos de un pago existente (tipo, método, monto). */
   const updateMutation = useMutation({
     mutationFn: ({ id, ...data }) => api.patch(`/pagos/${id}`, data).then((r) => r.data),
-    onSuccess: () => qc.invalidateQueries({ queryKey }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey });
+      qc.invalidateQueries({ queryKey: ['pagos'] });
+    },
   });
 
   /** Elimina lógicamente un pago. */
   const deleteMutation = useMutation({
     mutationFn: (id) => api.delete(`/pagos/${id}`).then((r) => r.data),
-    onSuccess: () => qc.invalidateQueries({ queryKey }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey });
+      qc.invalidateQueries({ queryKey: ['pagos'] });
+    },
   });
 
   return {

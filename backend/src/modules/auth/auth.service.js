@@ -15,6 +15,7 @@ const { withNotDeleted } = require('../../utils/softDelete');
 const loginSchema = z.object({
   correo: z.string().email('Correo inválido'),
   contrasena: z.string().min(6, 'Contraseña debe tener al menos 6 caracteres'),
+  rememberMe: z.boolean().optional(),
 });
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -59,28 +60,31 @@ function buildUsuarioPayload(usuario) {
 /**
  * Lógica de negocio del inicio de sesión.
  *
- * Busca el usuario por correo (excluyendo eliminados lógicamente), verifica
- * la contraseña usando bcrypt y emite el par de tokens JWT en caso de éxito.
- * Se utiliza el mismo mensaje de error para credenciales incorrectas y usuario
- * no encontrado para evitar enumeración de usuarios (timing-safe).
+ * Busca el usuario por correo y verifica la contraseña usando bcrypt.
+ * Devuelve mensajes de error específicos según si la cuenta no existe,
+ * está dada de baja o la contraseña es inválida.
  *
  * @param {{ correo: string, contrasena: string }} credentials
  * @returns {Promise<{ tokens: { accessToken: string, refreshToken: string }, usuario: object }>}
- * @throws {ApiError} 401 si las credenciales son inválidas
+ * @throws {ApiError} 401 si hay problemas de autenticación
  */
 async function loginService({ correo, contrasena }) {
   const usuario = await prisma.usuario.findFirst({
-    where: withNotDeleted({ correo }),
+    where: { correo },
     include: {
       persona: true,
       rol: { include: { permisos: { include: { permiso: true } } } },
     },
   });
 
-  if (!usuario) throw ApiError.unauthorized('Credenciales inválidas');
+  if (!usuario) throw ApiError.unauthorized('La cuenta no existe.');
+
+  if (usuario.deleted_at !== null) {
+    throw ApiError.unauthorized('La cuenta está dada de baja. Debe comunicarse con el administrador.');
+  }
 
   const valid = await bcrypt.compare(contrasena, usuario.contrasena);
-  if (!valid) throw ApiError.unauthorized('Credenciales inválidas');
+  if (!valid) throw ApiError.unauthorized('La Contraseña igresada es incorrecta.');
 
   const payload = { sub: usuario.id_usuario.toString(), correo: usuario.correo, rol: usuario.rol.nombre };
   const tokens = generateTokens(payload);

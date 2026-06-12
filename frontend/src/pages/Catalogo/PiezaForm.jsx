@@ -69,7 +69,7 @@ export default function PiezaForm() {
   });
 
   const { data: categoriasData } = useQuery({
-    queryKey: ['categorias-all'],
+    queryKey: ['categorias', 'all'],
     queryFn: () => api.get('/catalogo/categorias', { params: { limit: 100 } }).then((r) => r.data),
   });
 
@@ -131,11 +131,14 @@ export default function PiezaForm() {
 
   return (
     <div className="w-full min-h-0 md:h-[calc(100vh-120px)] flex flex-col">
-      <div className="mb-4 md:mb-6 shrink-0">
-        <button onClick={() => navigate(-1)} className="text-body-md text-primary hover:underline font-label mb-2 min-h-[44px] inline-flex items-center">← Volver</button>
-        <h1 className="font-display text-headline-md font-semibold text-on-surface">
+      <div className="mb-4 md:mb-5 shrink-0 flex items-center justify-between w-full gap-3">
+        <h1 className="font-display text-title-lg md:text-headline-sm font-semibold text-on-surface m-0">
           {isEditing ? 'Editar pieza' : 'Nueva pieza del catálogo'}
         </h1>
+        <button onClick={() => navigate(-1)} className="text-body-md text-primary hover:bg-primary/10 p-2 rounded-xl transition-colors font-label inline-flex items-center gap-1 shrink-0">
+          <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+          <span className="hidden sm:inline">Volver</span>
+        </button>
       </div>
 
       <div className="bg-surface-container-lowest rounded-2xl shadow-card p-4 md:p-6 flex flex-col flex-1 min-h-0">
@@ -145,7 +148,7 @@ export default function PiezaForm() {
           )}
           className="flex flex-col gap-6 flex-1 min-h-0"
         >
-          <div className="flex flex-col gap-6 shrink-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 shrink-0">
             <Input label="Nombre" placeholder="Nombre de la pieza…" {...register('nombre', { required: true })} />
             <Input label="Descripción" placeholder="Descripción opcional…" {...register('descripcion')} />
           </div>

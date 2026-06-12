@@ -44,7 +44,7 @@ export default function AlquilerForm() {
   const [stockSearch, setStockSearch] = useState('');
 
   const { data: stockData } = useQuery({
-    queryKey: ['stock-disponible', stockSearch],
+    queryKey: ['stock', 'disponible', stockSearch],
     queryFn: () =>
       api.get('/stock', { params: { estado: 'DISPONIBLE', search: stockSearch, limit: 30 } }).then((r) => r.data),
   });
@@ -143,11 +143,14 @@ export default function AlquilerForm() {
       <ToastContainer toasts={toast.toasts} onRemove={toast.remove} />
 
       <div className="w-full">
-        <div className="mb-6">
-          <button onClick={() => navigate(-1)} className="text-body-md text-primary hover:underline font-label mb-2">
-            ← Volver
+        <div className="mb-4 md:mb-5 shrink-0 flex items-center justify-between w-full gap-3">
+          <h1 className="font-display text-title-lg md:text-headline-sm font-semibold text-on-surface m-0">
+            Nuevo alquiler
+          </h1>
+          <button onClick={() => navigate(-1)} className="text-body-md text-primary hover:bg-primary/10 p-2 rounded-xl transition-colors font-label inline-flex items-center gap-1 shrink-0">
+            <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+            <span className="hidden sm:inline">Volver</span>
           </button>
-          <h1 className="font-display text-headline-md font-semibold text-on-surface">Nuevo alquiler</h1>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 xl:grid-cols-3 gap-6">
