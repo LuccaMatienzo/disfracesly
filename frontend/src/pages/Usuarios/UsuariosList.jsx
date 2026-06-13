@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
 import { usePagination } from '@/hooks/usePagination';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useFeedback } from '@/context/FeedbackContext';
 import { useAuth } from '@/context/AuthContext';
 import Table, { Pagination } from '@/components/ui/Table';
@@ -32,7 +33,8 @@ export default function UsuariosList() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { page, limit, goToPage, reset } = usePagination();
-  const [search, setSearch] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [includeDeleted, setIncludeDeleted] = useState(false);
   const { showSuccess, showError } = useFeedback();
 
@@ -54,15 +56,19 @@ export default function UsuariosList() {
     queryFn: () => api.get('/usuarios/roles').then((r) => r.data),
   });
 
+  useEffect(() => {
+    reset();
+  }, [debouncedSearchQuery, includeDeleted, roleFilter, reset]);
+
   // ─── Query ────────────────────────────────────────────────────────────────
   const { data, isLoading } = useQuery({
-    queryKey: ['usuarios', { page, limit, search, includeDeleted, roleFilter, sort }],
+    queryKey: ['usuarios', { page, limit, search: debouncedSearchQuery, includeDeleted, roleFilter, sort }],
     queryFn: () =>
       api.get('/usuarios', {
         params: {
           page,
           limit,
-          search: search || undefined,
+          search: debouncedSearchQuery || undefined,
           include_deleted: includeDeleted,
           id_rol: roleFilter || undefined,
           sort_field: sort.field ?? undefined,
@@ -166,20 +172,15 @@ export default function UsuariosList() {
       <div className="bg-surface-container-lowest rounded-2xl shadow-card p-3 lg:p-5 flex flex-col gap-4">
         {/* Buscador */}
         <div className="flex flex-row flex-nowrap w-full gap-2 items-center">
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 relative">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none text-[20px]">search</span>
             <Input
               placeholder="Buscar por nombre, apellido o correo…"
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); reset(); }}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
             />
           </div>
-          <Button
-            onClick={() => reset()}
-            className="h-[48px] shrink-0 px-4 lg:px-6"
-          >
-            <span className="material-symbols-outlined text-[20px] sm:mr-2">search</span>
-            <span className="hidden sm:inline">Buscar</span>
-          </Button>
         </div>
 
         {/* Barra de ordenamiento (Cinta Deslizable) */}

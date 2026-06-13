@@ -53,4 +53,8 @@ async function remove(req, res, next) {
   try { await svc.deletePago(req.params.id); res.json({ message: 'Pago eliminado' }); } catch (e) { next(e); }
 }
 
-module.exports = { getAll, getStats, getByOperacion, create, update, remove };
+async function getById(req, res, next) {
+  try { res.json(await svc.getPagoById(req.params.id)); } catch (e) { next(e); }
+}
+
+module.exports = { getAll, getStats, getByOperacion, create, update, remove, getById };

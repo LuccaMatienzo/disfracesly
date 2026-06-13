@@ -1,14 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
 import { usePagination } from '@/hooks/usePagination';
+import { useDebounce } from '@/hooks/useDebounce';
 import Table, { Pagination } from '@/components/ui/Table';
 import Button from '@/components/ui/Button';
-import Input, { Select } from '@/components/ui/Input';
+import Input from '@/components/ui/Input';
 import ActionButtons from '@/components/ui/ActionButtons';
 import Badge from '@/components/ui/Badge';
-import { FiSearch } from 'react-icons/fi';
+import SortToggle from '@/components/ui/SortToggle';
+import PagoViewModal from '@/components/ui/PagoViewModal';
+import { FiSearch, FiChevronDown } from 'react-icons/fi';
 import { MdTrendingUp, MdTrendingDown, MdAccountBalanceWallet, MdOutlineSwapHoriz } from 'react-icons/md';
 
 const formatCurrency = (val) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(val);
@@ -36,9 +39,22 @@ function KpiCard({ title, amount, icon: Icon, colorClass, isNegative = false, on
 export default function FinanzasList() {
   const navigate = useNavigate();
   const { page, limit, goToPage, reset } = usePagination();
-  const [search, setSearch] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [filtroFlujo, setFiltroFlujo] = useState('');
   const [filtroMetodo, setFiltroMetodo] = useState('');
+  const [filtroTipo, setFiltroTipo] = useState('');
+  const [sort, setSort] = useState({ field: null, direction: null });
+  const [viewId, setViewId] = useState(null);
+
+  const handleSortChange = (field, direction) => {
+    setSort({ field, direction });
+    reset();
+  };
+
+  useEffect(() => {
+    reset();
+  }, [debouncedSearchQuery, filtroFlujo, filtroMetodo, filtroTipo, sort, reset]);
 
   // ─── Queries ────────────────────────────────────────────────────────────────
   const { data: statsData, isLoading: isLoadingStats } = useQuery({
@@ -47,14 +63,17 @@ export default function FinanzasList() {
   });
 
   const { data, isLoading } = useQuery({
-    queryKey: ['pagos', { page, limit, search, filtroFlujo, filtroMetodo }],
+    queryKey: ['pagos', { page, limit, search: debouncedSearchQuery, filtroFlujo, filtroMetodo, filtroTipo, sort }],
     queryFn: () =>
       api.get('/pagos', { 
         params: { 
           page, limit, 
-          search: search || undefined,
+          search: debouncedSearchQuery || undefined,
           flujo: filtroFlujo || undefined,
-          metodo: filtroMetodo || undefined
+          metodo: filtroMetodo || undefined,
+          tipo: filtroTipo || undefined,
+          sort_field: sort.field ?? undefined,
+          sort_direction: sort.direction ?? undefined,
         } 
       }).then((r) => r.data),
   });
@@ -115,6 +134,7 @@ export default function FinanzasList() {
       align: 'center',
       render: (_, r) => (
         <ActionButtons
+          onView={() => setViewId(r.id_pago_operacion)}
           onDetail={() => navigate(`/admin/operaciones/${r.id_operacion}`)}
         />
       ),
@@ -124,12 +144,13 @@ export default function FinanzasList() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-row items-center justify-between gap-2 w-full">
-        <div>
-          <h1 className="font-headline font-semibold text-xl md:text-3xl text-on-surface">Finanzas</h1>
-          <p className="text-on-surface-variant text-sm md:text-base mt-1">
-            Resumen contable y movimientos del mes en curso
-          </p>
+      <div className="flex flex-row items-center justify-between gap-2 md:gap-4 w-full mb-6">
+        <div className="min-w-0 overflow-x-auto">
+          <div className="inline-flex h-11 bg-surface-container-high border border-transparent dark:border-zinc-800 rounded-xl items-center">
+            <div className="relative flex h-full items-center justify-center px-6 rounded-xl text-sm font-medium transition-all duration-200 bg-surface-container-lowest shadow-sm text-primary font-semibold">
+              Finanzas
+            </div>
+          </div>
         </div>
       </div>
 
@@ -169,46 +190,88 @@ export default function FinanzasList() {
       )}
 
       {/* Buscador y Filtros */}
-      <div className="bg-surface-container-lowest rounded-2xl shadow-card p-3 md:p-5">
-        <div className="flex flex-col md:flex-row gap-3 md:gap-4 items-center">
-          <div className="w-full md:w-1/3 xl:w-1/4">
+      <div className="bg-surface-container-lowest rounded-2xl shadow-card p-3 lg:p-5 flex flex-col gap-4">
+        {/* Buscador */}
+        <div className="flex flex-row flex-nowrap w-full gap-2 items-center">
+          <div className="flex-1 min-w-0 relative">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none text-[20px]">search</span>
             <Input
               placeholder="Buscar por cliente…"
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); reset(); }}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
             />
           </div>
+        </div>
+
+        {/* Barra inferior */}
+        <div className="flex flex-row flex-nowrap overflow-x-auto whitespace-nowrap gap-3 pb-2 w-full pt-3 border-t border-divider items-center min-w-0 lg:overflow-visible lg:pb-0 lg:justify-start">
+          <div className="flex flex-row items-center gap-3 shrink-0">
+            {/* Filtro Flujo */}
+            <div className="relative inline-block shrink-0">
+              <select
+                value={filtroFlujo}
+                onChange={(e) => setFiltroFlujo(e.target.value)}
+                className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent text-gray-700 dark:text-gray-200 cursor-pointer focus:outline-none"
+              >
+                <option value="" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Todos los Flujos</option>
+                <option value="ingreso" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Ingresos</option>
+                <option value="egreso" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Egresos</option>
+              </select>
+              <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 size-3.5" />
+            </div>
+
+            {/* Filtro Metodo */}
+            <div className="relative inline-block shrink-0">
+              <select
+                value={filtroMetodo}
+                onChange={(e) => setFiltroMetodo(e.target.value)}
+                className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent text-gray-700 dark:text-gray-200 cursor-pointer focus:outline-none"
+              >
+                <option value="" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Todos los Métodos</option>
+                <option value="EFECTIVO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Efectivo</option>
+                <option value="TRANSFERENCIA" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Transferencia</option>
+              </select>
+              <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 size-3.5" />
+            </div>
+
+            {/* Filtro Tipo */}
+            <div className="relative inline-block shrink-0">
+              <select
+                value={filtroTipo}
+                onChange={(e) => setFiltroTipo(e.target.value)}
+                className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent text-gray-700 dark:text-gray-200 cursor-pointer focus:outline-none"
+              >
+                <option value="" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Todos los Tipos</option>
+                <option value="SENA" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Seña</option>
+                <option value="DEPOSITO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Depósito</option>
+                <option value="SALDO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Saldo</option>
+                <option value="DEVOLUCION_DEPOSITO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Devolución Dep.</option>
+                <option value="AJUSTE" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Ajuste</option>
+              </select>
+              <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 size-3.5" />
+            </div>
+
+            <div className="w-px h-6 bg-divider shrink-0 ml-1"></div>
+
+            <span className="text-label-lg font-label font-medium text-on-surface-variant uppercase tracking-wide shrink-0 ml-1">
+              Ordenar:
+            </span>
+          </div>
           
-          <div className="w-full md:w-1/4 xl:w-1/5">
-            <Select
-              value={filtroFlujo}
-              onChange={(e) => { setFiltroFlujo(e.target.value); reset(); }}
-            >
-              <option value="">Todos los Flujos</option>
-              <option value="ingreso">Ingresos</option>
-              <option value="egreso">Egresos</option>
-            </Select>
-          </div>
-
-          <div className="w-full md:w-1/4 xl:w-1/5">
-            <Select
-              value={filtroMetodo}
-              onChange={(e) => { setFiltroMetodo(e.target.value); reset(); }}
-            >
-              <option value="">Todos los Métodos</option>
-              <option value="EFECTIVO">Efectivo</option>
-              <option value="TRANSFERENCIA">Transferencia</option>
-            </Select>
-          </div>
-
-          <div className="w-full md:w-auto md:ml-auto">
-            <Button
-              onClick={() => reset()}
-              className="h-[48px] w-full px-6 shrink-0"
-            >
-              <span className="material-symbols-outlined text-[20px] mr-2">search</span>
-              Buscar
-            </Button>
+          <div className="flex flex-row items-center gap-2 shrink-0 lg:flex-nowrap">
+            <SortToggle
+              label="Fecha"
+              field="fecha"
+              currentSort={sort}
+              onSortChange={handleSortChange}
+            />
+            <SortToggle
+              label="Monto"
+              field="monto"
+              currentSort={sort}
+              onSortChange={handleSortChange}
+            />
           </div>
         </div>
       </div>
@@ -220,6 +283,13 @@ export default function FinanzasList() {
           <Pagination meta={data?.meta} page={page} onPageChange={goToPage} />
         </div>
       </div>
+
+      {/* Modal Ver Pago */}
+      <PagoViewModal
+        id={viewId}
+        open={!!viewId}
+        onClose={() => setViewId(null)}
+      />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
 import { usePagination } from '@/hooks/usePagination';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useFeedback } from '@/context/FeedbackContext';
 import Table, { Pagination } from '@/components/ui/Table';
 import Button from '@/components/ui/Button';
@@ -21,11 +22,14 @@ export default function CatalogoList() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { page, limit, goToPage, reset } = usePagination();
-  const [search, setSearch] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [categoria, setCategoria] = useState('');
-  const [tempSearch, setTempSearch] = useState('');
-  const [tempCategoria, setTempCategoria] = useState('');
   const [includeDeleted, setIncludeDeleted] = useState(false);
+
+  useEffect(() => {
+    reset();
+  }, [debouncedSearchQuery, categoria, includeDeleted, reset]);
 
 
   const [tab, setTab] = useState('piezas');
@@ -59,23 +63,23 @@ export default function CatalogoList() {
   const categorias = categoriasData?.data || [];
 
   const { data: piezas, isLoading: loadingPiezas } = useQuery({
-    queryKey: ['piezas', { page, limit, search, categoria, include_deleted: includeDeleted }],
+    queryKey: ['piezas', { page, limit, search: debouncedSearchQuery, categoria, include_deleted: includeDeleted }],
     queryFn: () =>
-      api.get('/catalogo/piezas', { params: { page, limit, search: search || undefined, categoria: categoria || undefined, include_deleted: includeDeleted } }).then((r) => r.data),
+      api.get('/catalogo/piezas', { params: { page, limit, search: debouncedSearchQuery || undefined, categoria: categoria || undefined, include_deleted: includeDeleted } }).then((r) => r.data),
     enabled: tab === 'piezas',
   });
 
   const { data: disfraces, isLoading: loadingDisfraces } = useQuery({
-    queryKey: ['disfraces', { page, limit, search, categoria, include_deleted: includeDeleted }],
+    queryKey: ['disfraces', { page, limit, search: debouncedSearchQuery, categoria, include_deleted: includeDeleted }],
     queryFn: () =>
-      api.get('/catalogo/disfraces', { params: { page, limit, search: search || undefined, categoria: categoria || undefined, include_deleted: includeDeleted } }).then((r) => r.data),
+      api.get('/catalogo/disfraces', { params: { page, limit, search: debouncedSearchQuery || undefined, categoria: categoria || undefined, include_deleted: includeDeleted } }).then((r) => r.data),
     enabled: tab === 'disfraces',
   });
 
   const { data: categoriasTab, isLoading: loadingCategorias } = useQuery({
-    queryKey: ['categorias', 'tab', { page, limit, search, include_deleted: includeDeleted }],
+    queryKey: ['categorias', 'tab', { page, limit, search: debouncedSearchQuery, include_deleted: includeDeleted }],
     queryFn: () =>
-      api.get('/catalogo/categorias', { params: { page, limit, search: search || undefined, include_deleted: includeDeleted } }).then((r) => r.data),
+      api.get('/catalogo/categorias', { params: { page, limit, search: debouncedSearchQuery || undefined, include_deleted: includeDeleted } }).then((r) => r.data),
     enabled: tab === 'categorias',
   });
 
@@ -326,10 +330,8 @@ export default function CatalogoList() {
                 reset();
                 setViewId(null);
                 setViewDisfrazId(null);
-                setSearch('');
-                setTempSearch('');
+                setSearchQuery('');
                 setCategoria('');
-                setTempCategoria('');
               }}
               className={[
                 'relative flex h-full items-center justify-center px-6 rounded-xl text-sm font-medium transition-all duration-200',
@@ -347,10 +349,8 @@ export default function CatalogoList() {
                 reset();
                 setViewId(null);
                 setViewDisfrazId(null);
-                setSearch('');
-                setTempSearch('');
+                setSearchQuery('');
                 setCategoria('');
-                setTempCategoria('');
               }}
               className={[
                 'relative flex h-full items-center justify-center px-6 rounded-xl text-sm font-medium transition-all duration-200',
@@ -368,10 +368,8 @@ export default function CatalogoList() {
                 reset();
                 setViewId(null);
                 setViewDisfrazId(null);
-                setSearch('');
-                setTempSearch('');
+                setSearchQuery('');
                 setCategoria('');
-                setTempCategoria('');
               }}
               className={[
                 'relative flex h-full items-center justify-center px-6 rounded-xl text-sm font-medium transition-all duration-200',
@@ -407,31 +405,15 @@ export default function CatalogoList() {
       <div className="bg-surface-container-lowest rounded-2xl shadow-card p-3 lg:p-5 flex flex-col gap-4">
         {/* Buscador */}
         <div className="flex flex-row flex-nowrap w-full gap-2 items-center">
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 relative">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none text-[20px]">search</span>
             <Input
               placeholder={`Buscar ${tab}…`}
-              value={tempSearch}
-              onChange={(e) => setTempSearch(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  setSearch(tempSearch);
-                  setCategoria(tempCategoria);
-                  reset();
-                }
-              }}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
             />
           </div>
-          <Button
-            onClick={() => {
-              setSearch(tempSearch);
-              setCategoria(tempCategoria);
-              reset();
-            }}
-            className="h-[48px] shrink-0 px-4 lg:px-6"
-          >
-            <span className="material-symbols-outlined text-[20px] sm:mr-2">search</span>
-            <span className="hidden sm:inline">Buscar</span>
-          </Button>
         </div>
 
         {/* Barra inferior */}
@@ -455,12 +437,8 @@ export default function CatalogoList() {
             {tab !== 'categorias' && (
               <div className="relative inline-block shrink-0">
                 <select
-                  value={tempCategoria}
-                  onChange={(e) => {
-                    setTempCategoria(e.target.value);
-                    setCategoria(e.target.value);
-                    reset();
-                  }}
+                  value={categoria}
+                  onChange={(e) => setCategoria(e.target.value)}
                   className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent text-gray-700 dark:text-gray-200 cursor-pointer focus:outline-none"
                 >
                   <option value="" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Todas las categorías</option>
@@ -559,7 +537,7 @@ export default function CatalogoList() {
             <button
               onClick={() => {
                 setTab('piezas');
-                reset(); setViewId(null); setViewDisfrazId(null); setSearch(''); setTempSearch(''); setCategoria(''); setTempCategoria('');
+                reset(); setViewId(null); setViewDisfrazId(null); setSearchQuery(''); setCategoria('');
                 setIsMobileMenuOpen(false);
               }}
               className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-left font-medium transition-colors ${
@@ -575,7 +553,7 @@ export default function CatalogoList() {
             <button
               onClick={() => {
                 setTab('disfraces');
-                reset(); setViewId(null); setViewDisfrazId(null); setSearch(''); setTempSearch(''); setCategoria(''); setTempCategoria('');
+                reset(); setViewId(null); setViewDisfrazId(null); setSearchQuery(''); setCategoria('');
                 setIsMobileMenuOpen(false);
               }}
               className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-left font-medium transition-colors ${
@@ -591,7 +569,7 @@ export default function CatalogoList() {
             <button
               onClick={() => {
                 setTab('categorias');
-                reset(); setViewId(null); setViewDisfrazId(null); setSearch(''); setTempSearch(''); setCategoria(''); setTempCategoria('');
+                reset(); setViewId(null); setViewDisfrazId(null); setSearchQuery(''); setCategoria('');
                 setIsMobileMenuOpen(false);
               }}
               className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-left font-medium transition-colors ${

@@ -224,7 +224,7 @@ function KpiMonthlyRevenue({ data }) {
 function RecentMovements({ movements }) {
   if (!movements || movements.length === 0) {
     return (
-      <div className="bg-card-panel rounded-2xl shadow-card p-4 md:p-6">
+      <div className="bg-card-panel rounded-2xl shadow-card p-4 md:p-6 h-full">
         <h2 className="font-headline font-semibold text-on-surface text-base md:text-lg mb-4">Movimientos Recientes</h2>
         <p className="text-on-surface-variant text-sm">No hay movimientos recientes</p>
       </div>
@@ -232,7 +232,7 @@ function RecentMovements({ movements }) {
   }
 
   return (
-    <div className="bg-card-panel rounded-2xl shadow-card overflow-hidden">
+    <div className="bg-card-panel rounded-2xl shadow-card overflow-hidden h-full flex flex-col">
       <div className="px-4 md:px-6 py-3 md:py-4 border-b border-divider flex items-center justify-between">
         <h2 className="font-headline font-semibold text-on-surface text-base md:text-lg">Movimientos Recientes</h2>
         <a href="/admin/operaciones" className="text-xs md:text-sm text-on-surface-variant font-label font-semibold hover:underline">
@@ -278,7 +278,7 @@ function RecentMovements({ movements }) {
       </div>
 
       {/* Desktop: table */}
-      <div className="hidden md:block overflow-x-auto">
+      <div className="hidden md:block overflow-x-auto flex-1">
         <table className="w-full">
           <thead>
             <tr className="border-b border-divider">
@@ -377,18 +377,19 @@ function StockStatusCard({ data }) {
     { label: 'Disponible', value: data.DISPONIBLE ?? 0, color: '#4caf50' },
     { label: 'Alquilado', value: data.ALQUILADA ?? 0, color: '#2196f3' },
     { label: 'Reservado', value: data.RESERVADA ?? 0, color: '#ff9800' },
-    { label: 'Reparación', value: data.FUERA_DE_SERVICIO ?? 0, color: '#ef5350' },
   ];
 
   return (
-    <div className="bg-card-panel rounded-2xl shadow-card p-4 md:p-6">
+    <div className="bg-card-panel rounded-2xl shadow-card p-4 md:p-6 h-full flex flex-col">
       <div className="flex items-center justify-between mb-3 md:mb-4">
         <h2 className="font-headline font-semibold text-on-surface text-base md:text-lg">Estado del Stock</h2>
         <a href="/admin/stock" className="text-[10px] md:text-xs text-on-surface-variant font-label font-semibold bg-surface-container-low px-2.5 md:px-3 py-1 rounded-full hover:bg-surface-container transition-colors">
           Reporte por Categoría
         </a>
       </div>
-      <DonutChart data={chartData} />
+      <div className="flex-1 flex items-center justify-center">
+        <DonutChart data={chartData} />
+      </div>
     </div>
   );
 }
@@ -657,13 +658,17 @@ export default function Dashboard() {
       </div>
 
       {/* ── Bento: Movements + Cash/Stock ─────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-        <div className="lg:col-span-2">
-          <RecentMovements movements={recentMovements} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 items-stretch gap-4 md:gap-6">
+        <div className="lg:col-span-2 flex flex-col">
+          <div className="flex-1 flex flex-col">
+            <RecentMovements movements={recentMovements} />
+          </div>
         </div>
         <div className="flex flex-col gap-4 md:gap-6">
           {!hasRol('Empleado') && <CashFlow data={cashFlowWeekly} />}
-          <StockStatusCard data={stockStatus} />
+          <div className="flex-1 flex flex-col min-h-0">
+            <StockStatusCard data={stockStatus} />
+          </div>
         </div>
       </div>
 

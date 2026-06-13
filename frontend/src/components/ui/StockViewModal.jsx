@@ -66,6 +66,35 @@ export default function StockViewModal({ id, open, onClose }) {
               </div>
             </Section>
           )}
+
+          {/* Historial de Operaciones */}
+          {data.detalles && data.detalles.length > 0 && (
+            <Section title="Historial de Operaciones">
+              <div className="flex flex-col gap-3 max-h-60 overflow-y-auto pr-1">
+                {data.detalles.map((d, i) => {
+                  const op = d.operacion;
+                  if (!op) return null;
+                  const tipo = op.alquiler ? 'Alquiler' : op.venta ? 'Venta' : 'Operación';
+                  const etapa = op.alquiler?.etapa || op.venta?.etapa || '—';
+                  const fecha = op.fecha_constitucion ? new Date(op.fecha_constitucion).toLocaleDateString('es-AR') : '—';
+                  return (
+                    <div key={op.id_operacion || i} className="p-3 bg-surface-container-lowest rounded-xl shadow-sm border border-divider flex flex-row justify-between items-center gap-4">
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-sm text-primary">{tipo} #{op.id_operacion}</span>
+                        <span className="text-xs text-on-surface-variant mt-0.5">
+                          {op.cliente?.persona?.nombre} {op.cliente?.persona?.apellido}
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-end gap-1.5">
+                        <span className="text-xs text-on-surface-variant font-medium">{fecha}</span>
+                        <Badge value={etapa} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </Section>
+          )}
         </div>
       )}
     </ViewModal>

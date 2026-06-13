@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
 import { useStock } from '@/hooks/useStock';
 import { usePagination } from '@/hooks/usePagination';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useFeedback } from '@/context/FeedbackContext';
 import Table, { Pagination } from '@/components/ui/Table';
 import Badge, { badgeConfig } from '@/components/ui/Badge';
@@ -23,7 +24,8 @@ export default function StockList() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { page, limit, goToPage, reset } = usePagination();
-  const [search, setSearch] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [estado, setEstado] = useState('');
   const [talle, setTalle] = useState('');
   const [categoria, setCategoria] = useState('');
@@ -38,12 +40,16 @@ export default function StockList() {
   const { data, isLoading } = useStock({
     page,
     limit,
-    search: search || undefined,
+    search: debouncedSearchQuery || undefined,
     estado: estado || undefined,
     talle: talle || undefined,
     categoria: categoria || undefined,
     include_deleted: includeDeleted,
   });
+
+  useEffect(() => {
+    reset();
+  }, [debouncedSearchQuery, estado, talle, categoria, includeDeleted, reset]);
 
   const { data: categoriasData } = useQuery({
     queryKey: ['categorias', 'all'],
@@ -162,21 +168,15 @@ export default function StockList() {
       <div className="bg-surface-container-lowest rounded-2xl shadow-card p-3 lg:p-5 flex flex-col gap-4">
         {/* Buscador */}
         <div className="flex flex-row flex-nowrap w-full gap-2 items-center">
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 relative">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none text-[20px]">search</span>
             <Input
               placeholder="Buscar por nombre de pieza…"
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); reset(); }}
-              onKeyDown={(e) => e.key === 'Enter' && reset()}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
             />
           </div>
-          <Button
-            onClick={() => reset()}
-            className="h-[48px] shrink-0 px-4 lg:px-6"
-          >
-            <span className="material-symbols-outlined text-[20px] sm:mr-2">search</span>
-            <span className="hidden sm:inline">Buscar</span>
-          </Button>
         </div>
 
         {/* Barra inferior */}
@@ -196,17 +196,6 @@ export default function StockList() {
               </>
             )}
 
-            {/* Filtro por Talle */}
-            <div className="relative inline-block shrink-0">
-              <input
-                type="text"
-                placeholder="Talle..."
-                value={talle}
-                onChange={(e) => { setTalle(e.target.value); reset(); }}
-                className="w-24 px-3 py-1 text-sm font-medium rounded-full border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-primary placeholder-gray-500 dark:placeholder-gray-400"
-              />
-            </div>
-            
             {/* Filtro por Categoría */}
             <div className="relative inline-block shrink-0">
               <select
@@ -245,6 +234,19 @@ export default function StockList() {
                 ))}
               </select>
               <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 size-3.5" />
+            </div>
+
+            <div className="w-px h-6 bg-divider shrink-0 ml-1"></div>
+
+            {/* Filtro por Talle */}
+            <div className="relative inline-block shrink-0 ml-1">
+              <input
+                type="text"
+                placeholder="Talle..."
+                value={talle}
+                onChange={(e) => { setTalle(e.target.value); reset(); }}
+                className="w-24 px-3 py-1 text-sm font-medium rounded-full border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-primary placeholder-gray-500 dark:placeholder-gray-400"
+              />
             </div>
           </div>
         </div>

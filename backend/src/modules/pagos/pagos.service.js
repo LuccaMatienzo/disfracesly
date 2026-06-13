@@ -120,7 +120,7 @@ async function deletePago(id) {
 async function getAllPagos(query) {
   const { skip, take, page, limit } = parsePagination(query);
   const search = query.search ?? '';
-  const { metodo, flujo } = query;
+  const { metodo, flujo, tipo, sort_field, sort_direction } = query;
 
   let baseWhere = { AND: [] };
 
@@ -135,6 +135,10 @@ async function getAllPagos(query) {
 
   if (metodo === 'EFECTIVO' || metodo === 'TRANSFERENCIA') {
     baseWhere.AND.push({ metodo });
+  }
+
+  if (tipo) {
+    baseWhere.AND.push({ tipo });
   }
 
   if (flujo === 'ingreso') {
@@ -155,6 +159,14 @@ async function getAllPagos(query) {
 
   const where = baseWhere.AND.length > 0 ? baseWhere : {};
 
+  let orderBy = { fecha: 'desc' };
+  if (sort_field && sort_direction) {
+    const validFields = ['fecha', 'monto'];
+    if (validFields.includes(sort_field)) {
+      orderBy = { [sort_field]: sort_direction === 'asc' ? 'asc' : 'desc' };
+    }
+  }
+
   const [data, total] = await prisma.$transaction([
     prisma.pagoOperacion.findMany({
       where: withNotDeleted(where),
@@ -168,7 +180,7 @@ async function getAllPagos(query) {
         },
         persona: true // El usuario que registró el pago
       },
-      orderBy: { fecha: 'desc' },
+      orderBy,
     }),
     prisma.pagoOperacion.count({ where: withNotDeleted(where) }),
   ]);
@@ -211,4 +223,20 @@ async function getPagosStats() {
   };
 }
 
-module.exports = { createPagoSchema, updatePagoSchema, getPagosStats, getAllPagos, getPagosByOperacion, createPago, updatePago, deletePago };
+async function getPagoById(id) {
+  const pago = await prisma.pagoOperacion.findFirst({
+    where: withNotDeleted({ id_pago_operacion: BigInt(id) }),
+    include: {
+      persona: true,
+      operacion: {
+        include: {
+          cliente: { include: { persona: true } }
+        }
+      }
+    }
+  });
+  if (!pago) throw ApiError.notFound('Pago no encontrado');
+  return pago;
+}
+
+module.exports = { createPagoSchema, updatePagoSchema, getPagosStats, getAllPagos, getPagosByOperacion, createPago, updatePago, deletePago, getPagoById };

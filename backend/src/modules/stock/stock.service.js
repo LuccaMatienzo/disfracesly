@@ -89,6 +89,27 @@ async function getStockById(id) {
     include: {
       pieza: { include: { categorias: { include: { categoriaMotivo: true } } } },
       imagenes: { include: { imagen: true }, orderBy: { orden: 'asc' } },
+      detalles: {
+        include: {
+          operacion: {
+            include: {
+              cliente: { include: { persona: true } },
+              alquiler: true,
+              venta: true,
+              interacciones: {
+                include: {
+                  persona: true,
+                  usuario: { include: { persona: true } }
+                },
+                orderBy: { fecha_hora: 'desc' }
+              }
+            }
+          }
+        },
+        orderBy: {
+          operacion: { fecha_constitucion: 'desc' }
+        }
+      }
     },
   });
   if (!item) throw ApiError.notFound('Pieza de stock no encontrada');
