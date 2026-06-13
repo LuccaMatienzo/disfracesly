@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
@@ -26,6 +27,7 @@ export default function CatalogoList() {
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [categoria, setCategoria] = useState('');
   const [includeDeleted, setIncludeDeleted] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     reset();
@@ -403,7 +405,7 @@ export default function CatalogoList() {
 
       {/* Buscador y Filtros */}
       <div className="bg-surface-container-lowest rounded-2xl shadow-card p-3 lg:p-5 flex flex-col gap-4">
-        {/* Buscador */}
+        {/* Buscador y Toggle */}
         <div className="flex flex-row flex-nowrap w-full gap-2 items-center">
           <div className="flex-1 min-w-0 relative">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none text-[20px]">search</span>
@@ -414,10 +416,23 @@ export default function CatalogoList() {
               className="pl-10"
             />
           </div>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`md:hidden flex-shrink-0 h-11 w-11 flex items-center justify-center rounded-xl transition-colors border ${
+              showFilters || includeDeleted || categoria
+                ? 'bg-primary/10 text-primary border-primary/20'
+                : 'bg-surface-container-high text-on-surface-variant border-transparent dark:border-zinc-800 hover:bg-surface-container-highest'
+            }`}
+            title="Filtros"
+          >
+            <span className="material-symbols-outlined text-[20px]">
+              {showFilters ? 'close' : 'tune'}
+            </span>
+          </button>
         </div>
 
-        {/* Barra inferior */}
-        <div className="flex flex-row flex-nowrap overflow-x-auto whitespace-nowrap gap-3 pb-2 w-full pt-3 border-t border-divider items-center min-w-0 lg:overflow-visible lg:pb-0 lg:justify-start">
+        {/* Barra inferior (Desktop) */}
+        <div className="hidden md:flex flex-row flex-nowrap overflow-x-auto whitespace-nowrap gap-3 pb-2 w-full pt-3 border-t border-divider items-center min-w-0 overflow-visible justify-start">
           <div className="flex flex-row items-center gap-3 shrink-0">
             {hasRol('Administrador') && (
               <>
@@ -454,6 +469,93 @@ export default function CatalogoList() {
           </div>
         </div>
       </div>
+
+      {/* Bottom Sheet de Filtros (Mobile) */}
+      {showFilters && createPortal(
+        <div 
+          className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40 md:hidden animate-fade-in" 
+          onClick={() => setShowFilters(false)}
+        >
+          <div 
+            className="bg-surface-container-lowest w-full rounded-t-3xl shadow-elevated p-5 sm:p-6 flex flex-col animate-slide-up relative max-h-[90vh] overflow-hidden" 
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Handle visual */}
+            <div className="w-10 h-1.5 bg-surface-container-highest rounded-full mx-auto mb-5 shrink-0" />
+
+            <div className="flex items-center justify-between mb-6 shrink-0">
+              <h3 className="text-title-lg font-bold text-on-surface">Filtros</h3>
+              <button 
+                onClick={() => setShowFilters(false)} 
+                className="text-on-surface-variant hover:text-on-surface flex items-center justify-center w-8 h-8 rounded-full bg-surface-container-high transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-6 overflow-y-auto pb-4">
+              {hasRol('Administrador') && (
+                <div className="flex flex-col gap-3">
+                  <span className="text-label-lg font-bold text-on-surface-variant uppercase tracking-wide">
+                    Estado
+                  </span>
+                  <div className="bg-surface-container-low border border-divider rounded-2xl p-4 flex items-center justify-between">
+                    <span className="text-body-lg font-medium text-on-surface">Ver inactivos</span>
+                    <ToggleSwitch
+                      checked={includeDeleted}
+                      onChange={(val) => { setIncludeDeleted(val); reset(); }}
+                      id="toggle-inactivos-catalogo-mobile"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {tab !== 'categorias' && (
+                <div className="flex flex-col gap-3">
+                  <span className="text-label-lg font-bold text-on-surface-variant uppercase tracking-wide">
+                    Categoría
+                  </span>
+                  <div className="relative inline-block w-full">
+                    <select
+                      value={categoria}
+                      onChange={(e) => {
+                        setCategoria(e.target.value);
+                        reset();
+                      }}
+                      className="appearance-none w-full px-4 py-3 text-body-lg rounded-2xl border border-divider bg-surface-container-low text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="">Todas las categorías</option>
+                      {categorias.map(cat => (
+                        <option key={cat.id_categoria_motivo} value={cat.id_categoria_motivo}>
+                          {cat.nombre}
+                        </option>
+                      ))}
+                    </select>
+                    <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant" />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="pt-5 mt-2 border-t border-divider flex gap-3 shrink-0">
+              <Button 
+                onClick={() => {
+                  setCategoria('');
+                  setIncludeDeleted(false);
+                  reset();
+                }} 
+                className="flex-1 h-12 flex justify-center items-center bg-surface-container-high text-on-surface hover:bg-surface-container-highest"
+              >
+                Limpiar
+              </Button>
+              <Button onClick={() => setShowFilters(false)} className="flex-1 h-12 flex justify-center items-center">
+                Aplicar
+              </Button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
 
       {/* Tabla — cards en móvil, tabla clásica en md+ */}
       <div className="md:bg-surface-container-lowest rounded-2xl md:shadow-card md:overflow-hidden">

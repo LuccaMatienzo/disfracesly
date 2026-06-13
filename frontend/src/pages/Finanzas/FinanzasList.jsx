@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
@@ -45,6 +46,7 @@ export default function FinanzasList() {
   const [filtroMetodo, setFiltroMetodo] = useState('');
   const [filtroTipo, setFiltroTipo] = useState('');
   const [sort, setSort] = useState({ field: null, direction: null });
+  const [showFilters, setShowFilters] = useState(false);
   const [viewId, setViewId] = useState(null);
 
   const handleSortChange = (field, direction) => {
@@ -191,7 +193,7 @@ export default function FinanzasList() {
 
       {/* Buscador y Filtros */}
       <div className="bg-surface-container-lowest rounded-2xl shadow-card p-3 lg:p-5 flex flex-col gap-4">
-        {/* Buscador */}
+        {/* Buscador y Toggle */}
         <div className="flex flex-row flex-nowrap w-full gap-2 items-center">
           <div className="flex-1 min-w-0 relative">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none text-[20px]">search</span>
@@ -202,10 +204,23 @@ export default function FinanzasList() {
               className="pl-10"
             />
           </div>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`md:hidden flex-shrink-0 h-11 w-11 flex items-center justify-center rounded-xl transition-colors border ${
+              showFilters || filtroFlujo || filtroMetodo || filtroTipo || sort.field
+                ? 'bg-primary/10 text-primary border-primary/20'
+                : 'bg-surface-container-high text-on-surface-variant border-transparent dark:border-zinc-800 hover:bg-surface-container-highest'
+            }`}
+            title="Filtros y Orden"
+          >
+            <span className="material-symbols-outlined text-[20px]">
+              {showFilters ? 'close' : 'tune'}
+            </span>
+          </button>
         </div>
 
-        {/* Barra inferior */}
-        <div className="flex flex-row flex-nowrap overflow-x-auto whitespace-nowrap gap-3 pb-2 w-full pt-3 border-t border-divider items-center min-w-0 lg:overflow-visible lg:pb-0 lg:justify-start">
+        {/* Barra inferior (Desktop) */}
+        <div className="hidden md:flex flex-row flex-nowrap overflow-x-auto whitespace-nowrap gap-3 pb-2 w-full pt-3 border-t border-divider items-center min-w-0 overflow-visible justify-start">
           <div className="flex flex-row items-center gap-3 shrink-0">
             {/* Filtro Flujo */}
             <div className="relative inline-block shrink-0">
@@ -275,6 +290,134 @@ export default function FinanzasList() {
           </div>
         </div>
       </div>
+
+      {/* Bottom Sheet de Filtros (Mobile) */}
+      {showFilters && createPortal(
+        <div 
+          className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40 md:hidden animate-fade-in" 
+          onClick={() => setShowFilters(false)}
+        >
+          <div 
+            className="bg-surface-container-lowest w-full rounded-t-3xl shadow-elevated p-5 sm:p-6 flex flex-col animate-slide-up relative max-h-[90vh] overflow-hidden" 
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Handle visual */}
+            <div className="w-10 h-1.5 bg-surface-container-highest rounded-full mx-auto mb-5 shrink-0" />
+
+            <div className="flex items-center justify-between mb-6 shrink-0">
+              <h3 className="text-title-lg font-bold text-on-surface">Filtros y Orden</h3>
+              <button 
+                onClick={() => setShowFilters(false)} 
+                className="text-on-surface-variant hover:text-on-surface flex items-center justify-center w-8 h-8 rounded-full bg-surface-container-high transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-6 overflow-y-auto pb-4">
+              {/* Filtros Dropdowns */}
+              <div className="flex flex-col gap-3">
+                <span className="text-label-lg font-bold text-on-surface-variant uppercase tracking-wide">
+                  Flujo
+                </span>
+                <div className="relative inline-block w-full">
+                  <select
+                    value={filtroFlujo}
+                    onChange={(e) => setFiltroFlujo(e.target.value)}
+                    className="appearance-none w-full px-4 py-3 text-body-lg rounded-2xl border border-divider bg-surface-container-low text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="">Todos los Flujos</option>
+                    <option value="ingreso">Ingresos</option>
+                    <option value="egreso">Egresos</option>
+                  </select>
+                  <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant" />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <span className="text-label-lg font-bold text-on-surface-variant uppercase tracking-wide">
+                  Método
+                </span>
+                <div className="relative inline-block w-full">
+                  <select
+                    value={filtroMetodo}
+                    onChange={(e) => setFiltroMetodo(e.target.value)}
+                    className="appearance-none w-full px-4 py-3 text-body-lg rounded-2xl border border-divider bg-surface-container-low text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="">Todos los Métodos</option>
+                    <option value="EFECTIVO">Efectivo</option>
+                    <option value="TRANSFERENCIA">Transferencia</option>
+                  </select>
+                  <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant" />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <span className="text-label-lg font-bold text-on-surface-variant uppercase tracking-wide">
+                  Tipo
+                </span>
+                <div className="relative inline-block w-full">
+                  <select
+                    value={filtroTipo}
+                    onChange={(e) => setFiltroTipo(e.target.value)}
+                    className="appearance-none w-full px-4 py-3 text-body-lg rounded-2xl border border-divider bg-surface-container-low text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="">Todos los Tipos</option>
+                    <option value="SENA">Seña</option>
+                    <option value="DEPOSITO">Depósito</option>
+                    <option value="SALDO">Saldo</option>
+                    <option value="DEVOLUCION_DEPOSITO">Devolución Dep.</option>
+                    <option value="AJUSTE">Ajuste</option>
+                  </select>
+                  <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant" />
+                </div>
+              </div>
+
+              {/* Ordenamiento */}
+              <div className="flex flex-col gap-3 mt-2">
+                <span className="text-label-lg font-bold text-on-surface-variant uppercase tracking-wide">
+                  Ordenar por
+                </span>
+                <div className="grid grid-cols-2 gap-3">
+                  <SortToggle
+                    label="Fecha"
+                    field="fecha"
+                    currentSort={sort}
+                    onSortChange={handleSortChange}
+                    className="w-full justify-center bg-surface-container-low py-3"
+                  />
+                  <SortToggle
+                    label="Monto"
+                    field="monto"
+                    currentSort={sort}
+                    onSortChange={handleSortChange}
+                    className="w-full justify-center bg-surface-container-low py-3"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-5 mt-2 border-t border-divider flex gap-3 shrink-0">
+              <Button 
+                onClick={() => {
+                  setFiltroFlujo('');
+                  setFiltroMetodo('');
+                  setFiltroTipo('');
+                  setSort({ field: null, direction: null });
+                  reset();
+                }} 
+                className="flex-1 h-12 flex justify-center items-center bg-surface-container-high text-on-surface hover:bg-surface-container-highest"
+              >
+                Limpiar
+              </Button>
+              <Button onClick={() => setShowFilters(false)} className="flex-1 h-12 flex justify-center items-center">
+                Aplicar
+              </Button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
 
       {/* Tabla */}
       <div className="md:bg-surface-container-lowest rounded-2xl md:shadow-card md:overflow-hidden">

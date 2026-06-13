@@ -93,8 +93,7 @@ export default function PageWrapper() {
       >
         {/* Logo + toggle */}
         <div
-          className={`flex items-center border-b border-divider shrink-0 transition-all duration-300 ${sidebarOpen ? 'gap-3 px-5 py-5 justify-between' : 'flex-col gap-2 px-3 py-4 justify-center'
-            }`}
+          className={`flex items-center border-b border-divider shrink-0 transition-all duration-300 gap-3 px-5 py-5 justify-between ${!sidebarOpen ? 'lg:flex-col lg:gap-2 lg:px-3 lg:py-4 lg:justify-center' : ''}`}
         >
           <div
             className="flex items-center gap-2.5 min-w-0 cursor-pointer hover:opacity-80 transition-opacity"
@@ -104,8 +103,7 @@ export default function PageWrapper() {
             <img
               src="/logo_svg_verdelima.svg"
               alt="DisfracesLy"
-              className={`object-contain drop-shadow-md shrink-0 transition-all duration-300 ${sidebarOpen ? 'size-14' : 'size-10'
-                }`}
+              className={`object-contain drop-shadow-md shrink-0 transition-all duration-300 size-14 ${!sidebarOpen ? 'lg:size-10' : ''}`}
               onError={(e) => {
                 e.target.style.display = 'none';
                 const fallback = document.createElement('span');
@@ -114,13 +112,11 @@ export default function PageWrapper() {
                 e.target.parentElement?.insertBefore(fallback, e.target);
               }}
             />
-            {sidebarOpen && (
-              <div className="min-w-0">
-                <p className="font-headline font-black text-on-surface truncate text-base leading-none">
-                  DisfracesLy
-                </p>
-              </div>
-            )}
+            <div className={`min-w-0 ${!sidebarOpen ? 'lg:hidden' : ''}`}>
+              <p className="font-headline font-black text-on-surface truncate text-base leading-none">
+                DisfracesLy
+              </p>
+            </div>
           </div>
           <button
             onClick={() => setSidebarOpen((p) => !p)}
@@ -141,9 +137,9 @@ export default function PageWrapper() {
               to={to}
               end={end}
               className={({ isActive }) => `
-                relative flex items-center ${sidebarOpen ? '' : 'justify-center'} gap-3 px-3 py-3 rounded-xl
+                relative flex items-center gap-3 px-3 py-3 rounded-xl
                 font-label font-medium transition-all duration-150 group
-                ${sidebarOpen ? 'w-[220px]' : 'w-full'}
+                w-[220px] ${!sidebarOpen ? 'lg:justify-center lg:w-full' : ''}
                 ${isActive
                   ? 'bg-primary/10 text-primary'
                   : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
@@ -159,9 +155,7 @@ export default function PageWrapper() {
                   <span className={`material-symbols-outlined text-xl shrink-0 ${isActive ? 'text-primary' : ''}`}>
                     {icon}
                   </span>
-                  {sidebarOpen && (
-                    <span className="truncate text-sm">{label}</span>
-                  )}
+                  <span className={`truncate text-sm ${!sidebarOpen ? 'lg:hidden' : ''}`}>{label}</span>
                 </>
               )}
             </NavLink>
@@ -170,26 +164,23 @@ export default function PageWrapper() {
 
         {/* User footer */}
         <div className="px-2 pb-4 border-t border-divider pt-3 shrink-0">
-          <div className={`flex items-center gap-3 px-3 py-2 rounded-xl ${!sidebarOpen && 'justify-center'}`}>
+          <div className={`flex items-center gap-3 px-3 py-2 rounded-xl ${!sidebarOpen ? 'lg:justify-center' : ''}`}>
             <div className="size-8 rounded-full gradient-secondary flex items-center justify-center text-white text-xs font-bold shrink-0">
               {initials}
             </div>
-            {sidebarOpen && (
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-on-surface truncate">
-                  {user?.persona?.nombre} {user?.persona?.apellido}
-                </p>
-                <p className="text-[11px] text-tertiary truncate font-label">{user?.rol}</p>
-              </div>
-            )}
+            <div className={`flex-1 min-w-0 ${!sidebarOpen ? 'lg:hidden' : ''}`}>
+              <p className="text-sm font-medium text-on-surface truncate">
+                {user?.persona?.nombre} {user?.persona?.apellido}
+              </p>
+              <p className="text-[11px] text-tertiary truncate font-label">{user?.rol}</p>
+            </div>
           </div>
           <button
             onClick={handleLogout}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mt-1 text-on-surface-variant hover:text-error hover:bg-error/5 transition-all text-sm ${!sidebarOpen && 'justify-center'
-              }`}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mt-1 text-on-surface-variant hover:text-error hover:bg-error/5 transition-all text-sm ${!sidebarOpen ? 'lg:justify-center' : ''}`}
           >
             <span className="material-symbols-outlined text-xl shrink-0">logout</span>
-            {sidebarOpen && 'Cerrar sesión'}
+            <span className={!sidebarOpen ? 'lg:hidden' : ''}>Cerrar sesión</span>
           </button>
         </div>
       </aside>
