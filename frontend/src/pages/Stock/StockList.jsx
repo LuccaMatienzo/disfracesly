@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
 import { useStock } from '@/hooks/useStock';
-import { usePagination } from '@/hooks/usePagination';
+import { useUrlFilters } from '@/hooks/useUrlFilters';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useFeedback } from '@/context/FeedbackContext';
 import Table, { Pagination } from '@/components/ui/Table';
@@ -24,13 +24,18 @@ const ESTADOS = ['', 'DISPONIBLE', 'RESERVADA', 'ALQUILADA', 'VENDIDA', 'FUERA_D
 export default function StockList() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { page, limit, goToPage, reset } = usePagination();
-  const [searchQuery, setSearchQuery] = useState('');
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
-  const [estado, setEstado] = useState('');
-  const [talle, setTalle] = useState('');
-  const [categoria, setCategoria] = useState('');
-  const [includeDeleted, setIncludeDeleted] = useState(false);
+  const { filters, updateFilters, goToPage, reset } = useUrlFilters();
+  const { search, include_deleted: includeDeleted, page, limit, estado = '', talle = '', categoria = '' } = filters;
+
+  const [localSearch, setLocalSearch] = useState(search);
+  const debouncedSearch = useDebounce(localSearch, 300);
+
+  useEffect(() => {
+    if (debouncedSearch !== search) {
+      updateFilters({ search: debouncedSearch, page: 1 }, { replace: true });
+    }
+  }, [debouncedSearch, search, updateFilters]);
+
   const [showFilters, setShowFilters] = useState(false);
   const { showSuccess, showError } = useFeedback();
   const { hasRol } = useAuth();
@@ -39,19 +44,7 @@ export default function StockList() {
   const [viewId, setViewId] = useState(null);             // id de stock en modal Ver
 
   // ─── Query ────────────────────────────────────────────────────────────────
-  const { data, isLoading } = useStock({
-    page,
-    limit,
-    search: debouncedSearchQuery || undefined,
-    estado: estado || undefined,
-    talle: talle || undefined,
-    categoria: categoria || undefined,
-    include_deleted: includeDeleted,
-  });
-
-  useEffect(() => {
-    reset();
-  }, [debouncedSearchQuery, estado, talle, categoria, includeDeleted, reset]);
+  const { data, isLoading } = useStock(filters);
 
   const { data: categoriasData } = useQuery({
     queryKey: ['categorias', 'all'],
@@ -91,13 +84,13 @@ export default function StockList() {
     { 
       key: 'pieza', 
       label: 'Pieza', 
-      render: (_, r) => <span className={r.deleted_at ? 'text-coral font-medium' : ''}>{r.pieza?.nombre ?? '—'}</span>
+      render: (_, r) => <span className={r.deleted_at ? 'text-coral font-medium' : ''}>{r.pieza?.nombre || '—'}</span>
     },
     { 
       key: 'talle', 
       label: 'Talle', 
       align: 'center', 
-      render: (_, r) => <span className={r.deleted_at ? 'text-coral' : ''}>{r.talle ?? '—'}</span>
+      render: (_, r) => <span className={r.deleted_at ? 'text-coral' : ''}>{r.talle || '—'}</span>
     },
     {
       key: 'categorias',
@@ -115,7 +108,7 @@ export default function StockList() {
     { 
       key: 'descripcion', 
       label: 'Descripción', 
-      render: (_, r) => <span className={r.deleted_at ? 'text-coral' : ''}>{r.descripcion ?? '—'}</span>
+      render: (_, r) => <span className={r.deleted_at ? 'text-coral' : ''}>{r.descripcion || '—'}</span>
     },
     {
       key: 'acciones',
@@ -174,8 +167,8 @@ export default function StockList() {
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none text-[20px]">search</span>
             <Input
               placeholder="Buscar por nombre de pieza…"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
               className="pl-10"
             />
           </div>
@@ -202,7 +195,7 @@ export default function StockList() {
                 <div className="shrink-0">
                   <ToggleSwitch
                     checked={includeDeleted}
-                    onChange={(val) => { setIncludeDeleted(val); reset(); }}
+                    onChange={(val) => updateFilters({ include_deleted: val, page: 1 })}
                     label="Ver inactivos"
                     id="toggle-inactivos-stock"
                   />
@@ -215,40 +208,34 @@ export default function StockList() {
             <div className="relative inline-block shrink-0">
               <select
                 value={categoria}
-                onChange={(e) => {
-                  setCategoria(e.target.value);
-                  reset();
-                }}
-                className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent text-gray-700 dark:text-gray-200 cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary max-w-[200px] truncate"
+                onChange={(e) => updateFilters({ categoria: e.target.value, page: 1 })}
+                className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-outline-variant bg-surface-container text-on-surface cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary max-w-[200px] truncate"
               >
-                <option value="" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Todas las categorías</option>
+                <option value="" className="bg-surface-container text-on-surface">Todas las categorías</option>
                 {categoriasOptions.map(cat => (
-                  <option key={cat.id_categoria_motivo} value={cat.id_categoria_motivo} className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">
+                  <option key={cat.id_categoria_motivo} value={cat.id_categoria_motivo} className="bg-surface-container text-on-surface">
                     {cat.nombre}
                   </option>
                 ))}
               </select>
-              <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 size-3.5" />
+              <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant size-3.5" />
             </div>
             
             {/* Filtro por Etapas (Nativo) */}
             <div className="relative inline-block shrink-0">
               <select
                 value={estado}
-                onChange={(e) => {
-                  setEstado(e.target.value);
-                  reset();
-                }}
-                className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent text-gray-700 dark:text-gray-200 cursor-pointer focus:outline-none"
+                onChange={(e) => updateFilters({ estado: e.target.value, page: 1 })}
+                className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-outline-variant bg-surface-container text-on-surface cursor-pointer focus:outline-none"
               >
-                <option value="" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Todos los estados</option>
+                <option value="" className="bg-surface-container text-on-surface">Todos los estados</option>
                 {ESTADOS.filter(e => e !== '').map(e => (
-                  <option key={e} value={e} className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">
+                  <option key={e} value={e} className="bg-surface-container text-on-surface">
                     {badgeConfig[e]?.label ?? e}
                   </option>
                 ))}
               </select>
-              <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 size-3.5" />
+              <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant size-3.5" />
             </div>
 
             <div className="w-px h-6 bg-divider shrink-0 ml-1"></div>
@@ -259,10 +246,23 @@ export default function StockList() {
                 type="text"
                 placeholder="Talle..."
                 value={talle}
-                onChange={(e) => { setTalle(e.target.value); reset(); }}
-                className="w-24 px-3 py-1 text-sm font-medium rounded-full border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-primary placeholder-gray-500 dark:placeholder-gray-400"
+                onChange={(e) => updateFilters({ talle: e.target.value, page: 1 })}
+                className="w-24 px-3 py-1 text-sm font-medium rounded-full border border-outline-variant bg-surface-container text-on-surface focus:outline-none focus:ring-1 focus:ring-primary placeholder-gray-500 dark:placeholder-gray-400"
               />
             </div>
+          </div>
+
+          <div className="ml-auto shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                updateFilters({ categoria: null, estado: null, talle: null, include_deleted: false, page: 1 });
+              }}
+              className="text-on-surface-variant hover:text-on-surface"
+            >
+              Limpiar Filtros
+            </Button>
           </div>
         </div>
       </div>
@@ -300,7 +300,7 @@ export default function StockList() {
                     <span className="text-body-lg font-medium text-on-surface">Ver inactivos</span>
                     <ToggleSwitch
                       checked={includeDeleted}
-                      onChange={(val) => { setIncludeDeleted(val); reset(); }}
+                      onChange={(val) => updateFilters({ include_deleted: val, page: 1 })}
                       id="toggle-inactivos-stock-mobile"
                     />
                   </div>
@@ -314,10 +314,7 @@ export default function StockList() {
                 <div className="relative inline-block w-full">
                   <select
                     value={categoria}
-                    onChange={(e) => {
-                      setCategoria(e.target.value);
-                      reset();
-                    }}
+                    onChange={(e) => updateFilters({ categoria: e.target.value, page: 1 })}
                     className="appearance-none w-full px-4 py-3 text-body-lg rounded-2xl border border-divider bg-surface-container-low text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     <option value="">Todas las categorías</option>
@@ -338,10 +335,7 @@ export default function StockList() {
                 <div className="relative inline-block w-full">
                   <select
                     value={estado}
-                    onChange={(e) => {
-                      setEstado(e.target.value);
-                      reset();
-                    }}
+                    onChange={(e) => updateFilters({ estado: e.target.value, page: 1 })}
                     className="appearance-none w-full px-4 py-3 text-body-lg rounded-2xl border border-divider bg-surface-container-low text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     <option value="">Todos los estados</option>
@@ -363,7 +357,7 @@ export default function StockList() {
                   type="text"
                   placeholder="Ej: M, L, Único"
                   value={talle}
-                  onChange={(e) => { setTalle(e.target.value); reset(); }}
+                  onChange={(e) => updateFilters({ talle: e.target.value, page: 1 })}
                   className="w-full px-4 py-3 text-body-lg rounded-2xl border border-divider bg-surface-container-low text-on-surface focus:outline-none focus:ring-2 focus:ring-primary placeholder-on-surface-variant/50"
                 />
               </div>
@@ -372,11 +366,7 @@ export default function StockList() {
             <div className="pt-5 mt-2 border-t border-divider flex gap-3 shrink-0">
               <Button 
                 onClick={() => {
-                  setCategoria('');
-                  setEstado('');
-                  setTalle('');
-                  setIncludeDeleted(false);
-                  reset();
+                  updateFilters({ categoria: null, estado: null, talle: null, include_deleted: false, page: 1 });
                 }} 
                 className="flex-1 h-12 flex justify-center items-center bg-surface-container-high text-on-surface hover:bg-surface-container-highest"
               >
@@ -424,3 +414,4 @@ export default function StockList() {
     </div>
   );
 }
+

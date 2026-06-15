@@ -1,12 +1,13 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
 import { useCreateStock, useUpdateStock, useStockItem } from '@/hooks/useStock';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { Select } from '@/components/ui/Input';
+import PiezaCombobox from '@/components/ui/PiezaCombobox';
 
 export default function StockForm() {
   const { id } = useParams();
@@ -14,15 +15,11 @@ export default function StockForm() {
   const isEditing = !!id;
 
   const { data: item } = useStockItem(id);
-  const { data: piezasData } = useQuery({
-    queryKey: ['piezas', 'all'],
-    queryFn: () => api.get('/catalogo/piezas', { params: { limit: 200 } }).then((r) => r.data),
-  });
 
   const createStock = useCreateStock();
   const updateStock = useUpdateStock();
 
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
+  const { register, handleSubmit, reset, control, formState: { errors, isSubmitting } } = useForm({
     defaultValues: { id_pieza: '', talle: '', medidas: '', descripcion: '', estado_pieza_stock: 'DISPONIBLE' },
   });
 
@@ -45,7 +42,7 @@ export default function StockForm() {
     navigate('/admin/stock');
   };
 
-  const piezas = piezasData?.data ?? [];
+
 
   return (
     <div className="w-full">
@@ -61,16 +58,24 @@ export default function StockForm() {
 
       <div className="bg-surface-container-lowest rounded-2xl shadow-card p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
-          <Select
-            label="Pieza"
-            error={errors.id_pieza?.message}
-            {...register('id_pieza', { required: 'Seleccioná una pieza' })}
-          >
-            <option value="">Seleccionar pieza…</option>
-            {piezas.map((p) => (
-              <option key={p.id_pieza} value={p.id_pieza}>{p.nombre}</option>
-            ))}
-          </Select>
+          <div className="flex flex-col gap-1.5 mb-2">
+            <label className="text-label-lg font-label font-medium text-on-surface-variant uppercase tracking-wide px-1">
+              Pieza del Catálogo
+            </label>
+            <Controller
+              name="id_pieza"
+              control={control}
+              rules={{ required: 'Seleccioná una pieza' }}
+              render={({ field: { onChange, value }, fieldState: { error } }) => (
+                <PiezaCombobox 
+                  value={value} 
+                  onChange={onChange} 
+                  error={error?.message} 
+                  defaultSearchTerm={item?.pieza?.nombre ?? ''}
+                />
+              )}
+            />
+          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <Input label="Talle" placeholder="XS, S, M, L, XL…" {...register('talle')} />

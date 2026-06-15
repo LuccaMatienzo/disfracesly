@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
-import { usePagination } from '@/hooks/usePagination';
+import { useUrlFilters } from '@/hooks/useUrlFilters';
 import { useDebounce } from '@/hooks/useDebounce';
 import Table, { Pagination } from '@/components/ui/Table';
 import Button from '@/components/ui/Button';
@@ -14,12 +14,15 @@ import SortToggle from '@/components/ui/SortToggle';
 import PagoViewModal from '@/components/ui/PagoViewModal';
 import { FiSearch, FiChevronDown } from 'react-icons/fi';
 import { MdTrendingUp, MdTrendingDown, MdAccountBalanceWallet, MdOutlineSwapHoriz } from 'react-icons/md';
+import KpiCarousel from '@/components/ui/KpiCarousel';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
 const formatCurrency = (val) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(val);
+const COLORS = ['#84cc16', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444'];
 
 function KpiCard({ title, amount, icon: Icon, colorClass, isNegative = false, onClick }) {
   return (
-    <div 
+    <div
       onClick={onClick}
       className="bg-card-panel rounded-2xl shadow-card p-4 md:p-5 hover:-translate-y-1 hover:bg-surface-container-lowest transition-all duration-200 cursor-pointer overflow-hidden relative flex flex-col justify-start h-full border border-transparent hover:border-primary/20"
     >
@@ -39,24 +42,25 @@ function KpiCard({ title, amount, icon: Icon, colorClass, isNegative = false, on
 
 export default function FinanzasList() {
   const navigate = useNavigate();
-  const { page, limit, goToPage, reset } = usePagination();
-  const [searchQuery, setSearchQuery] = useState('');
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
-  const [filtroFlujo, setFiltroFlujo] = useState('');
-  const [filtroMetodo, setFiltroMetodo] = useState('');
-  const [filtroTipo, setFiltroTipo] = useState('');
-  const [sort, setSort] = useState({ field: null, direction: null });
+  const { filters, updateFilters, goToPage, reset } = useUrlFilters();
+  const { search, flujo: filtroFlujo = '', metodo: filtroMetodo = '', tipo: filtroTipo = '', sort_field: sortField, sort_direction: sortDirection, page, limit } = filters;
+  const sort = { field: sortField, direction: sortDirection };
+
+  const [localSearch, setLocalSearch] = useState(search);
+  const debouncedSearch = useDebounce(localSearch, 300);
+
+  useEffect(() => {
+    if (debouncedSearch !== search) {
+      updateFilters({ search: debouncedSearch, page: 1 }, { replace: true });
+    }
+  }, [debouncedSearch, search, updateFilters]);
+
   const [showFilters, setShowFilters] = useState(false);
   const [viewId, setViewId] = useState(null);
 
   const handleSortChange = (field, direction) => {
-    setSort({ field, direction });
-    reset();
+    updateFilters({ sort_field: field, sort_direction: direction, page: 1 });
   };
-
-  useEffect(() => {
-    reset();
-  }, [debouncedSearchQuery, filtroFlujo, filtroMetodo, filtroTipo, sort, reset]);
 
   // ─── Queries ────────────────────────────────────────────────────────────────
   const { data: statsData, isLoading: isLoadingStats } = useQuery({
@@ -65,19 +69,8 @@ export default function FinanzasList() {
   });
 
   const { data, isLoading } = useQuery({
-    queryKey: ['pagos', { page, limit, search: debouncedSearchQuery, filtroFlujo, filtroMetodo, filtroTipo, sort }],
-    queryFn: () =>
-      api.get('/pagos', { 
-        params: { 
-          page, limit, 
-          search: debouncedSearchQuery || undefined,
-          flujo: filtroFlujo || undefined,
-          metodo: filtroMetodo || undefined,
-          tipo: filtroTipo || undefined,
-          sort_field: sort.field ?? undefined,
-          sort_direction: sort.direction ?? undefined,
-        } 
-      }).then((r) => r.data),
+    queryKey: ['pagos', filters],
+    queryFn: () => api.get('/pagos', { params: filters }).then((r) => r.data),
   });
 
   // ─── Columnas ─────────────────────────────────────────────────────────────
@@ -158,36 +151,129 @@ export default function FinanzasList() {
 
       {/* ── KPI Cards ─────────────────────────────────────────────────────── */}
       {!isLoadingStats && statsData && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4 mb-6">
-          <KpiCard 
-            title="Ingresos Brutos" 
-            amount={statsData.ingresos} 
-            icon={MdTrendingUp} 
-            colorClass="text-primary" 
-            onClick={() => { setFiltroFlujo('ingreso'); setFiltroMetodo(''); reset(); }}
-          />
-          <KpiCard 
-            title="Egresos (Devoluciones)" 
-            amount={statsData.egresos} 
-            icon={MdTrendingDown} 
-            colorClass="text-error" 
-            isNegative={true}
-            onClick={() => { setFiltroFlujo('egreso'); setFiltroMetodo(''); reset(); }}
-          />
-          <KpiCard 
-            title="Saldo Neto" 
-            amount={statsData.saldoNeto} 
-            icon={MdAccountBalanceWallet} 
-            colorClass={statsData.saldoNeto >= 0 ? 'text-on-surface' : 'text-error'} 
-            onClick={() => { setFiltroFlujo(''); setFiltroMetodo(''); reset(); }}
-          />
-          <KpiCard 
-            title="Efectivo en Caja" 
-            amount={statsData.efectivo} 
-            icon={MdOutlineSwapHoriz} 
-            colorClass="text-success" 
-            onClick={() => { setFiltroFlujo(''); setFiltroMetodo('EFECTIVO'); reset(); }}
-          />
+        <div className="flex flex-col gap-6 mb-6">
+          <KpiCarousel className="grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
+            <KpiCard
+              title="Recaudación Total (Mes)"
+              amount={statsData.ingresosMes}
+              icon={MdTrendingUp}
+              colorClass="text-primary"
+              onClick={() => { updateFilters({ flujo: 'ingreso', metodo: null, page: 1 }); }}
+            />
+            <KpiCard
+              title="Fondo de Garantía"
+              amount={statsData.depositosActivos}
+              icon={MdAccountBalanceWallet}
+              colorClass="text-amber-500"
+              onClick={() => { updateFilters({ tipo: 'DEPOSITO', flujo: null, page: 1 }); }}
+            />
+            <KpiCard
+              title="Efectivo (Mes)"
+              amount={statsData.efectivoMes}
+              icon={MdOutlineSwapHoriz}
+              colorClass="text-success"
+              onClick={() => { updateFilters({ flujo: 'ingreso', metodo: 'EFECTIVO', page: 1 }); }}
+            />
+            <KpiCard
+              title="Transferencias (Mes)"
+              amount={statsData.transferenciaMes}
+              icon={MdOutlineSwapHoriz}
+              colorClass="text-blue-500"
+              onClick={() => { updateFilters({ flujo: 'ingreso', metodo: 'TRANSFERENCIA', page: 1 }); }}
+            />
+          </KpiCarousel>
+
+          {/* Gráficas */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6">
+            {/* Gráfica de Tendencia (AreaChart) */}
+            <div className="xl:col-span-2 bg-surface-container-lowest rounded-2xl shadow-card p-4 md:p-6 flex flex-col min-h-[300px]">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-title-md font-headline font-semibold text-on-surface">Recaudación Histórica (Últimos 6 meses)</h3>
+                <div className="flex items-center gap-4 text-xs font-medium text-on-surface-variant">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#84cc16]"></span>
+                    Alquileres
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#3b82f6]"></span>
+                    Ventas
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 w-full h-[250px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={statsData.trend} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorAlquileres" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#84cc16" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#84cc16" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="colorVentas" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-outline-variant)" opacity={0.5} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--color-on-surface-variant)' }} dy={10} />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={(val) => `$${val >= 1000 ? (val / 1000).toFixed(0) + 'k' : val}`}
+                      tick={{ fontSize: 12, fill: 'var(--color-on-surface-variant)' }}
+                      dx={-10}
+                    />
+                    <RechartsTooltip
+                      formatter={(value) => [formatCurrency(value)]}
+                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: 'var(--shadow-elevated)' }}
+                    />
+                    <Area type="monotone" dataKey="alquileres" name="Alquileres" stroke="#84cc16" strokeWidth={2} fillOpacity={1} fill="url(#colorAlquileres)" />
+                    <Area type="monotone" dataKey="ventas" name="Ventas" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorVentas)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Gráfica de Tipos (PieChart) */}
+            <div className="xl:col-span-1 bg-surface-container-lowest rounded-2xl shadow-card p-4 md:p-6 flex flex-col min-h-[300px]">
+              <h3 className="text-title-md font-headline font-semibold text-on-surface mb-2">Origen de Recaudación (Mes Actual)</h3>
+              <div className="flex-1 w-full h-[250px] relative flex items-center justify-center">
+                {(statsData.ingresosAlquiler === 0 && statsData.ingresosVenta === 0) ? (
+                  <div className="flex flex-col items-center justify-center text-center p-4">
+                    <span className="material-symbols-outlined text-[48px] text-on-surface-variant/30 mb-3">query_stats</span>
+                    <p className="text-body-md text-on-surface-variant max-w-[220px]">
+                      Aún no hay recaudación este mes. El gráfico se generará al registrar cobros.
+                    </p>
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={[
+                          { name: 'Alquileres', value: statsData.ingresosAlquiler },
+                          { name: 'Ventas', value: statsData.ingresosVenta }
+                        ].filter(v => v.value > 0)}
+                        cx="50%"
+                        cy="45%"
+                        innerRadius={60}
+                        outerRadius={80}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {[
+                          { name: 'Alquileres', value: statsData.ingresosAlquiler },
+                          { name: 'Ventas', value: statsData.ingresosVenta }
+                        ].filter(v => v.value > 0).map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.name === 'Alquileres' ? '#84cc16' : '#3b82f6'} />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip formatter={(value) => [formatCurrency(value)]} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: 'var(--shadow-elevated)' }} />
+                      <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px', color: 'var(--color-on-surface)' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -199,18 +285,17 @@ export default function FinanzasList() {
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none text-[20px]">search</span>
             <Input
               placeholder="Buscar por cliente…"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
               className="pl-10"
             />
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`md:hidden flex-shrink-0 h-11 w-11 flex items-center justify-center rounded-xl transition-colors border ${
-              showFilters || filtroFlujo || filtroMetodo || filtroTipo || sort.field
-                ? 'bg-primary/10 text-primary border-primary/20'
-                : 'bg-surface-container-high text-on-surface-variant border-transparent dark:border-zinc-800 hover:bg-surface-container-highest'
-            }`}
+            className={`md:hidden flex-shrink-0 h-11 w-11 flex items-center justify-center rounded-xl transition-colors border ${showFilters || filtroFlujo || filtroMetodo || filtroTipo || sort.field
+              ? 'bg-primary/10 text-primary border-primary/20'
+              : 'bg-surface-container-high text-on-surface-variant border-transparent dark:border-zinc-800 hover:bg-surface-container-highest'
+              }`}
             title="Filtros y Orden"
           >
             <span className="material-symbols-outlined text-[20px]">
@@ -226,46 +311,31 @@ export default function FinanzasList() {
             <div className="relative inline-block shrink-0">
               <select
                 value={filtroFlujo}
-                onChange={(e) => setFiltroFlujo(e.target.value)}
-                className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent text-gray-700 dark:text-gray-200 cursor-pointer focus:outline-none"
+                onChange={(e) => updateFilters({ flujo: e.target.value, page: 1 })}
+                className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-outline-variant bg-surface-container text-on-surface cursor-pointer focus:outline-none"
               >
-                <option value="" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Todos los Flujos</option>
-                <option value="ingreso" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Ingresos</option>
-                <option value="egreso" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Egresos</option>
+                <option value="" className="bg-surface-container text-on-surface">Todos los Movimientos</option>
+                <option value="ingreso" className="bg-surface-container text-on-surface">Ingresos Percibidos</option>
+                <option value="egreso" className="bg-surface-container text-on-surface">Devoluciones Emitidas</option>
               </select>
-              <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 size-3.5" />
+              <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant size-3.5" />
             </div>
 
             {/* Filtro Metodo */}
             <div className="relative inline-block shrink-0">
               <select
                 value={filtroMetodo}
-                onChange={(e) => setFiltroMetodo(e.target.value)}
-                className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent text-gray-700 dark:text-gray-200 cursor-pointer focus:outline-none"
+                onChange={(e) => updateFilters({ metodo: e.target.value, page: 1 })}
+                className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-outline-variant bg-surface-container text-on-surface cursor-pointer focus:outline-none"
               >
-                <option value="" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Todos los Métodos</option>
-                <option value="EFECTIVO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Efectivo</option>
-                <option value="TRANSFERENCIA" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Transferencia</option>
+                <option value="" className="bg-surface-container text-on-surface">Todos los Métodos</option>
+                <option value="EFECTIVO" className="bg-surface-container text-on-surface">Efectivo</option>
+                <option value="TRANSFERENCIA" className="bg-surface-container text-on-surface">Transferencia</option>
               </select>
-              <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 size-3.5" />
+              <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant size-3.5" />
             </div>
 
-            {/* Filtro Tipo */}
-            <div className="relative inline-block shrink-0">
-              <select
-                value={filtroTipo}
-                onChange={(e) => setFiltroTipo(e.target.value)}
-                className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent text-gray-700 dark:text-gray-200 cursor-pointer focus:outline-none"
-              >
-                <option value="" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Todos los Tipos</option>
-                <option value="SENA" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Seña</option>
-                <option value="DEPOSITO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Depósito</option>
-                <option value="SALDO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Saldo</option>
-                <option value="DEVOLUCION_DEPOSITO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Devolución Dep.</option>
-                <option value="AJUSTE" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Ajuste</option>
-              </select>
-              <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 size-3.5" />
-            </div>
+
 
             <div className="w-px h-6 bg-divider shrink-0 ml-1"></div>
 
@@ -273,7 +343,7 @@ export default function FinanzasList() {
               Ordenar:
             </span>
           </div>
-          
+
           <div className="flex flex-row items-center gap-2 shrink-0 lg:flex-nowrap">
             <SortToggle
               label="Fecha"
@@ -288,17 +358,30 @@ export default function FinanzasList() {
               onSortChange={handleSortChange}
             />
           </div>
+
+          <div className="ml-auto shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                updateFilters({ flujo: null, metodo: null, tipo: null, sort_field: null, sort_direction: null, page: 1 });
+              }}
+              className="text-on-surface-variant hover:text-on-surface"
+            >
+              Limpiar Filtros
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Bottom Sheet de Filtros (Mobile) */}
       {showFilters && createPortal(
-        <div 
-          className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40 md:hidden animate-fade-in" 
+        <div
+          className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40 md:hidden animate-fade-in"
           onClick={() => setShowFilters(false)}
         >
-          <div 
-            className="bg-surface-container-lowest w-full rounded-t-3xl shadow-elevated p-5 sm:p-6 flex flex-col animate-slide-up relative max-h-[90vh] overflow-hidden" 
+          <div
+            className="bg-surface-container-lowest w-full rounded-t-3xl shadow-elevated p-5 sm:p-6 flex flex-col animate-slide-up relative max-h-[90vh] overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
             {/* Handle visual */}
@@ -306,8 +389,8 @@ export default function FinanzasList() {
 
             <div className="flex items-center justify-between mb-6 shrink-0">
               <h3 className="text-title-lg font-bold text-on-surface">Filtros y Orden</h3>
-              <button 
-                onClick={() => setShowFilters(false)} 
+              <button
+                onClick={() => setShowFilters(false)}
                 className="text-on-surface-variant hover:text-on-surface flex items-center justify-center w-8 h-8 rounded-full bg-surface-container-high transition-colors"
               >
                 <span className="material-symbols-outlined text-[20px]">close</span>
@@ -323,12 +406,12 @@ export default function FinanzasList() {
                 <div className="relative inline-block w-full">
                   <select
                     value={filtroFlujo}
-                    onChange={(e) => setFiltroFlujo(e.target.value)}
+                    onChange={(e) => updateFilters({ flujo: e.target.value, page: 1 })}
                     className="appearance-none w-full px-4 py-3 text-body-lg rounded-2xl border border-divider bg-surface-container-low text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
                   >
-                    <option value="">Todos los Flujos</option>
-                    <option value="ingreso">Ingresos</option>
-                    <option value="egreso">Egresos</option>
+                    <option value="">Todos los Movimientos</option>
+                    <option value="ingreso">Ingresos Percibidos</option>
+                    <option value="egreso">Devoluciones Emitidas</option>
                   </select>
                   <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant" />
                 </div>
@@ -341,7 +424,7 @@ export default function FinanzasList() {
                 <div className="relative inline-block w-full">
                   <select
                     value={filtroMetodo}
-                    onChange={(e) => setFiltroMetodo(e.target.value)}
+                    onChange={(e) => updateFilters({ metodo: e.target.value, page: 1 })}
                     className="appearance-none w-full px-4 py-3 text-body-lg rounded-2xl border border-divider bg-surface-container-low text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     <option value="">Todos los Métodos</option>
@@ -352,26 +435,7 @@ export default function FinanzasList() {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-3">
-                <span className="text-label-lg font-bold text-on-surface-variant uppercase tracking-wide">
-                  Tipo
-                </span>
-                <div className="relative inline-block w-full">
-                  <select
-                    value={filtroTipo}
-                    onChange={(e) => setFiltroTipo(e.target.value)}
-                    className="appearance-none w-full px-4 py-3 text-body-lg rounded-2xl border border-divider bg-surface-container-low text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
-                  >
-                    <option value="">Todos los Tipos</option>
-                    <option value="SENA">Seña</option>
-                    <option value="DEPOSITO">Depósito</option>
-                    <option value="SALDO">Saldo</option>
-                    <option value="DEVOLUCION_DEPOSITO">Devolución Dep.</option>
-                    <option value="AJUSTE">Ajuste</option>
-                  </select>
-                  <FiChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant" />
-                </div>
-              </div>
+
 
               {/* Ordenamiento */}
               <div className="flex flex-col gap-3 mt-2">
@@ -398,14 +462,10 @@ export default function FinanzasList() {
             </div>
 
             <div className="pt-5 mt-2 border-t border-divider flex gap-3 shrink-0">
-              <Button 
+              <Button
                 onClick={() => {
-                  setFiltroFlujo('');
-                  setFiltroMetodo('');
-                  setFiltroTipo('');
-                  setSort({ field: null, direction: null });
-                  reset();
-                }} 
+                  updateFilters({ flujo: null, metodo: null, tipo: null, sort_field: null, sort_direction: null, page: 1 });
+                }}
                 className="flex-1 h-12 flex justify-center items-center bg-surface-container-high text-on-surface hover:bg-surface-container-highest"
               >
                 Limpiar
@@ -436,3 +496,4 @@ export default function FinanzasList() {
     </div>
   );
 }
+

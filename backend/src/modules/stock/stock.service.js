@@ -55,14 +55,30 @@ async function getAllStock(query) {
     ...(query.estado && { estado_pieza_stock: query.estado }),
     ...(query.id_pieza && { id_pieza: BigInt(query.id_pieza) }),
     ...(query.talle && { talle: { contains: query.talle, mode: 'insensitive' } }),
-    pieza: {
-      ...(query.search && { nombre: { contains: query.search, mode: 'insensitive' } }),
-      ...(query.categoria && { categorias: { some: { id_categoria_motivo: parseInt(query.categoria) } } })
-    },
   };
+
+  if (query.categoria) {
+    baseWhere.pieza = { categorias: { some: { id_categoria_motivo: parseInt(query.categoria) } } };
+  }
+
+  if (query.search) {
+    const searchPattern = `%${query.search.replace(/[aeiouáéíóúAEIOUÁÉÍÓÚ]/g, '_')}%`;
+    const rawIds = await prisma.$queryRaw`
+      SELECT id_pieza FROM pieza WHERE nombre ILIKE ${searchPattern}
+    `;
+    const searchIds = rawIds.map(r => r.id_pieza);
+    if (baseWhere.id_pieza) {
+      if (!searchIds.includes(baseWhere.id_pieza)) {
+        baseWhere.id_pieza = BigInt(-1);
+      }
+    } else {
+      baseWhere.id_pieza = { in: searchIds };
+    }
+  }
 
   if (query.include_deleted !== 'true' && query.include_deleted !== true) {
     baseWhere = withNotDeleted(baseWhere);
+    if (!baseWhere.pieza) baseWhere.pieza = {};
     baseWhere.pieza.deleted_at = null;
   }
 

@@ -193,33 +193,78 @@ async function getPagosStats() {
   const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
 
   const pagosMes = await prisma.pagoOperacion.findMany({
-    where: withNotDeleted({
-      fecha: { gte: firstDay }
-    }),
+    where: withNotDeleted({ fecha: { gte: firstDay } }),
+    include: { operacion: { include: { alquiler: true, venta: true } } }
   });
 
-  let totalIngresos = 0;
-  let totalEgresos = 0;
-  let efectivo = 0;
-  let transferencia = 0;
+  let ingresosMes = 0;
+  let efectivoMes = 0;
+  let transferenciaMes = 0;
+  let ingresosAlquiler = 0;
+  let ingresosVenta = 0;
 
   for (const p of pagosMes) {
     const m = Number(p.monto);
-    if (p.tipo === 'DEVOLUCION_DEPOSITO' || (p.tipo === 'AJUSTE' && m < 0)) {
-      totalEgresos += Math.abs(m);
-    } else {
-      totalIngresos += m;
-      if (p.metodo === 'EFECTIVO') efectivo += m;
-      if (p.metodo === 'TRANSFERENCIA') transferencia += m;
+    if (['SENA', 'SALDO'].includes(p.tipo) || (p.tipo === 'AJUSTE' && m > 0)) {
+      ingresosMes += m;
+      if (p.metodo === 'EFECTIVO') efectivoMes += m;
+      if (p.metodo === 'TRANSFERENCIA') transferenciaMes += m;
+      
+      if (p.operacion.alquiler) ingresosAlquiler += m;
+      else if (p.operacion.venta) ingresosVenta += m;
     }
   }
 
+  // Depósitos activos (Total histórico retenido)
+  const depositosRaw = await prisma.$queryRaw`
+    SELECT 
+      SUM(CASE WHEN tipo = 'DEPOSITO' THEN monto ELSE 0 END) as total_deposito,
+      SUM(CASE WHEN tipo = 'DEVOLUCION_DEPOSITO' THEN ABS(monto) ELSE 0 END) as total_devolucion
+    FROM pago_operacion
+    WHERE deleted_at IS NULL
+  `;
+  const depositosActivos = depositosRaw.length > 0 ? Number(depositosRaw[0].total_deposito || 0) - Number(depositosRaw[0].total_devolucion || 0) : 0;
+
+  // Tendencia de 6 meses (Ingresos Alquiler vs Venta)
+  const trendRaw = await prisma.$queryRaw`
+    SELECT 
+      TO_CHAR(p.fecha, 'YYYY-MM') AS month,
+      SUM(CASE WHEN o.id_operacion IN (SELECT id_operacion FROM alquiler) THEN p.monto ELSE 0 END) AS ingresos_alquiler,
+      SUM(CASE WHEN o.id_operacion IN (SELECT id_operacion FROM venta) THEN p.monto ELSE 0 END) AS ingresos_venta
+    FROM pago_operacion p
+    JOIN operacion o ON p.id_operacion = o.id_operacion
+    WHERE p.deleted_at IS NULL AND o.deleted_at IS NULL
+      AND (p.tipo IN ('SENA', 'SALDO') OR (p.tipo = 'AJUSTE' AND p.monto > 0))
+      AND p.fecha >= date_trunc('month', current_date - interval '5 months')
+    GROUP BY TO_CHAR(p.fecha, 'YYYY-MM')
+    ORDER BY TO_CHAR(p.fecha, 'YYYY-MM') ASC
+  `;
+  
+  const trend = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    const label = d.toLocaleString('es-AR', { month: 'short' }).toUpperCase();
+    
+    const dbData = trendRaw.find(r => r.month === monthStr);
+    const alg = dbData ? Number(dbData.ingresos_alquiler) : 0;
+    const vnt = dbData ? Number(dbData.ingresos_venta) : 0;
+    trend.push({
+      name: label,
+      alquileres: alg,
+      ventas: vnt,
+      total: alg + vnt
+    });
+  }
+
   return {
-    ingresos: totalIngresos,
-    egresos: totalEgresos,
-    saldoNeto: totalIngresos - totalEgresos,
-    efectivo,
-    transferencia
+    ingresosMes,
+    depositosActivos,
+    efectivoMes,
+    transferenciaMes,
+    ingresosAlquiler,
+    ingresosVenta,
+    trend
   };
 }
 

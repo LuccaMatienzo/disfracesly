@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
-import { usePagination } from '@/hooks/usePagination';
+import { useUrlFilters } from '@/hooks/useUrlFilters';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useFeedback } from '@/context/FeedbackContext';
 import Table, { Pagination } from '@/components/ui/Table';
@@ -22,19 +22,19 @@ import ToggleSwitch from '@/components/ui/ToggleSwitch';
 export default function CatalogoList() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { page, limit, goToPage, reset } = usePagination();
-  const [searchQuery, setSearchQuery] = useState('');
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
-  const [categoria, setCategoria] = useState('');
-  const [includeDeleted, setIncludeDeleted] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
+  const { filters, updateFilters, goToPage, reset } = useUrlFilters();
+  const { search, include_deleted: includeDeleted, page, limit, categoria = '', tab = 'piezas' } = filters;
+
+  const [localSearch, setLocalSearch] = useState(search);
+  const debouncedSearch = useDebounce(localSearch, 300);
 
   useEffect(() => {
-    reset();
-  }, [debouncedSearchQuery, categoria, includeDeleted, reset]);
+    if (debouncedSearch !== search) {
+      updateFilters({ search: debouncedSearch, page: 1 }, { replace: true });
+    }
+  }, [debouncedSearch, search, updateFilters]);
 
-
-  const [tab, setTab] = useState('piezas');
+  const [showFilters, setShowFilters] = useState(false);
   const { showSuccess, showError } = useFeedback();
   const { hasRol } = useAuth();
 
@@ -65,23 +65,20 @@ export default function CatalogoList() {
   const categorias = categoriasData?.data || [];
 
   const { data: piezas, isLoading: loadingPiezas } = useQuery({
-    queryKey: ['piezas', { page, limit, search: debouncedSearchQuery, categoria, include_deleted: includeDeleted }],
-    queryFn: () =>
-      api.get('/catalogo/piezas', { params: { page, limit, search: debouncedSearchQuery || undefined, categoria: categoria || undefined, include_deleted: includeDeleted } }).then((r) => r.data),
+    queryKey: ['piezas', filters],
+    queryFn: () => api.get('/catalogo/piezas', { params: filters }).then((r) => r.data),
     enabled: tab === 'piezas',
   });
 
   const { data: disfraces, isLoading: loadingDisfraces } = useQuery({
-    queryKey: ['disfraces', { page, limit, search: debouncedSearchQuery, categoria, include_deleted: includeDeleted }],
-    queryFn: () =>
-      api.get('/catalogo/disfraces', { params: { page, limit, search: debouncedSearchQuery || undefined, categoria: categoria || undefined, include_deleted: includeDeleted } }).then((r) => r.data),
+    queryKey: ['disfraces', filters],
+    queryFn: () => api.get('/catalogo/disfraces', { params: filters }).then((r) => r.data),
     enabled: tab === 'disfraces',
   });
 
   const { data: categoriasTab, isLoading: loadingCategorias } = useQuery({
-    queryKey: ['categorias', 'tab', { page, limit, search: debouncedSearchQuery, include_deleted: includeDeleted }],
-    queryFn: () =>
-      api.get('/catalogo/categorias', { params: { page, limit, search: debouncedSearchQuery || undefined, include_deleted: includeDeleted } }).then((r) => r.data),
+    queryKey: ['categorias', 'tab', filters],
+    queryFn: () => api.get('/catalogo/categorias', { params: filters }).then((r) => r.data),
     enabled: tab === 'categorias',
   });
 
@@ -188,7 +185,7 @@ export default function CatalogoList() {
   const piezasCols = [
     { key: 'id_pieza', label: '#', width: '60px' },
     { key: 'nombre', label: 'Nombre', render: (_, r) => <span className={r.deleted_at ? 'text-coral font-medium' : ''}>{r.nombre}</span> },
-    { key: 'descripcion', label: 'Descripción', render: (_, r) => <span className={r.deleted_at ? 'text-coral' : ''}>{r.descripcion ?? '—'}</span> },
+    { key: 'descripcion', label: 'Descripción', render: (_, r) => <span className={r.deleted_at ? 'text-coral' : ''}>{r.descripcion || '—'}</span> },
     {
       key: 'categorias',
       label: 'Categorías',
@@ -231,7 +228,7 @@ export default function CatalogoList() {
   const disfrazCols = [
     { key: 'id_disfraz', label: '#', width: '60px' },
     { key: 'nombre', label: 'Nombre', render: (_, r) => <span className={r.deleted_at ? 'text-coral font-medium' : ''}>{r.nombre}</span> },
-    { key: 'descripcion', label: 'Descripción', render: (_, r) => <span className={r.deleted_at ? 'text-coral' : ''}>{r.descripcion ?? '—'}</span> },
+    { key: 'descripcion', label: 'Descripción', render: (_, r) => <span className={r.deleted_at ? 'text-coral' : ''}>{r.descripcion || '—'}</span> },
     {
       key: 'categorias',
       label: 'Categorías',
@@ -328,12 +325,10 @@ export default function CatalogoList() {
             <button
               type="button"
               onClick={() => {
-                setTab('piezas');
-                reset();
+                updateFilters({ tab: 'piezas', page: 1, categoria: null, search: null, include_deleted: false });
+                setLocalSearch('');
                 setViewId(null);
                 setViewDisfrazId(null);
-                setSearchQuery('');
-                setCategoria('');
               }}
               className={[
                 'relative flex h-full items-center justify-center px-6 rounded-xl text-sm font-medium transition-all duration-200',
@@ -347,12 +342,10 @@ export default function CatalogoList() {
             <button
               type="button"
               onClick={() => {
-                setTab('disfraces');
-                reset();
+                updateFilters({ tab: 'disfraces', page: 1, categoria: null, search: null, include_deleted: false });
+                setLocalSearch('');
                 setViewId(null);
                 setViewDisfrazId(null);
-                setSearchQuery('');
-                setCategoria('');
               }}
               className={[
                 'relative flex h-full items-center justify-center px-6 rounded-xl text-sm font-medium transition-all duration-200',
@@ -366,12 +359,10 @@ export default function CatalogoList() {
             <button
               type="button"
               onClick={() => {
-                setTab('categorias');
-                reset();
+                updateFilters({ tab: 'categorias', page: 1, categoria: null, search: null, include_deleted: false });
+                setLocalSearch('');
                 setViewId(null);
                 setViewDisfrazId(null);
-                setSearchQuery('');
-                setCategoria('');
               }}
               className={[
                 'relative flex h-full items-center justify-center px-6 rounded-xl text-sm font-medium transition-all duration-200',
@@ -411,8 +402,8 @@ export default function CatalogoList() {
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none text-[20px]">search</span>
             <Input
               placeholder={`Buscar ${tab}…`}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
               className="pl-10"
             />
           </div>
@@ -439,7 +430,7 @@ export default function CatalogoList() {
                 <div className="shrink-0">
                   <ToggleSwitch
                     checked={includeDeleted}
-                    onChange={(val) => { setIncludeDeleted(val); reset(); }}
+                    onChange={(val) => updateFilters({ include_deleted: val, page: 1 })}
                     label="Ver inactivos"
                     id={`toggle-inactivos-${tab}`}
                   />
@@ -453,19 +444,32 @@ export default function CatalogoList() {
               <div className="relative inline-block shrink-0">
                 <select
                   value={categoria}
-                  onChange={(e) => setCategoria(e.target.value)}
-                  className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent text-gray-700 dark:text-gray-200 cursor-pointer focus:outline-none"
+                  onChange={(e) => updateFilters({ categoria: e.target.value, page: 1 })}
+                  className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-outline-variant bg-surface-container text-on-surface cursor-pointer focus:outline-none"
                 >
-                  <option value="" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Todas las categorías</option>
+                  <option value="" className="bg-surface-container text-on-surface">Todas las categorías</option>
                   {categorias.map((c) => (
-                    <option key={c.id_categoria_motivo} value={c.id_categoria_motivo} className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">
+                    <option key={c.id_categoria_motivo} value={c.id_categoria_motivo} className="bg-surface-container text-on-surface">
                       {c.nombre}
                     </option>
                   ))}
                 </select>
-                <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 size-3.5" />
+                <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant size-3.5" />
               </div>
             )}
+          </div>
+
+          <div className="ml-auto shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                updateFilters({ categoria: null, include_deleted: false, page: 1 });
+              }}
+              className="text-on-surface-variant hover:text-on-surface"
+            >
+              Limpiar Filtros
+            </Button>
           </div>
         </div>
       </div>
@@ -503,7 +507,7 @@ export default function CatalogoList() {
                     <span className="text-body-lg font-medium text-on-surface">Ver inactivos</span>
                     <ToggleSwitch
                       checked={includeDeleted}
-                      onChange={(val) => { setIncludeDeleted(val); reset(); }}
+                      onChange={(val) => updateFilters({ include_deleted: val, page: 1 })}
                       id="toggle-inactivos-catalogo-mobile"
                     />
                   </div>
@@ -518,10 +522,7 @@ export default function CatalogoList() {
                   <div className="relative inline-block w-full">
                     <select
                       value={categoria}
-                      onChange={(e) => {
-                        setCategoria(e.target.value);
-                        reset();
-                      }}
+                      onChange={(e) => updateFilters({ categoria: e.target.value, page: 1 })}
                       className="appearance-none w-full px-4 py-3 text-body-lg rounded-2xl border border-divider bg-surface-container-low text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
                     >
                       <option value="">Todas las categorías</option>
@@ -540,9 +541,7 @@ export default function CatalogoList() {
             <div className="pt-5 mt-2 border-t border-divider flex gap-3 shrink-0">
               <Button 
                 onClick={() => {
-                  setCategoria('');
-                  setIncludeDeleted(false);
-                  reset();
+                  updateFilters({ categoria: null, include_deleted: false, page: 1 });
                 }} 
                 className="flex-1 h-12 flex justify-center items-center bg-surface-container-high text-on-surface hover:bg-surface-container-highest"
               >
@@ -638,8 +637,8 @@ export default function CatalogoList() {
             
             <button
               onClick={() => {
-                setTab('piezas');
-                reset(); setViewId(null); setViewDisfrazId(null); setSearchQuery(''); setCategoria('');
+                updateFilters({ tab: 'piezas', page: 1, search: null, categoria: null, include_deleted: false });
+                setLocalSearch(''); setViewId(null); setViewDisfrazId(null);
                 setIsMobileMenuOpen(false);
               }}
               className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-left font-medium transition-colors ${
@@ -654,8 +653,8 @@ export default function CatalogoList() {
             
             <button
               onClick={() => {
-                setTab('disfraces');
-                reset(); setViewId(null); setViewDisfrazId(null); setSearchQuery(''); setCategoria('');
+                updateFilters({ tab: 'disfraces', page: 1, search: null, categoria: null, include_deleted: false });
+                setLocalSearch(''); setViewId(null); setViewDisfrazId(null);
                 setIsMobileMenuOpen(false);
               }}
               className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-left font-medium transition-colors ${
@@ -670,8 +669,8 @@ export default function CatalogoList() {
             
             <button
               onClick={() => {
-                setTab('categorias');
-                reset(); setViewId(null); setViewDisfrazId(null); setSearchQuery(''); setCategoria('');
+                updateFilters({ tab: 'categorias', page: 1, search: null, categoria: null, include_deleted: false });
+                setLocalSearch(''); setViewId(null); setViewDisfrazId(null);
                 setIsMobileMenuOpen(false);
               }}
               className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-left font-medium transition-colors ${
@@ -689,3 +688,4 @@ export default function CatalogoList() {
     </div>
   );
 }
+

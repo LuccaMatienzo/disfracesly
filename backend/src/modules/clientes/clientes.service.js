@@ -175,13 +175,28 @@ async function getClienteById(id) {
 async function createCliente(data) {
   const { persona, ...clienteData } = data;
 
-  const existing = await prisma.persona.findUnique({ where: { documento: persona.documento } });
-  if (existing) throw ApiError.conflict('Ya existe una persona con ese documento');
-
   return prisma.$transaction(async (tx) => {
-    const newPersona = await tx.persona.create({ data: persona });
+    let targetPersona = await tx.persona.findUnique({ where: { documento: persona.documento } });
+
+    if (targetPersona) {
+      // Si la persona ya existe, verificamos que no sea cliente ya
+      const existingCliente = await tx.cliente.findFirst({ where: { id_persona: targetPersona.id_persona } });
+      if (existingCliente) {
+        throw ApiError.conflict('Ya existe un cliente con este documento');
+      }
+      
+      // Actualizamos los datos personales en caso de que hayan cambiado
+      targetPersona = await tx.persona.update({
+        where: { id_persona: targetPersona.id_persona },
+        data: persona
+      });
+    } else {
+      // Si no existe, creamos la persona
+      targetPersona = await tx.persona.create({ data: persona });
+    }
+
     return tx.cliente.create({
-      data: { ...clienteData, id_persona: newPersona.id_persona },
+      data: { ...clienteData, id_persona: targetPersona.id_persona },
       include: { persona: true },
     });
   });

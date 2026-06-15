@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
-import { usePagination } from '@/hooks/usePagination';
+import { useUrlFilters } from '@/hooks/useUrlFilters';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useFeedback } from '@/context/FeedbackContext';
 import { useAuth } from '@/context/AuthContext';
@@ -33,22 +33,27 @@ export default function UsuariosList() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const { page, limit, goToPage, reset } = usePagination();
-  const [searchQuery, setSearchQuery] = useState('');
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
-  const [includeDeleted, setIncludeDeleted] = useState(false);
-  const { showSuccess, showError } = useFeedback();
+  const { filters, updateFilters, goToPage, reset } = useUrlFilters();
+  const { search, include_deleted: includeDeleted, sort_field: sortField, sort_direction: sortDirection, page, limit, id_rol: roleFilter = '' } = filters;
+  const sort = { field: sortField, direction: sortDirection };
 
-  const [sort, setSort] = useState({ field: null, direction: null });
+  const [localSearch, setLocalSearch] = useState(search);
+  const debouncedSearch = useDebounce(localSearch, 300);
+
+  useEffect(() => {
+    if (debouncedSearch !== search) {
+      updateFilters({ search: debouncedSearch, page: 1 }, { replace: true });
+    }
+  }, [debouncedSearch, search, updateFilters]);
+
+  const { showSuccess, showError } = useFeedback();
   const [showFilters, setShowFilters] = useState(false);
 
   const handleSortChange = (field, direction) => {
-    setSort({ field, direction });
-    reset();
+    updateFilters({ sort_field: field, sort_direction: direction, page: 1 });
   };
 
   const [deleteTarget, setDeleteTarget] = useState(null); // { id, nombre }
-  const [roleFilter, setRoleFilter] = useState('');
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const [resetTarget, setResetTarget] = useState(null);
 
@@ -58,25 +63,12 @@ export default function UsuariosList() {
     queryFn: () => api.get('/usuarios/roles').then((r) => r.data),
   });
 
-  useEffect(() => {
-    reset();
-  }, [debouncedSearchQuery, includeDeleted, roleFilter, reset]);
+
 
   // ─── Query ────────────────────────────────────────────────────────────────
   const { data, isLoading } = useQuery({
-    queryKey: ['usuarios', { page, limit, search: debouncedSearchQuery, includeDeleted, roleFilter, sort }],
-    queryFn: () =>
-      api.get('/usuarios', {
-        params: {
-          page,
-          limit,
-          search: debouncedSearchQuery || undefined,
-          include_deleted: includeDeleted,
-          id_rol: roleFilter || undefined,
-          sort_field: sort.field ?? undefined,
-          sort_direction: sort.direction ?? undefined,
-        },
-      }).then((r) => r.data),
+    queryKey: ['usuarios', filters],
+    queryFn: () => api.get('/usuarios', { params: filters }).then((r) => r.data),
   });
 
   // ─── Mutación: soft-delete ────────────────────────────────────────────────
@@ -178,8 +170,8 @@ export default function UsuariosList() {
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none text-[20px]">search</span>
             <Input
               placeholder="Buscar por nombre, apellido o correo…"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
               className="pl-10"
             />
           </div>
@@ -206,7 +198,7 @@ export default function UsuariosList() {
                 <div className="shrink-0">
                   <ToggleSwitch
                     checked={includeDeleted}
-                    onChange={(val) => { setIncludeDeleted(val); reset(); }}
+                    onChange={(val) => updateFilters({ include_deleted: val, page: 1 })}
                     label="Ver inactivos"
                     id="toggle-inactivos-usuarios"
                   />
@@ -219,20 +211,17 @@ export default function UsuariosList() {
             <div className="relative inline-block shrink-0">
               <select
                 value={roleFilter}
-                onChange={(e) => {
-                  setRoleFilter(e.target.value);
-                  reset();
-                }}
-                className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent text-gray-700 dark:text-gray-200 cursor-pointer focus:outline-none"
+                onChange={(e) => updateFilters({ id_rol: e.target.value, page: 1 })}
+                className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-outline-variant bg-surface-container text-on-surface cursor-pointer focus:outline-none"
               >
-                <option value="" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Todos los roles</option>
+                <option value="" className="bg-surface-container text-on-surface">Todos los roles</option>
                 {roles.map(rol => (
-                  <option key={rol.id_rol} value={rol.id_rol} className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">
+                  <option key={rol.id_rol} value={rol.id_rol} className="bg-surface-container text-on-surface">
                     {rol.nombre}
                   </option>
                 ))}
               </select>
-              <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 size-3.5" />
+              <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant size-3.5" />
             </div>
 
             <div className="w-px h-6 bg-divider shrink-0 ml-1"></div>
@@ -267,6 +256,19 @@ export default function UsuariosList() {
               currentSort={sort}
               onSortChange={handleSortChange}
             />
+          </div>
+
+          <div className="ml-auto shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                updateFilters({ id_rol: null, include_deleted: false, sort_field: null, sort_direction: null, page: 1 });
+              }}
+              className="text-on-surface-variant hover:text-on-surface"
+            >
+              Limpiar Filtros
+            </Button>
           </div>
         </div>
       </div>
@@ -304,7 +306,7 @@ export default function UsuariosList() {
                     <span className="text-body-lg font-medium text-on-surface">Ver inactivos</span>
                     <ToggleSwitch
                       checked={includeDeleted}
-                      onChange={(val) => { setIncludeDeleted(val); reset(); }}
+                      onChange={(val) => updateFilters({ include_deleted: val, page: 1 })}
                       id="toggle-inactivos-usuarios-mobile"
                     />
                   </div>
@@ -318,10 +320,7 @@ export default function UsuariosList() {
                 <div className="relative inline-block w-full">
                   <select
                     value={roleFilter}
-                    onChange={(e) => {
-                      setRoleFilter(e.target.value);
-                      reset();
-                    }}
+                    onChange={(e) => updateFilters({ id_rol: e.target.value, page: 1 })}
                     className="appearance-none w-full px-4 py-3 text-body-lg rounded-2xl border border-divider bg-surface-container-low text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     <option value="">Todos los roles</option>
@@ -376,10 +375,7 @@ export default function UsuariosList() {
             <div className="pt-5 mt-2 border-t border-divider flex gap-3 shrink-0">
               <Button 
                 onClick={() => {
-                  setRoleFilter('');
-                  setIncludeDeleted(false);
-                  setSort({ field: null, direction: null });
-                  reset();
+                  updateFilters({ id_rol: null, include_deleted: false, sort_field: null, sort_direction: null, page: 1 });
                 }} 
                 className="flex-1 h-12 flex justify-center items-center bg-surface-container-high text-on-surface hover:bg-surface-container-highest"
               >
@@ -501,3 +497,4 @@ function ResetPasswordModal({ open, onClose, userId }) {
     </Modal>
   );
 }
+

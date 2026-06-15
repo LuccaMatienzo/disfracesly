@@ -24,15 +24,15 @@ export const badgeConfig = {
   VENDIDO: { label: 'Vendido', cls: 'bg-primary-container text-primary-on-container' },
 
   // Pagos: Tipo
-  SENA: { label: 'Seña', cls: 'bg-secondary-container/30 text-secondary' },
-  DEPOSITO: { label: 'Depósito', cls: 'bg-primary/10 text-primary' },
+  SENA: { label: 'Seña', cls: 'bg-coral text-white' },
+  DEPOSITO: { label: 'Depósito', cls: 'bg-amber-400 text-amber-950' },
   SALDO: { label: 'Saldo', cls: 'bg-primary-container text-primary-on-container' },
   DEVOLUCION_DEPOSITO: { label: 'Dev. Depósito', cls: 'bg-error-container text-error-on-container' },
   AJUSTE: { label: 'Ajuste', cls: 'bg-surface-container text-on-surface-variant' },
 
   // Pagos: Método
-  EFECTIVO: { label: 'Efectivo', cls: 'bg-primary-container text-primary-on-container' },
-  TRANSFERENCIA: { label: 'Transferencia', cls: 'bg-tertiary-container text-tertiary-on-container' },
+  EFECTIVO: { label: 'Efectivo', cls: 'bg-[#4b5320] text-white' },
+  TRANSFERENCIA: { label: 'Transferencia', cls: 'bg-blue-400 text-blue-950' },
 };
 
 const variantClasses = {

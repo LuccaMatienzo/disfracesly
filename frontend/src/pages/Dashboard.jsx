@@ -14,6 +14,7 @@ import { MdOutlinePendingActions } from 'react-icons/md';
 import { LuPackageOpen } from 'react-icons/lu';
 import { BsBagCheck } from 'react-icons/bs';
 import KpiDetailsModal from '@/components/ui/KpiDetailsModal';
+import KpiCarousel from '@/components/ui/KpiCarousel';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -640,7 +641,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── KPI Cards ─────────────────────────────────────────────────────── */}
-      <div className={`grid grid-cols-1 sm:grid-cols-2 ${hasRol('Empleado') ? 'xl:grid-cols-3' : 'xl:grid-cols-4'} gap-3 md:gap-4`}>
+      <KpiCarousel className={`grid-cols-1 sm:grid-cols-2 ${hasRol('Empleado') ? 'xl:grid-cols-3' : 'xl:grid-cols-4'} gap-3 md:gap-4`}>
         <KpiActiveRentals 
           data={activeRentals} 
           onClick={() => setActiveOpsModalOpen(true)} 
@@ -655,7 +656,7 @@ export default function Dashboard() {
           onClick={() => setReadyModalOpen(true)}
         />
         {!hasRol('Empleado') && <KpiMonthlyRevenue data={monthlyRevenue} />}
-      </div>
+      </KpiCarousel>
 
       {/* ── Bento: Movements + Cash/Stock ─────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 items-stretch gap-4 md:gap-6">

@@ -139,6 +139,11 @@ export default function VentaForm() {
                       <div className="flex-1 min-w-0 pr-2">
                         <p className="text-body-md font-medium text-on-surface truncate">{s.pieza?.nombre}</p>
                         <p className="text-label-lg text-on-surface-variant truncate">{s.talle ?? 'Sin talle'}</p>
+                        {s.descripcion && (
+                          <p className="text-[10px] text-on-surface-variant mt-0.5 line-clamp-2" title={s.descripcion}>
+                            {s.descripcion}
+                          </p>
+                        )}
                       </div>
                       <Badge value={s.estado_pieza_stock} />
                     </div>

@@ -46,9 +46,15 @@ async function getAllPiezas(query) {
   const { skip, take, page, limit } = parsePagination(query);
   const search = query.search ?? '';
 
-  let where = {
-    nombre: { contains: search, mode: 'insensitive' },
-  };
+  let where = {};
+
+  if (search) {
+    const searchPattern = `%${search.replace(/[aeiouáéíóúAEIOUÁÉÍÓÚ]/g, '_')}%`;
+    const rawIds = await prisma.$queryRaw`
+      SELECT id_pieza FROM pieza WHERE nombre ILIKE ${searchPattern}
+    `;
+    where.id_pieza = { in: rawIds.map(r => r.id_pieza) };
+  }
 
   if (query.include_deleted !== 'true' && query.include_deleted !== true) {
     where = withNotDeleted(where);
@@ -194,9 +200,16 @@ async function restorePieza(id) {
  */
 async function getAllCategorias(query) {
   const { skip, take, page, limit } = parsePagination(query);
-  const where = withNotDeleted({
-    nombre: { contains: query.search ?? '', mode: 'insensitive' },
-  });
+  let where = {};
+  if (query.search) {
+    const searchPattern = `%${query.search.replace(/[aeiouáéíóúAEIOUÁÉÍÓÚ]/g, '_')}%`;
+    const rawIds = await prisma.$queryRaw`
+      SELECT id_categoria_motivo FROM categoria_motivo WHERE nombre ILIKE ${searchPattern}
+    `;
+    where.id_categoria_motivo = { in: rawIds.map(r => r.id_categoria_motivo) };
+  }
+  where = withNotDeleted(where);
+
   const [data, total] = await prisma.$transaction([
     prisma.categoriaMotivo.findMany({ where, skip, take, orderBy: { nombre: 'asc' } }),
     prisma.categoriaMotivo.count({ where }),
@@ -267,7 +280,14 @@ async function restoreCategoria(id) {
  */
 async function getAllDisfraces(query) {
   const { skip, take, page, limit } = parsePagination(query);
-  let where = { nombre: { contains: query.search ?? '', mode: 'insensitive' } };
+  let where = {};
+  if (query.search) {
+    const searchPattern = `%${query.search.replace(/[aeiouáéíóúAEIOUÁÉÍÓÚ]/g, '_')}%`;
+    const rawIds = await prisma.$queryRaw`
+      SELECT id_disfraz FROM disfraz WHERE nombre ILIKE ${searchPattern}
+    `;
+    where.id_disfraz = { in: rawIds.map(r => r.id_disfraz) };
+  }
 
   if (query.include_deleted !== 'true' && query.include_deleted !== true) {
     where = withNotDeleted(where);
@@ -456,7 +476,8 @@ async function getDisfracesPúblico(query) {
   const search = query.search ?? '';
   const categoriaId = query.categoria ? parseInt(query.categoria, 10) : undefined;
 
-  let whereClausula = Prisma.sql`WHERE d.deleted_at IS NULL AND d.nombre ILIKE ${'%' + search + '%'}`;
+  const searchPattern = search ? `%${search.replace(/[aeiouáéíóúAEIOUÁÉÍÓÚ]/g, '_')}%` : '%';
+  let whereClausula = Prisma.sql`WHERE d.deleted_at IS NULL AND d.nombre ILIKE ${searchPattern}`;
 
   if (categoriaId) {
     whereClausula = Prisma.sql`${whereClausula} AND d.categorias @> ${`[{"id": ${categoriaId}}]`}::jsonb`;

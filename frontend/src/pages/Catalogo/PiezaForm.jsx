@@ -55,7 +55,7 @@ function CatChip({ cat, isSelected, onToggle }) {
 }
 
 /* ── Componente principal ──────────────────────────────────────────────── */
-export default function PiezaForm() {
+export default function PiezaForm({ isModal = false, onSuccessCallback, onCancelCallback }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -78,10 +78,11 @@ export default function PiezaForm() {
       isEditing
         ? api.put(`/catalogo/piezas/${id}`, data).then((r) => r.data)
         : api.post('/catalogo/piezas', data).then((r) => r.data),
-    onSuccess: () => {
+    onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ['piezas'] });
       showSuccess(isEditing ? 'Pieza actualizada con éxito' : 'Pieza creada con éxito', () => {
-        navigate('/admin/catalogo');
+        if (isModal && onSuccessCallback) onSuccessCallback(data);
+        else navigate('/admin/catalogo');
       });
     },
     onError: (err) => {
@@ -129,17 +130,24 @@ export default function PiezaForm() {
 
   const clearAll = () => setValue('categoria_ids', [], { shouldDirty: true });
 
+  const handleCancel = () => {
+    if (isModal && onCancelCallback) onCancelCallback();
+    else navigate(-1);
+  };
+
   return (
-    <div className="w-full min-h-0 md:h-[calc(100vh-120px)] flex flex-col">
-      <div className="mb-4 md:mb-5 shrink-0 flex items-center justify-between w-full gap-3">
-        <h1 className="font-display text-title-lg md:text-headline-sm font-semibold text-on-surface m-0">
-          {isEditing ? 'Editar pieza' : 'Nueva pieza del catálogo'}
-        </h1>
-        <button onClick={() => navigate(-1)} className="text-body-md text-primary hover:bg-primary/10 p-2 rounded-xl transition-colors font-label inline-flex items-center gap-1 shrink-0">
-          <span className="material-symbols-outlined text-[20px]">arrow_back</span>
-          <span className="hidden sm:inline">Volver</span>
-        </button>
-      </div>
+    <div className={`w-full flex flex-col ${isModal ? 'h-[60vh]' : 'min-h-0 md:h-[calc(100vh-120px)]'}`}>
+      {!isModal && (
+        <div className="mb-4 md:mb-5 shrink-0 flex items-center justify-between w-full gap-3">
+          <h1 className="font-display text-title-lg md:text-headline-sm font-semibold text-on-surface m-0">
+            {isEditing ? 'Editar pieza' : 'Nueva pieza del catálogo'}
+          </h1>
+          <button onClick={handleCancel} className="text-body-md text-primary hover:bg-primary/10 p-2 rounded-xl transition-colors font-label inline-flex items-center gap-1 shrink-0">
+            <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+            <span className="hidden sm:inline">Volver</span>
+          </button>
+        </div>
+      )}
 
       <div className="bg-surface-container-lowest rounded-2xl shadow-card p-4 md:p-6 flex flex-col flex-1 min-h-0">
         <form
@@ -230,7 +238,7 @@ export default function PiezaForm() {
           <input type="hidden" {...register('categoria_ids')} />
 
           <div className="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end mt-4 md:mt-2 shrink-0">
-            <Button type="button" variant="secondary" onClick={() => navigate(-1)} className="w-full sm:w-auto">Cancelar</Button>
+            <Button type="button" variant="secondary" onClick={handleCancel} className="w-full sm:w-auto">Cancelar</Button>
             <Button type="submit" loading={isSubmitting} className="w-full sm:w-auto">
               {isEditing ? 'Guardar cambios' : 'Crear pieza'}
             </Button>

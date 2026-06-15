@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
 import { useOperaciones } from '@/hooks/useOperaciones';
-import { usePagination } from '@/hooks/usePagination';
+import { useUrlFilters } from '@/hooks/useUrlFilters';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useFeedback } from '@/context/FeedbackContext';
 import Table, { Pagination } from '@/components/ui/Table';
@@ -22,23 +22,24 @@ import { FiChevronDown } from 'react-icons/fi';
 export default function OperacionesList() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { page, limit, goToPage, reset } = usePagination();
-  const [tipo, setTipo] = useState('alquiler');
-  const [searchQuery, setSearchQuery] = useState('');
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
-  const [etapa, setEtapa] = useState('');
-  const [includeDeleted, setIncludeDeleted] = useState(false);
-  const [sort, setSort] = useState({ field: null, direction: null });
+  const { filters, updateFilters, goToPage, reset } = useUrlFilters();
+  const { search, include_deleted: includeDeleted, sort_field: sortField, sort_direction: sortDirection, page, limit, tipo = 'alquiler', etapa = '' } = filters;
+  const sort = { field: sortField, direction: sortDirection };
+
+  const [localSearch, setLocalSearch] = useState(search);
+  const debouncedSearch = useDebounce(localSearch, 300);
+
+  useEffect(() => {
+    if (debouncedSearch !== search) {
+      updateFilters({ search: debouncedSearch, page: 1 }, { replace: true });
+    }
+  }, [debouncedSearch, search, updateFilters]);
+
   const [showFilters, setShowFilters] = useState(false);
 
   const handleSortChange = (field, direction) => {
-    setSort({ field, direction });
-    reset();
+    updateFilters({ sort_field: field, sort_direction: direction, page: 1 });
   };
-
-  useEffect(() => {
-    reset();
-  }, [debouncedSearchQuery, etapa, tipo, includeDeleted, reset]);
 
   const { showSuccess, showError } = useFeedback();
   const { hasRol } = useAuth();
@@ -47,16 +48,8 @@ export default function OperacionesList() {
   const [viewId, setViewId] = useState(null);             // id de operación en modal Ver
 
   // ─── Query ────────────────────────────────────────────────────────────────
-  const { data, isLoading } = useOperaciones({
-    page,
-    limit,
-    tipo,
-    search: debouncedSearchQuery || undefined,
-    etapa: etapa || undefined,
-    include_deleted: includeDeleted,
-    sort_field: sort.field ?? undefined,
-    sort_direction: sort.direction ?? undefined,
-  });
+  const queryFilters = { ...filters, tipo };
+  const { data, isLoading } = useOperaciones(queryFilters);
 
   // ─── Mutación: soft-delete ────────────────────────────────────────────────
   const deleteMutation = useMutation({
@@ -95,10 +88,16 @@ export default function OperacionesList() {
         <head>
           <title>Imprimir Operación #${operacion.id_operacion}</title>
           <style>
+            @media print {
+              @page { margin: 0; }
+              body { padding: 1.5cm; }
+            }
             body { font-family: sans-serif; padding: 20px; color: #333; }
-            .header { display: flex; align-items: center; gap: 10px; border-bottom: 2px solid #ccc; padding-bottom: 10px; margin-bottom: 20px; }
+            .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #ccc; padding-bottom: 10px; margin-bottom: 20px; }
+            .header-left { display: flex; align-items: center; gap: 10px; }
             .logo { height: 40px; }
-            h1 { margin: 0; color: #4caf50; font-size: 24px; }
+            h1 { margin: 0; color: #65a30d; font-size: 24px; }
+            .print-date { font-size: 18px; font-weight: bold; color: #666; }
             .info { margin-bottom: 10px; line-height: 1.5; font-size: 14px; }
             table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
             th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
@@ -108,8 +107,11 @@ export default function OperacionesList() {
         </head>
         <body>
           <div class="header">
-            <img src="${window.location.origin}/logo_svg_verdelima.svg" class="logo" alt="Logo" />
-            <h1>DisfracesLy</h1>
+            <div class="header-left">
+              <img src="${window.location.origin}/logo_svg_verdelima.svg" class="logo" alt="Logo" />
+              <h1>DisfracesLy</h1>
+            </div>
+            <div class="print-date">${new Date().toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}</div>
           </div>
           <h2>Operación de ${isAlquiler ? 'Alquiler' : 'Venta'} #${operacion.id_operacion}</h2>
           <div class="info"><strong>Cliente:</strong> ${operacion.cliente?.persona?.nombre ?? ''} ${operacion.cliente?.persona?.apellido ?? ''}</div>
@@ -127,11 +129,12 @@ export default function OperacionesList() {
           <h3>Piezas</h3>
           ${operacion.detalles && operacion.detalles.length > 0 ? `
           <table>
-            <tr><th>Pieza</th><th>Talle</th></tr>
+            <tr><th>Pieza</th><th>Talle</th><th>Descripción</th></tr>
             ${operacion.detalles.map(d => {
               const nombre = d.piezaStock?.pieza?.nombre ?? 'Desconocida';
               const talle = d.piezaStock?.talle ?? 'Único';
-              return `<tr><td>${nombre}</td><td>${talle}</td></tr>`;
+              const desc = d.piezaStock?.descripcion ?? '-';
+              return `<tr><td>${nombre}</td><td>${talle}</td><td>${desc}</td></tr>`;
             }).join('')}
           </table>
           ` : '<p>Sin piezas registradas</p>'}
@@ -215,12 +218,9 @@ export default function OperacionesList() {
   ];
 
   /* ─── Tab state ─────────────────────────────────────────────────────────── */
-  const [activeTab, setActiveTab] = useState('alquiler');
-
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    setTipo(tab);
-    setEtapa('');
+  const handleTabChange = (newTipo) => {
+    updateFilters({ tipo: newTipo, etapa: null, search: null, page: 1 });
+    setLocalSearch('');
   };
 
   return (
@@ -235,7 +235,7 @@ export default function OperacionesList() {
               onClick={() => handleTabChange('alquiler')}
               className={[
                 'relative flex h-full items-center justify-center px-6 rounded-xl text-sm font-medium transition-all duration-200',
-                activeTab === 'alquiler'
+                tipo === 'alquiler'
                   ? 'bg-surface-container-lowest shadow-sm text-primary font-semibold'
                   : 'bg-transparent text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200',
               ].join(' ')}
@@ -247,7 +247,7 @@ export default function OperacionesList() {
               onClick={() => handleTabChange('venta')}
               className={[
                 'relative flex h-full items-center justify-center px-6 rounded-xl text-sm font-medium transition-all duration-200',
-                activeTab === 'venta'
+                tipo === 'venta'
                   ? 'bg-surface-container-lowest shadow-sm text-primary font-semibold'
                   : 'bg-transparent text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200',
               ].join(' ')}
@@ -259,7 +259,7 @@ export default function OperacionesList() {
 
         {/* CTA */}
         {!hasRol('Empleado') && (
-          <Link to={`/admin/operaciones/${activeTab === 'alquiler' ? 'alquiler' : 'venta'}/nuevo`}>
+          <Link to={`/admin/operaciones/${tipo === 'alquiler' ? 'alquiler' : 'venta'}/nuevo`}>
             <Button className="h-11 px-4 flex items-center justify-center gap-2 whitespace-nowrap flex-shrink-0">
               <span className="material-symbols-outlined text-[18px]">add</span>
               Nuevo
@@ -276,8 +276,8 @@ export default function OperacionesList() {
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none text-[20px]">search</span>
             <Input
               placeholder="Buscar por ID o Nombre de cliente…"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
               className="pl-10"
             />
           </div>
@@ -304,7 +304,7 @@ export default function OperacionesList() {
                 <div className="shrink-0">
                   <ToggleSwitch
                     checked={includeDeleted}
-                    onChange={(val) => setIncludeDeleted(val)}
+                    onChange={(val) => updateFilters({ include_deleted: val, page: 1 })}
                     label="Ver inactivos"
                     id="toggle-inactivos-operaciones"
                   />
@@ -317,26 +317,26 @@ export default function OperacionesList() {
             <div className="relative inline-block shrink-0">
               <select
                 value={etapa}
-                onChange={(e) => setEtapa(e.target.value)}
-                className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent text-gray-700 dark:text-gray-200 cursor-pointer focus:outline-none"
+                onChange={(e) => updateFilters({ etapa: e.target.value, page: 1 })}
+                className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-outline-variant bg-surface-container text-on-surface cursor-pointer focus:outline-none"
               >
-                <option value="" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Todas las etapas</option>
-                <option value="RESERVADO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Reservado</option>
-                {activeTab === 'alquiler' ? (
+                <option value="" className="bg-surface-container text-on-surface">Todas las etapas</option>
+                <option value="RESERVADO" className="bg-surface-container text-on-surface">Reservado</option>
+                {tipo === 'alquiler' ? (
                   <>
-                    <option value="LISTO_PARA_RETIRO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Listo para retiro</option>
-                    <option value="RETIRADO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Retirado</option>
-                    <option value="DEVUELTO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Devuelto</option>
+                    <option value="LISTO_PARA_RETIRO" className="bg-surface-container text-on-surface">Listo para retiro</option>
+                    <option value="RETIRADO" className="bg-surface-container text-on-surface">Retirado</option>
+                    <option value="DEVUELTO" className="bg-surface-container text-on-surface">Devuelto</option>
                   </>
                 ) : (
                   <>
-                    <option value="LISTO_PARA_ENTREGA" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Listo para entrega</option>
-                    <option value="VENDIDO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Vendido</option>
+                    <option value="LISTO_PARA_ENTREGA" className="bg-surface-container text-on-surface">Listo para entrega</option>
+                    <option value="VENDIDO" className="bg-surface-container text-on-surface">Vendido</option>
                   </>
                 )}
-                <option value="CANCELADO" className="bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-200">Cancelado</option>
+                <option value="CANCELADO" className="bg-surface-container text-on-surface">Cancelado</option>
               </select>
-              <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 size-3.5" />
+              <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant size-3.5" />
             </div>
 
             <div className="w-px h-6 bg-divider shrink-0 ml-1"></div>
@@ -354,12 +354,12 @@ export default function OperacionesList() {
               onSortChange={handleSortChange}
             />
             <SortToggle
-              label={activeTab === 'alquiler' ? "Fecha Retiro" : "Fecha Entrega"}
+              label={tipo === 'alquiler' ? "Fecha Retiro" : "Fecha Entrega"}
               field="fecha_retiro"
               currentSort={sort}
               onSortChange={handleSortChange}
             />
-            {activeTab === 'alquiler' && (
+            {tipo === 'alquiler' && (
               <SortToggle
                 label="Fecha Devolución"
                 field="fecha_devolucion"
@@ -367,6 +367,19 @@ export default function OperacionesList() {
                 onSortChange={handleSortChange}
               />
             )}
+          </div>
+
+          <div className="ml-auto shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                updateFilters({ etapa: null, include_deleted: false, sort_field: null, sort_direction: null, page: 1 });
+              }}
+              className="text-on-surface-variant hover:text-on-surface"
+            >
+              Limpiar Filtros
+            </Button>
           </div>
         </div>
       </div>
@@ -404,7 +417,7 @@ export default function OperacionesList() {
                     <span className="text-body-lg font-medium text-on-surface">Ver inactivos</span>
                     <ToggleSwitch
                       checked={includeDeleted}
-                      onChange={(val) => setIncludeDeleted(val)}
+                      onChange={(val) => updateFilters({ include_deleted: val, page: 1 })}
                       id="toggle-inactivos-operaciones-mobile"
                     />
                   </div>
@@ -418,12 +431,12 @@ export default function OperacionesList() {
                 <div className="relative inline-block w-full">
                   <select
                     value={etapa}
-                    onChange={(e) => setEtapa(e.target.value)}
+                    onChange={(e) => updateFilters({ etapa: e.target.value, page: 1 })}
                     className="appearance-none w-full px-4 py-3 text-body-lg rounded-2xl border border-divider bg-surface-container-low text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     <option value="">Todas las etapas</option>
                     <option value="RESERVADO">Reservado</option>
-                    {activeTab === 'alquiler' ? (
+                    {tipo === 'alquiler' ? (
                       <>
                         <option value="LISTO_PARA_RETIRO">Listo para retiro</option>
                         <option value="RETIRADO">Retirado</option>
@@ -455,13 +468,13 @@ export default function OperacionesList() {
                     className="w-full justify-center bg-surface-container-low py-3"
                   />
                   <SortToggle
-                    label={activeTab === 'alquiler' ? "Fecha Retiro" : "Fecha Entrega"}
+                    label={tipo === 'alquiler' ? "Fecha Retiro" : "Fecha Entrega"}
                     field="fecha_retiro"
                     currentSort={sort}
                     onSortChange={handleSortChange}
                     className="w-full justify-center bg-surface-container-low py-3"
                   />
-                  {activeTab === 'alquiler' && (
+                  {tipo === 'alquiler' && (
                     <SortToggle
                       label="Fecha Devolución"
                       field="fecha_devolucion"
@@ -477,10 +490,7 @@ export default function OperacionesList() {
             <div className="pt-5 mt-2 border-t border-divider flex gap-3 shrink-0">
               <Button 
                 onClick={() => {
-                  setEtapa('');
-                  setIncludeDeleted(false);
-                  setSort({ field: null, direction: null });
-                  reset();
+                  updateFilters({ etapa: null, include_deleted: false, sort_field: null, sort_direction: null, page: 1 });
                 }} 
                 className="flex-1 h-12 flex justify-center items-center bg-surface-container-high text-on-surface hover:bg-surface-container-highest"
               >
@@ -523,3 +533,4 @@ export default function OperacionesList() {
     </div>
   );
 }
+

@@ -478,6 +478,11 @@ export default function OperacionDetalle() {
                       <p className="text-xs text-on-surface-variant">
                         Stock #{ps?.id_pieza_stock} · Talle: {ps?.talle ?? 'N/A'}
                       </p>
+                      {ps?.descripcion && (
+                        <p className="text-[11px] text-on-surface-variant mt-1 line-clamp-2" title={ps.descripcion}>
+                          <span className="font-semibold">Descripción:</span> {ps.descripcion}
+                        </p>
+                      )}
                     </div>
                     {/* Status */}
                     <Badge value={ps?.estado_pieza_stock ?? 'DISPONIBLE'} />
@@ -513,60 +518,115 @@ export default function OperacionDetalle() {
             </div>
 
             {pagos.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-divider">
-                      {['Tipo', 'Método', 'Monto', 'Fecha', 'Responsable', 'Acciones'].map(h => (
-                        <th key={h} className={`text-left px-3 py-2.5 text-[10px] font-label font-bold uppercase tracking-widest text-on-surface-variant ${h === 'Acciones' ? 'text-center' : ''}`}>
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pagos.map((pago, i) => (
-                      <tr
-                        key={pago.id_pago_operacion}
-                        className={`border-b border-divider last:border-0 ${i % 2 ? 'bg-surface-container-low/30' : ''}`}
-                      >
-                        <td className="px-3 py-2.5">
-                          <span className={`text-xs font-semibold uppercase tracking-wider ${
-                            pago.tipo === 'DEVOLUCION_DEPOSITO' ? 'text-error' : 'text-on-surface'
-                          }`}>
-                            {TIPO_PAGO_LABELS[pago.tipo] ?? pago.tipo}
-                          </span>
-                        </td>
-                        <td className="px-3 py-2.5">
-                          <span className="inline-flex items-center gap-1 text-xs text-on-surface-variant">
-                            <span className="material-symbols-outlined text-sm">
-                              {METODO_ICONS[pago.metodo] ?? 'money'}
-                            </span>
-                            {pago.metodo === 'EFECTIVO' ? 'Efectivo' : 'Transferencia'}
-                          </span>
-                        </td>
-                        <td className="px-3 py-2.5 text-sm font-semibold text-on-surface">
-                          {fmt(pago.monto)}
-                        </td>
-                        <td className="px-3 py-2.5 text-xs text-on-surface-variant">
-                          {fmtDateTime(pago.fecha)}
-                        </td>
-                        <td className="px-3 py-2.5 text-xs text-on-surface-variant">
-                          {pago.persona
-                            ? `${pago.persona.nombre} ${pago.persona.apellido}`
-                            : '—'}
-                        </td>
-                        <td className="px-3 py-2.5">
-                          <ActionButtons
-                            onEdit={() => setPagoModal({ open: true, data: pago })}
-                            onDelete={() => setPagoDeleteTarget(pago)}
-                          />
-                        </td>
+              <>
+                {/* ── Vista Desktop ────────────────────────────────────────── */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-divider">
+                        {['Tipo', 'Método', 'Monto', 'Fecha', 'Responsable', 'Acciones'].map(h => (
+                          <th key={h} className={`text-left px-3 py-2.5 text-[10px] font-label font-bold uppercase tracking-widest text-on-surface-variant ${h === 'Acciones' ? 'text-center' : ''}`}>
+                            {h}
+                          </th>
+                        ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {pagos.map((pago, i) => {
+                        const isEgreso = pago.tipo === 'DEVOLUCION_DEPOSITO' || (pago.tipo === 'AJUSTE' && Number(pago.monto) < 0);
+                        const montoNum = Math.abs(Number(pago.monto));
+                        return (
+                          <tr
+                            key={pago.id_pago_operacion}
+                            className={`border-b border-divider last:border-0 ${i % 2 ? 'bg-surface-container-low/30' : ''}`}
+                          >
+                            <td className="px-3 py-2.5">
+                              <span className={`text-xs font-semibold uppercase tracking-wider ${
+                                pago.tipo === 'DEVOLUCION_DEPOSITO' ? 'text-error' : 'text-on-surface'
+                              }`}>
+                                {TIPO_PAGO_LABELS[pago.tipo] ?? pago.tipo}
+                              </span>
+                            </td>
+                            <td className="px-3 py-2.5">
+                              <span className="inline-flex items-center gap-1 text-xs text-on-surface-variant">
+                                <span className="material-symbols-outlined text-sm">
+                                  {METODO_ICONS[pago.metodo] ?? 'money'}
+                                </span>
+                                {pago.metodo === 'EFECTIVO' ? 'Efectivo' : 'Transferencia'}
+                              </span>
+                            </td>
+                            <td className="px-3 py-2.5">
+                              <span className={`text-sm font-semibold ${isEgreso ? 'text-error' : 'text-success'}`}>
+                                {isEgreso ? '-' : ''}{fmt(montoNum)}
+                              </span>
+                            </td>
+                            <td className="px-3 py-2.5 text-xs text-on-surface-variant">
+                              {fmtDateTime(pago.fecha)}
+                            </td>
+                            <td className="px-3 py-2.5 text-xs text-on-surface-variant">
+                              {pago.persona
+                                ? `${pago.persona.nombre} ${pago.persona.apellido}`
+                                : '—'}
+                            </td>
+                            <td className="px-3 py-2.5">
+                              <ActionButtons
+                                onEdit={() => setPagoModal({ open: true, data: pago })}
+                                onDelete={() => setPagoDeleteTarget(pago)}
+                              />
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* ── Vista Mobile ─────────────────────────────────────────── */}
+                <div className="md:hidden flex flex-col gap-3 mt-4">
+                  {pagos.map((pago) => {
+                    const isEgreso = pago.tipo === 'DEVOLUCION_DEPOSITO' || (pago.tipo === 'AJUSTE' && Number(pago.monto) < 0);
+                    const montoNum = Math.abs(Number(pago.monto));
+                    return (
+                      <div key={pago.id_pago_operacion} className="p-4 rounded-xl border border-divider hover:bg-surface-container-low/40 transition-colors flex flex-col gap-3">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <span className={`text-[11px] font-bold uppercase tracking-widest ${
+                              pago.tipo === 'DEVOLUCION_DEPOSITO' ? 'text-error' : 'text-on-surface'
+                            }`}>
+                              {TIPO_PAGO_LABELS[pago.tipo] ?? pago.tipo}
+                            </span>
+                            <div className="flex items-center gap-1.5 text-xs text-on-surface-variant mt-1">
+                              <span className="material-symbols-outlined text-[16px]">
+                                {METODO_ICONS[pago.metodo] ?? 'money'}
+                              </span>
+                              {pago.metodo === 'EFECTIVO' ? 'Efectivo' : 'Transferencia'}
+                            </div>
+                          </div>
+                          <span className={`text-sm font-bold mt-0.5 ${isEgreso ? 'text-error' : 'text-success'}`}>
+                            {isEgreso ? '-' : ''}{fmt(montoNum)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-end pt-3 border-t border-divider/60">
+                          <div className="flex flex-col gap-1">
+                            <span className="text-[11px] text-on-surface-variant">
+                              {fmtDateTime(pago.fecha)}
+                            </span>
+                            <span className="text-[11px] font-medium text-on-surface-variant">
+                              Por: <span className="text-on-surface">{pago.persona ? `${pago.persona.nombre} ${pago.persona.apellido}` : '—'}</span>
+                            </span>
+                          </div>
+                          <div className="-mb-2 -mr-3 shrink-0">
+                            <ActionButtons
+                              onEdit={() => setPagoModal({ open: true, data: pago })}
+                              onDelete={() => setPagoDeleteTarget(pago)}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
             ) : (
               <p className="text-sm text-on-surface-variant text-center py-4">Sin pagos registrados</p>
             )}

@@ -222,15 +222,30 @@ async function createUsuario(data, reqUser) {
 
   const { persona, contrasena, ...usuData } = data;
 
-  const existing = await prisma.persona.findUnique({ where: { documento: persona.documento } });
-  if (existing) throw ApiError.conflict('Ya existe una persona con ese documento');
-
   const hashed = await hashPassword(contrasena);
 
   return prisma.$transaction(async (tx) => {
-    const newPersona = await tx.persona.create({ data: persona });
+    let targetPersona = await tx.persona.findUnique({ where: { documento: persona.documento } });
+
+    if (targetPersona) {
+      // Verificar si ya es usuario
+      const existingUsuario = await tx.usuario.findFirst({ where: { id_persona: targetPersona.id_persona } });
+      if (existingUsuario) {
+        throw ApiError.conflict('Ya existe un usuario con este documento');
+      }
+
+      // Actualizamos la persona por si hubo cambios de nombre o apellido
+      targetPersona = await tx.persona.update({
+        where: { id_persona: targetPersona.id_persona },
+        data: persona
+      });
+    } else {
+      // Crear nueva persona
+      targetPersona = await tx.persona.create({ data: persona });
+    }
+
     const newUsuario = await tx.usuario.create({
-      data: { ...usuData, id_persona: newPersona.id_persona, contrasena: hashed, id_rol: BigInt(usuData.id_rol) },
+      data: { ...usuData, id_persona: targetPersona.id_persona, contrasena: hashed, id_rol: BigInt(usuData.id_rol) },
       select: {
         id_usuario: true,
         id_persona: true,

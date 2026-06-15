@@ -189,7 +189,7 @@ export default function UsuarioForm() {
 
           <div className="flex gap-3 justify-end mt-2">
             <Button type="button" variant="secondary" onClick={() => navigate(-1)}>Cancelar</Button>
-            <Button type="submit" loading={isSubmitting} disabled={!isValid || isSubmitting}>
+            <Button type="submit" loading={isSubmitting} disabled={isSubmitting}>
               {isEditing ? 'Guardar cambios' : 'Crear usuario'}
             </Button>
           </div>

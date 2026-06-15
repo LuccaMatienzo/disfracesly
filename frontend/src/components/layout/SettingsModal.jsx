@@ -1,6 +1,18 @@
-import { FiX, FiGlobe, FiBell } from 'react-icons/fi';
+import { useState, useEffect } from 'react';
+import { FiX, FiMoon, FiSun, FiBell } from 'react-icons/fi';
 
 export default function SettingsModal({ isOpen, onClose }) {
+  const [theme, setTheme] = useState(() => localStorage.getItem('disfracesly_theme') || 'auto');
+
+  useEffect(() => {
+    localStorage.setItem('disfracesly_theme', theme);
+    if (theme === 'dark' || theme === 'light') {
+      document.documentElement.setAttribute('data-theme', theme);
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+  }, [theme]);
+
   if (!isOpen) return null;
 
   return (
@@ -26,16 +38,20 @@ export default function SettingsModal({ isOpen, onClose }) {
 
         {/* Body */}
         <div className="p-5 space-y-6 overflow-y-auto">
-          {/* Idioma */}
+          {/* Tema */}
           <section className="space-y-3">
             <div className="flex items-center gap-2 text-on-surface font-medium">
-              <FiGlobe className="text-primary" />
-              <h3>Idioma</h3>
+              {theme === 'dark' ? <FiMoon className="text-primary" /> : <FiSun className="text-primary" />}
+              <h3>Tema</h3>
             </div>
-            <select className="w-full bg-surface-container border border-divider text-on-surface rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
-              <option value="es-AR">Español (Argentina)</option>
-              <option value="es-ES">Español (España)</option>
-              <option value="en-US">English (US)</option>
+            <select 
+              value={theme}
+              onChange={(e) => setTheme(e.target.value)}
+              className="w-full bg-surface-container border border-divider text-on-surface rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+            >
+              <option value="light">Claro</option>
+              <option value="dark">Oscuro</option>
+              <option value="auto">Automático (Dispositivo)</option>
             </select>
           </section>
 

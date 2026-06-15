@@ -103,16 +103,23 @@ export default function OperacionViewModal({ id, open, onClose }) {
                   return (
                     <div
                       key={det.id_operacion_detalle ?? i}
-                      className="flex items-center gap-3 px-3 py-2 rounded-xl bg-surface-container-low"
+                      className="flex flex-col gap-1 px-3 py-2 rounded-xl bg-surface-container-low"
                     >
-                      <span className="text-on-surface-variant text-label-lg">#</span>
-                      <span className="text-body-md text-on-surface font-medium flex-1">{pieza?.nombre ?? '—'}</span>
-                      {det.piezaStock?.talle && (
-                        <span className="text-body-md text-on-surface-variant">
-                          Talle: {det.piezaStock.talle}
-                        </span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-on-surface-variant text-label-lg">#</span>
+                        <span className="text-body-md text-on-surface font-medium flex-1">{pieza?.nombre ?? '—'}</span>
+                        {det.piezaStock?.talle && (
+                          <span className="text-body-md text-on-surface-variant">
+                            Talle: {det.piezaStock.talle}
+                          </span>
+                        )}
+                        <Badge value={det.piezaStock?.estado_pieza_stock} />
+                      </div>
+                      {det.piezaStock?.descripcion && (
+                        <div className="pl-6 text-[11px] text-on-surface-variant">
+                          <span className="font-semibold">Descripción:</span> {det.piezaStock.descripcion}
+                        </div>
                       )}
-                      <Badge value={det.piezaStock?.estado_pieza_stock} />
                     </div>
                   );
                 })}
