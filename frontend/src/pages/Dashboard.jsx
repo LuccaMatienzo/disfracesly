@@ -426,13 +426,20 @@ function UpcomingReturns({ returns: list }) {
       {/* Mobile: stacked cards */}
       <div className="md:hidden divide-y divide-divider">
         {list.map((op) => {
-          const badge = BADGE_ETAPA[op.etapa] ?? BADGE_ETAPA.Pendiente;
+          const today = new Date();
+          today.setHours(0,0,0,0);
+          const [y, m, d] = op.devolucion.split('-');
+          const devDate = new Date(y, m - 1, d);
+          const isVencido = devDate < today;
+          const displayEtapa = isVencido ? 'Vencido' : 'Por vencer';
+          const badge = isVencido ? { cls: 'bg-error text-white' } : { cls: 'bg-error/15 text-error' };
+          
           return (
             <div key={op.id} className="p-4 space-y-2">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium text-on-surface">{op.cliente}</p>
                 <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${badge.cls}`}>
-                  {op.etapa}
+                  {displayEtapa}
                 </span>
               </div>
               <p className="text-xs text-on-surface-variant">{op.disfraz}</p>
@@ -453,7 +460,7 @@ function UpcomingReturns({ returns: list }) {
               {['Cliente', 'Disfraz', 'Retiro', 'Devolución', 'Estado'].map((h) => (
                 <th
                   key={h}
-                  className="text-left px-6 py-3 text-[10px] font-label font-bold uppercase tracking-widest text-tertiary"
+                  className={`px-6 py-3 text-[10px] font-label font-bold uppercase tracking-widest text-tertiary ${h === 'Estado' ? 'text-center' : 'text-left'}`}
                 >
                   {h}
                 </th>
@@ -462,7 +469,14 @@ function UpcomingReturns({ returns: list }) {
           </thead>
           <tbody>
             {list.map((op, i) => {
-              const badge = BADGE_ETAPA[op.etapa] ?? BADGE_ETAPA.Pendiente;
+              const today = new Date();
+              today.setHours(0,0,0,0);
+              const [y, m, d] = op.devolucion.split('-');
+              const devDate = new Date(y, m - 1, d);
+              const isVencido = devDate < today;
+              const displayEtapa = isVencido ? 'Vencido' : 'Por vencer';
+              const badge = isVencido ? { cls: 'bg-error text-white' } : { cls: 'bg-error/15 text-error' };
+              
               return (
                 <tr
                   key={op.id}
@@ -473,9 +487,9 @@ function UpcomingReturns({ returns: list }) {
                   <td className="px-6 py-4 text-on-surface-variant text-sm">{op.disfraz}</td>
                   <td className="px-6 py-4 text-on-surface-variant text-sm">{op.retiro}</td>
                   <td className="px-6 py-4 text-on-surface-variant text-sm">{op.devolucion}</td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 text-center">
                     <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${badge.cls}`}>
-                      {op.etapa}
+                      {displayEtapa}
                     </span>
                   </td>
                 </tr>

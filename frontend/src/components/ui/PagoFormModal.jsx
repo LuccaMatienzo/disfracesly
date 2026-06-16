@@ -1,3 +1,10 @@
+/**
+ * @module components/ui/PagoFormModal
+ * @description Modal de registro y edición de pagos para operaciones financieras.
+ * Gestiona validaciones complejas de montos máximos permitidos basándose en 
+ * el estado financiero actual de la operación (ej. no permitir un depósito 
+ * mayor al pactado o devoluciones mayores al depósito retenido).
+ */
 import { useState, useEffect, useMemo } from 'react';
 import Modal from './Modal';
 import Button from './Button';

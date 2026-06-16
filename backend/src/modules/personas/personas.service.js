@@ -1,5 +1,12 @@
 const { prisma } = require('../../config/database');
 
+/**
+ * Realiza una búsqueda en la base de datos de personas activas
+ * cuyo documento empiece con el patrón especificado.
+ *
+ * @param {string} q - Patrón de búsqueda para el documento.
+ * @returns {Promise<Array>} Lista de personas con id, documento, nombre y apellido.
+ */
 async function buscarPersonaPorDocumento(q) {
   return prisma.persona.findMany({
     where: {
