@@ -157,8 +157,9 @@ model Operacion {
   id_cliente         BigInt
   fecha_constitucion DateTime               @default(now())
   fecha_retiro       DateTime?
-  monto_total        Decimal                @default(0) @db.Decimal(12, 2)
-  observaciones      String?
+  monto_total             Decimal                @default(0) @db.Decimal(12, 2)
+  motivo_diferencia_monto String?
+  observaciones           String?
   deleted_at         DateTime?
   alquiler           Alquiler?
   interacciones      InteraccionOperacion[]

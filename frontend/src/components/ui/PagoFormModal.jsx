@@ -87,17 +87,19 @@ export default function PagoFormModal({ open, onClose, onSubmit, loading, initia
   let isMontoValid = formData.monto !== '' && !isNaN(montoNum) && Number.isInteger(montoNum) && montoNum > 0;
   let montoError = (formData.monto !== '' && !isMontoValid) ? 'El monto debe ser un entero positivo' : undefined;
 
-  // Validaciones de montos máximos según tipo
-  if (isMontoValid && operacion) {
+  let suggestedMonto = 0;
+
+  // Validaciones de montos máximos según tipo y cálculo de monto sugerido
+  if (operacion) {
     const ef = operacion.estado_financiero;
     
     if (formData.tipo === 'DEVOLUCION_DEPOSITO' && ef) {
-      let maxPermitido = ef.deposito_garantia - ef.deposito_devuelto;
-      if (initialData && initialData.tipo === 'DEVOLUCION_DEPOSITO') maxPermitido += initialData.monto;
+      suggestedMonto = ef.deposito_garantia - ef.deposito_devuelto;
+      if (initialData && initialData.tipo === 'DEVOLUCION_DEPOSITO') suggestedMonto += initialData.monto;
       
-      if (montoNum > maxPermitido) {
+      if (isMontoValid && montoNum > suggestedMonto) {
         isMontoValid = false;
-        montoError = `No podés devolver más del depósito disponible ($${maxPermitido})`;
+        montoError = `No podés devolver más del depósito disponible ($${suggestedMonto})`;
       }
     }
     else if (formData.tipo === 'DEPOSITO' && operacion.alquiler && ef) {
@@ -105,11 +107,11 @@ export default function PagoFormModal({ open, onClose, onSubmit, loading, initia
       let pagado = ef.deposito_garantia;
       if (initialData && initialData.tipo === 'DEPOSITO') pagado -= initialData.monto;
       
-      const maxPermitido = Math.max(0, pactado - pagado);
+      suggestedMonto = Math.max(0, pactado - pagado);
       
-      if (montoNum > maxPermitido) {
+      if (isMontoValid && montoNum > suggestedMonto) {
         isMontoValid = false;
-        montoError = `El depósito no puede superar el monto acordado ($${maxPermitido} restantes)`;
+        montoError = `El depósito no puede superar el monto acordado ($${suggestedMonto} restantes)`;
       }
     }
     else if (formData.tipo === 'SENA' && operacion.venta && ef) {
@@ -117,20 +119,20 @@ export default function PagoFormModal({ open, onClose, onSubmit, loading, initia
       let pagado = ef.sena_pagada;
       if (initialData && initialData.tipo === 'SENA') pagado -= initialData.monto;
       
-      const maxPermitido = Math.max(0, pactado - pagado);
+      suggestedMonto = Math.max(0, pactado - pagado);
       
-      if (montoNum > maxPermitido) {
+      if (isMontoValid && montoNum > suggestedMonto) {
         isMontoValid = false;
-        montoError = `La seña no puede superar el monto acordado ($${maxPermitido} restantes)`;
+        montoError = `La seña no puede superar el monto acordado ($${suggestedMonto} restantes)`;
       }
     }
     else if (formData.tipo === 'SALDO' && ef) {
-      let maxPermitido = ef.saldo_pendiente;
-      if (initialData && initialData.tipo === 'SALDO') maxPermitido += initialData.monto;
+      suggestedMonto = ef.saldo_pendiente;
+      if (initialData && initialData.tipo === 'SALDO') suggestedMonto += initialData.monto;
 
-      if (montoNum > maxPermitido) {
+      if (isMontoValid && montoNum > suggestedMonto) {
         isMontoValid = false;
-        montoError = `El saldo no puede superar el monto total de la operación ($${maxPermitido} restantes)`;
+        montoError = `El saldo no puede superar el monto total de la operación ($${suggestedMonto} restantes)`;
       }
     }
   }
@@ -198,7 +200,7 @@ export default function PagoFormModal({ open, onClose, onSubmit, loading, initia
           type="number"
           min="1"
           step="1"
-          placeholder="0"
+          placeholder={suggestedMonto > 0 ? suggestedMonto.toString() : '0'}
           value={formData.monto}
           onChange={(e) => setFormData({ ...formData, monto: e.target.value })}
           onKeyDown={(e) => {

@@ -14,6 +14,7 @@ import Input, { Select } from '@/components/ui/Input';
 import ActionButtons from '@/components/ui/ActionButtons';
 import ConfirmDeleteModal from '@/components/ui/ConfirmDeleteModal';
 import OperacionViewModal from '@/components/ui/OperacionViewModal';
+import Modal from '@/components/ui/Modal';
 import { useAuth } from '@/context/AuthContext';
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import SortToggle from '@/components/ui/SortToggle';
@@ -77,75 +78,278 @@ export default function OperacionesList() {
     },
   });
 
-  const handlePrint = (operacion) => {
+  const handlePrintOption = async (operacionBase, tipoComprobante) => {
     const newWin = window.open('', '_blank');
-    if (!newWin) return;
-    const isAlquiler = !!operacion.alquiler;
-    const details = operacion.alquiler || operacion.venta || {};
+    if (!newWin) {
+      showError('El navegador bloqueó la ventana emergente.');
+      return;
+    }
     
-    newWin.document.write(`
-      <html>
-        <head>
-          <title>Imprimir Operación #${operacion.id_operacion}</title>
-          <style>
-            @media print {
-              @page { margin: 0; }
-              body { padding: 1.5cm; }
-            }
-            body { font-family: sans-serif; padding: 20px; color: #333; }
-            .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #ccc; padding-bottom: 10px; margin-bottom: 20px; }
-            .header-left { display: flex; align-items: center; gap: 10px; }
-            .logo { height: 40px; }
-            h1 { margin: 0; color: #65a30d; font-size: 24px; }
-            .print-date { font-size: 18px; font-weight: bold; color: #666; }
-            .info { margin-bottom: 10px; line-height: 1.5; font-size: 14px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background-color: #f5f5f5; }
-            h2, h3 { margin-bottom: 10px; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <div class="header-left">
-              <img src="${window.location.origin}/logo_svg_verdelima.svg" class="logo" alt="Logo" />
-              <h1>DisfracesLy</h1>
-            </div>
-            <div class="print-date">${new Date().toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}</div>
-          </div>
-          <h2>Operación de ${isAlquiler ? 'Alquiler' : 'Venta'} #${operacion.id_operacion}</h2>
-          <div class="info"><strong>Cliente:</strong> ${operacion.cliente?.persona?.nombre ?? ''} ${operacion.cliente?.persona?.apellido ?? ''}</div>
-          <div class="info"><strong>Monto Total:</strong> $${operacion.monto_total}</div>
-          ${isAlquiler ? `<div class="info"><strong>Depósito:</strong> $${details.deposito_monto ?? 0}</div>` : ''}
-          <div class="info">
-            <strong>Fechas:</strong><br/>
-            Constitución: ${new Date(operacion.fecha_constitucion).toLocaleDateString()}<br/>
-            ${isAlquiler && details.fecha_retiro ? `Retiro: ${new Date(details.fecha_retiro).toLocaleDateString()}<br/>` : ''} 
-            ${isAlquiler && details.fecha_devolucion ? `Devolución: ${new Date(details.fecha_devolucion).toLocaleDateString()}` : ''}
-            ${!isAlquiler && operacion.fecha_retiro ? `Entrega: ${new Date(operacion.fecha_retiro).toLocaleDateString()}` : ''}
-          </div>
-          <div class="info"><strong>Observaciones:</strong> ${operacion.observaciones || 'Sin observaciones'}</div>
-          
-          <h3>Piezas</h3>
-          ${operacion.detalles && operacion.detalles.length > 0 ? `
-          <table>
-            <tr><th>Pieza</th><th>Talle</th><th>Descripción</th></tr>
-            ${operacion.detalles.map(d => {
-              const nombre = d.piezaStock?.pieza?.nombre ?? 'Desconocida';
-              const talle = d.piezaStock?.talle ?? 'Único';
-              const desc = d.piezaStock?.descripcion ?? '-';
-              return `<tr><td>${nombre}</td><td>${talle}</td><td>${desc}</td></tr>`;
-            }).join('')}
-          </table>
-          ` : '<p>Sin piezas registradas</p>'}
-          
-          <script>
-            window.onload = () => { window.print(); };
-          </script>
-        </body>
-      </html>
-    `);
+    newWin.document.open();
+    newWin.document.write('<html><body><p style="font-family: sans-serif; padding: 20px;">Cargando comprobante...</p></body></html>');
     newWin.document.close();
+    
+    try {
+      const res = await api.get(`/operaciones/${operacionBase.id_operacion}`);
+      const operacion = res.data.data || res.data;
+      const estadoFinanciero = operacion.estado_financiero || {};
+      
+      const isAlquiler = !!operacion.alquiler;
+      const details = operacion.alquiler || operacion.venta || {};
+      
+      newWin.document.open();
+      
+      if (tipoComprobante === 'detalles') {
+        newWin.document.write(`
+          <html>
+            <head>
+              <title>Detalles de Operación #${operacion.id_operacion}</title>
+              <link rel="preconnect" href="https://fonts.googleapis.com" />
+              <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+              <link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+              <style>
+                @media print {
+                  @page { margin: 0; }
+                  body { padding: 1.5cm; }
+                }
+                body { font-family: 'Domine', 'Manrope', 'Inter', serif; padding: 20px; color: #333; }
+                .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #ccc; padding-bottom: 10px; margin-bottom: 20px; }
+                .header-left { display: flex; align-items: center; gap: 10px; }
+                .logo { height: 40px; }
+                h1 { margin: 0; color: #65a30d; font-size: 24px; }
+                .print-date { font-size: 18px; font-weight: bold; color: #666; }
+                .info { margin-bottom: 10px; line-height: 1.5; font-size: 14px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f5f5f5; }
+                h2, h3 { margin-bottom: 10px; }
+              </style>
+            </head>
+            <body>
+              <div class="header">
+                <div class="header-left">
+                  <img src="${window.location.origin}/logo_svg_verdelima.svg" class="logo" alt="Logo" />
+                  <h1>DisfracesLy</h1>
+                </div>
+                <div class="print-date">${new Date().toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}</div>
+              </div>
+              <h2>Operación de ${isAlquiler ? 'Alquiler' : 'Venta'} #${operacion.id_operacion}</h2>
+              <div class="info"><strong>Cliente:</strong> ${operacion.cliente?.persona?.nombre ?? ''} ${operacion.cliente?.persona?.apellido ?? ''}</div>
+              <div class="info"><strong>Estado Actual:</strong> ${isAlquiler ? operacion.alquiler?.etapa : operacion.venta?.etapa}</div>
+              
+              <h3>Estado Financiero</h3>
+              <div class="info">
+                <strong>Monto de ${isAlquiler ? 'Alquiler' : 'Venta'}:</strong> $${operacion.monto_total}
+                <span style="color: ${estadoFinanciero.saldo_pendiente <= 0 ? 'green' : 'red'};">
+                  (${estadoFinanciero.saldo_pendiente <= 0 ? 'PAGADO' : `PENDIENTE ($${estadoFinanciero.saldo_pendiente} restantes)`})
+                </span>
+              </div>
+              ${isAlquiler && details.deposito_monto > 0 ? `
+              <div class="info">
+                <strong>Depósito de Garantía pactado:</strong> $${details.deposito_monto}
+                <span style="color: ${estadoFinanciero.deposito_garantia >= details.deposito_monto ? 'green' : 'red'};">
+                  (${estadoFinanciero.deposito_garantia >= details.deposito_monto ? 'PAGADO' : 'PENDIENTE'})
+                </span>
+              </div>` : ''}
+              ${!isAlquiler && details.sena_monto > 0 ? `
+              <div class="info">
+                <strong>Seña pactada:</strong> $${details.sena_monto}
+                <span style="color: ${estadoFinanciero.sena_pagada >= details.sena_monto ? 'green' : 'red'};">
+                  (${estadoFinanciero.sena_pagada >= details.sena_monto ? 'PAGADO' : 'PENDIENTE'})
+                </span>
+              </div>` : ''}
+
+              <h3>Fechas</h3>
+              <div class="info">
+                <strong>Constitución:</strong> ${new Date(operacion.fecha_constitucion).toLocaleString('es-AR')}<br/>
+                ${operacion.fecha_retiro ? `<strong>${isAlquiler ? 'Retiro' : 'Entrega'}:</strong> ${new Date(operacion.fecha_retiro).toLocaleDateString()}<br/>` : ''} 
+                ${isAlquiler && details.fecha_devolucion ? `<strong>Devolución:</strong> ${new Date(details.fecha_devolucion).toLocaleDateString()}` : ''}
+              </div>
+              
+              <div class="info"><strong>Observaciones:</strong> ${operacion.observaciones || 'Sin observaciones'}</div>
+              
+              <h3>Historial de Pagos</h3>
+              ${operacion.pagos && operacion.pagos.length > 0 ? `
+              <table>
+                <tr><th>Fecha</th><th>Tipo</th><th>Método</th><th>Monto</th></tr>
+                ${operacion.pagos.map(p => `
+                  <tr>
+                    <td>${new Date(p.fecha).toLocaleString('es-AR')}</td>
+                    <td>${p.tipo}</td>
+                    <td>${p.metodo}</td>
+                    <td>$${p.monto}</td>
+                  </tr>
+                `).join('')}
+              </table>
+              ` : '<div class="info">Sin pagos registrados</div>'}
+
+              <h3>Interacciones</h3>
+              ${operacion.interacciones && operacion.interacciones.length > 0 ? `
+              <table>
+                <tr><th>Fecha</th><th>Acción</th><th>Responsable</th></tr>
+                ${operacion.interacciones.map(i => `
+                  <tr>
+                    <td>${new Date(i.fecha_hora).toLocaleString('es-AR')}</td>
+                    <td>${i.tipo}</td>
+                    <td>${i.persona?.nombre ?? ''} ${i.persona?.apellido ?? ''}</td>
+                  </tr>
+                `).join('')}
+              </table>
+              ` : '<div class="info">Sin interacciones registradas</div>'}
+
+              <h3>Piezas</h3>
+              ${operacion.detalles && operacion.detalles.length > 0 ? `
+              <table>
+                <tr><th>Pieza</th><th style="text-align: center;">Talle</th><th>Descripción</th></tr>
+                ${operacion.detalles.map(d => {
+                  const nombre = d.piezaStock?.pieza?.nombre || 'Desconocida';
+                  const talle = d.piezaStock?.talle || '—';
+                  const desc = d.piezaStock?.descripcion || '—';
+                  return `<tr><td>${nombre}</td><td style="text-align: center;">${talle}</td><td>${desc}</td></tr>`;
+                }).join('')}
+              </table>
+              ` : '<p>Sin piezas registradas</p>'}
+              
+              <script>
+                window.onload = () => { window.print(); };
+              </script>
+            </body>
+          </html>
+        `);
+      } else {
+        // comprobante para cliente
+        const interaccionRetiro = (operacion.interacciones || []).find(i => i.tipo === 'RETIRO');
+        const retiraNombre = interaccionRetiro 
+          ? `${interaccionRetiro.persona?.nombre ?? ''} ${interaccionRetiro.persona?.apellido ?? ''}`.trim()
+          : `${operacion.cliente?.persona?.nombre ?? ''} ${operacion.cliente?.persona?.apellido ?? ''}`.trim();
+        
+        const fechaRetiroReal = interaccionRetiro?.fecha_hora ? new Date(interaccionRetiro.fecha_hora) : new Date();
+        const opcionesFecha = { weekday: 'long', day: 'numeric', month: 'numeric' };
+        
+        const formatearFechaStr = (fecha) => {
+          let str = fecha.toLocaleDateString('es-AR', opcionesFecha);
+          str = str.replace(/-/g, '/'); // Forzar separador barra
+          return str.charAt(0).toUpperCase() + str.slice(1);
+        };
+        
+        const retiroStr = formatearFechaStr(fechaRetiroReal);
+        const devolucionStr = isAlquiler && details.fecha_devolucion ? formatearFechaStr(new Date(details.fecha_devolucion)) : '';
+        const obsRetiro = interaccionRetiro?.observaciones?.trim() || '—';
+
+        newWin.document.write(`
+          <html>
+            <head>
+              <title>Comprobante de ${isAlquiler ? 'Alquiler' : 'Venta'} #${operacion.id_operacion}</title>
+              <link rel="preconnect" href="https://fonts.googleapis.com" />
+              <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+              <link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+              <style>
+                @media print {
+                  @page { margin: 0; }
+                  body { padding: 1.5cm; }
+                }
+                body { font-family: 'Domine', 'Manrope', 'Inter', serif; padding: 20px; color: #333; margin: 0; min-height: 100vh; display: flex; flex-direction: column; box-sizing: border-box; }
+                .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #ccc; padding-bottom: 10px; margin-bottom: 20px; }
+                .header-left { display: flex; align-items: center; gap: 10px; }
+                .logo { height: 40px; }
+                h1 { margin: 0; color: #65a30d; font-size: 24px; }
+                .print-date { font-size: 18px; font-weight: bold; color: #666; }
+                .info { margin-bottom: 10px; line-height: 1.5; font-size: 14px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f5f5f5; }
+                h2, h3 { margin-bottom: 10px; }
+                .footer { margin-top: auto; padding-top: 10px; border-top: 2px solid #ccc; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 14px; color: #666; width: 100%; }
+                .condiciones { text-align: center; font-style: italic; font-size: 12px; color: #555; margin-top: 20px; padding: 0 20px; }
+                
+                @media print and (max-width: 150mm) {
+                  body { padding: 1cm; }
+                  .logo { height: 30px; }
+                  h1 { font-size: 18px; }
+                  h2 { font-size: 16px; margin-bottom: 6px; }
+                  h3 { font-size: 14px; margin-bottom: 6px; }
+                  .print-date { font-size: 14px; }
+                  .header { margin-bottom: 12px; padding-bottom: 6px; }
+                  .info { font-size: 11px; margin-bottom: 6px; }
+                  table { font-size: 11px; margin-top: 10px; }
+                  th, td { padding: 5px; }
+                  .condiciones { font-size: 9px; margin-top: 15px; padding: 0 10px; }
+                  .footer { padding-top: 8px; font-size: 11px; }
+                }
+              </style>
+            </head>
+            <body>
+              <div class="header">
+                <div class="header-left">
+                  <img src="${window.location.origin}/logo_svg_verdelima.svg" class="logo" alt="Logo" />
+                  <h1>DisfracesLy</h1>
+                </div>
+                <div class="print-date">${new Date().toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}</div>
+              </div>
+              <h2>Operación de ${isAlquiler ? 'Alquiler' : 'Venta'} #${operacion.id_operacion}</h2>
+              <div class="info"><strong>Cliente:</strong> ${operacion.cliente?.persona?.nombre ?? ''} ${operacion.cliente?.persona?.apellido ?? ''}</div>
+              <div class="info">
+                <strong>Retira:</strong> ${retiraNombre}
+                <div style="margin-top: 4px; padding-left: 20px;">
+                  <strong>Observaciones:</strong> ${obsRetiro}
+                </div>
+              </div>
+              
+              <div class="info">
+                <strong>Monto de ${isAlquiler ? 'Alquiler' : 'Venta'}:</strong> $${operacion.monto_total}
+                <span style="color: ${estadoFinanciero.saldo_pendiente <= 0 ? 'green' : 'red'};">
+                  (${estadoFinanciero.saldo_pendiente <= 0 ? 'PAGADO' : `PENDIENTE ($${estadoFinanciero.saldo_pendiente} restantes)`})
+                </span>
+              </div>
+              ${isAlquiler && details.deposito_monto > 0 ? `
+              <div class="info">
+                <strong>Depósito de Garantía:</strong> $${details.deposito_monto}
+                <span style="color: ${estadoFinanciero.deposito_garantia >= details.deposito_monto ? 'green' : 'red'};">
+                  (${estadoFinanciero.deposito_garantia >= details.deposito_monto ? 'PAGADO' : 'PENDIENTE'})
+                </span>
+              </div>` : ''}
+
+              <div class="info">
+                <strong>Fechas:</strong><br/>
+                ${isAlquiler ? `Se retiró el día ${retiroStr}<br/>` : `Se entregó el día ${retiroStr}<br/>`} 
+                ${isAlquiler && devolucionStr ? `Devolución hasta el día ${devolucionStr}` : ''}
+              </div>
+              
+              <h3>Piezas del Disfraz</h3>
+              ${operacion.detalles && operacion.detalles.length > 0 ? `
+              <table>
+                <tr><th>Pieza</th><th style="text-align: center;">Talle</th><th>Descripción</th></tr>
+                ${operacion.detalles.map(d => {
+                  const nombre = d.piezaStock?.pieza?.nombre || 'Desconocida';
+                  const talle = d.piezaStock?.talle || '—';
+                  const desc = d.piezaStock?.descripcion || '—';
+                  return `<tr><td>${nombre}</td><td style="text-align: center;">${talle}</td><td>${desc}</td></tr>`;
+                }).join('')}
+              </table>
+              ` : '<p>Sin piezas registradas</p>'}
+              
+              <div class="condiciones">
+                El depósito de garantía será reintegrado al momento de la devolución, sujeto a la entrega del disfraz en las mismas condiciones en las que fue retirado. Se aplicarán retenciones totales o parciales en caso de demoras respecto a la fecha pactada, o si las piezas presentan roturas, manchas u otros daños.
+              </div>
+
+              <div class="footer">
+                <img src="${window.location.origin}/logo_svg_verdelima.svg" class="logo" alt="Logo" style="height: 20px;" />
+                <strong>DisfracesLy</strong> - Cel. 3815431344
+              </div>
+              <script>
+                window.onload = () => { window.print(); };
+              </script>
+            </body>
+          </html>
+        `);
+      }
+      
+      newWin.document.close();
+    } catch (error) {
+      console.error('Error al obtener el detalle de la operación para imprimir:', error);
+      newWin.document.body.innerHTML = '<p style="color: red; font-family: sans-serif; padding: 20px;">Ocurrió un error al cargar los datos del comprobante.</p>';
+      showError('Ocurrió un error al preparar el comprobante.');
+    }
   };
 
   // ─── Columnas ─────────────────────────────────────────────────────────────
@@ -199,7 +403,19 @@ export default function OperacionesList() {
             onView={!isDeleted ? () => setViewId(r.id_operacion) : undefined}
             {...(!isDeleted && {
               onDetail: () => navigate(`/admin/operaciones/${r.id_operacion}`),
-              onPrint: () => handlePrint(r),
+              printOptions: [
+                {
+                  label: 'Imprimir detalles de Operación',
+                  icon: 'receipt_long',
+                  onClick: () => handlePrintOption(r, 'detalles'),
+                },
+                {
+                  label: 'Imprimir comprobante para Cliente',
+                  icon: 'local_mall',
+                  disabled: !(r.alquiler?.etapa === 'RETIRADO' || r.alquiler?.etapa === 'DEVUELTO' || r.venta?.etapa === 'VENDIDO'),
+                  onClick: () => handlePrintOption(r, 'comprobante'),
+                }
+              ]
             })}
             {...(!hasRol('Empleado') && !isDeleted && {
               onDelete: () =>

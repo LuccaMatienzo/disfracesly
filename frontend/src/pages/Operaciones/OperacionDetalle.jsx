@@ -8,6 +8,7 @@ import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import ActionButtons from '@/components/ui/ActionButtons';
 import ConfirmDeleteModal from '@/components/ui/ConfirmDeleteModal';
+import CierreWarningModal from '@/components/ui/CierreWarningModal';
 import PagoFormModal from '@/components/ui/PagoFormModal';
 import InteraccionModal from '@/components/ui/InteraccionModal';
 import MontosModal from '@/components/ui/MontosModal';
@@ -190,6 +191,8 @@ export default function OperacionDetalle() {
   // Pago Modals state
   const [pagoModal, setPagoModal] = useState({ open: false, data: null });
   const [pagoDeleteTarget, setPagoDeleteTarget] = useState(null);
+  
+  const [cierreWarning, setCierreWarning] = useState({ open: false, pendingPayload: null, requiereMonto: false, requiereDeposito: false });
 
   if (isLoading) return <Skeleton />;
 
@@ -280,24 +283,66 @@ export default function OperacionDetalle() {
   }
 
   const handleInteraccionSubmit = async (payload) => {
+    const nextEtapaAlq = payload.tipo === 'RETIRO' ? 'RETIRADO' : 'DEVUELTO';
+    const nextEtapaVenta = payload.tipo === 'RETIRO' ? 'VENDIDO' : 'CANCELADO';
+    
+    const isClosingAlquiler = isAlquiler && nextEtapaAlq === 'DEVUELTO';
+    const isClosingVenta = isVenta && nextEtapaVenta === 'VENDIDO';
+    
+    if (isClosingAlquiler || isClosingVenta) {
+      const requiereMonto = saldoPendiente > 0;
+      const requiereDeposito = isAlquiler && (depositoPagado > depositoDevuelto);
+      
+      if (requiereMonto || requiereDeposito) {
+        setCierreWarning({
+          open: true,
+          pendingPayload: payload,
+          requiereMonto,
+          requiereDeposito
+        });
+        setInteraccionModal({ open: false, tipo: null });
+        return;
+      }
+    }
+    
+    await executeInteraccionAndAdvance(payload, {});
+  };
+
+  const executeInteraccionAndAdvance = async (payload, { motivo_diferencia_monto, deposito_motivo_retencion }) => {
     try {
       await createInteraccion.mutateAsync(payload);
       
       if (isAlquiler) {
         const nextEtapa = payload.tipo === 'RETIRO' ? 'RETIRADO' : 'DEVUELTO';
-        await avanzarAlquiler.mutateAsync({ id: op.id_operacion, etapa: nextEtapa });
+        await avanzarAlquiler.mutateAsync({ 
+           id: op.id_operacion, 
+           etapa: nextEtapa,
+           motivo_diferencia_monto,
+           deposito_motivo_retencion
+        });
       } else {
-        // En ventas, el 'RETIRO' (que semánticamente es Entrega) avanza a 'VENDIDO'
         const nextEtapa = payload.tipo === 'RETIRO' ? 'VENDIDO' : 'CANCELADO';
-        await avanzarVenta.mutateAsync({ id: op.id_operacion, etapa: nextEtapa });
+        await avanzarVenta.mutateAsync({ 
+           id: op.id_operacion, 
+           etapa: nextEtapa,
+           motivo_diferencia_monto
+        });
       }
       
       const textoAccion = payload.tipo === 'RETIRO' ? (isVenta ? 'la entrega' : 'el retiro') : 'la devolución';
       showSuccess(`Se ha registrado ${textoAccion} correctamente`);
-      setInteraccionModal({ open: false, tipo: null });
+      if (cierreWarning.open) {
+        setCierreWarning({ open: false, pendingPayload: null, requiereMonto: false, requiereDeposito: false });
+      } else {
+        setInteraccionModal({ open: false, tipo: null });
+      }
     } catch (err) {
       showError(err?.response?.data?.message ?? `Error al registrar la acción`);
     }
+  };
+
+  const handleCierreWarningSubmit = async (data) => {
+    await executeInteraccionAndAdvance(cierreWarning.pendingPayload, data);
   };
 
   async function handleCancel() {
@@ -867,6 +912,15 @@ export default function OperacionDetalle() {
         loading={createInteraccion.isPending || avanzarAlquiler.isPending}
         tipo={interaccionModal.tipo}
         operacion={op}
+      />
+
+      <CierreWarningModal
+        open={cierreWarning.open}
+        onClose={() => setCierreWarning({ open: false, pendingPayload: null, requiereMonto: false, requiereDeposito: false })}
+        onSubmit={handleCierreWarningSubmit}
+        requiereMonto={cierreWarning.requiereMonto}
+        requiereDeposito={cierreWarning.requiereDeposito}
+        loading={createInteraccion.isPending || avanzarAlquiler.isPending}
       />
 
       <MontosModal

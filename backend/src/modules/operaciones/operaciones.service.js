@@ -47,10 +47,12 @@ const avanzarEtapaAlquilerSchema = z.object({
   etapa: z.enum(ETAPAS_ALQUILER),
   deposito_devuelto_monto: z.number().nonnegative().optional(),
   deposito_motivo_retencion: z.string().max(255).optional(),
+  motivo_diferencia_monto: z.string().max(255).optional(),
 });
 
 const avanzarEtapaVentaSchema = z.object({
   etapa: z.enum(ETAPAS_VENTA),
+  motivo_diferencia_monto: z.string().max(255).optional(),
 });
 
 const updateMontosSchema = z.object({
@@ -372,7 +374,11 @@ async function avanzarEtapaAlquiler(id, data) {
   const piezaIds = operacion.detalles.map((d) => d.id_pieza_stock);
 
   return prisma.$transaction(async (tx) => {
-    const { etapa, deposito_devuelto_monto, deposito_motivo_retencion } = data;
+    const { etapa, deposito_devuelto_monto, deposito_motivo_retencion, motivo_diferencia_monto } = data;
+
+    if (motivo_diferencia_monto !== undefined) {
+      await tx.$executeRaw`UPDATE gestion.operacion SET motivo_diferencia_monto = ${motivo_diferencia_monto} WHERE id_operacion = ${operacion.id_operacion}`;
+    }
 
     // Transición de estado de piezas según etapa (Mapeo Estricto)
     let nuevoEstadoPieza;
@@ -420,7 +426,11 @@ async function avanzarEtapaVenta(id, data) {
   const piezaIds = operacion.detalles.map((d) => d.id_pieza_stock);
 
   return prisma.$transaction(async (tx) => {
-    const { etapa } = data;
+    const { etapa, motivo_diferencia_monto } = data;
+
+    if (motivo_diferencia_monto !== undefined) {
+      await tx.$executeRaw`UPDATE gestion.operacion SET motivo_diferencia_monto = ${motivo_diferencia_monto} WHERE id_operacion = ${operacion.id_operacion}`;
+    }
 
     // Transición de estado de piezas según etapa (Mapeo Estricto)
     let nuevoEstadoPieza;

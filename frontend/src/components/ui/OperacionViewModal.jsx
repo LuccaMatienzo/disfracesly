@@ -113,7 +113,6 @@ export default function OperacionViewModal({ id, open, onClose }) {
                             Talle: {det.piezaStock.talle}
                           </span>
                         )}
-                        <Badge value={det.piezaStock?.estado_pieza_stock} />
                       </div>
                       {det.piezaStock?.descripcion && (
                         <div className="pl-6 text-[11px] text-on-surface-variant">
