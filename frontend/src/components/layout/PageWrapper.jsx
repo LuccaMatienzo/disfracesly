@@ -66,7 +66,7 @@ export default function PageWrapper() {
   const filteredNavItems = NAV_ITEMS.filter(item => item.roles.includes(user?.rol));
 
   return (
-    <div className="flex min-h-screen bg-surface-container-low">
+    <div className="flex min-h-[100dvh] bg-surface-container-low">
 
       {/* ── Mobile backdrop ────────────────────────────────────────────────── */}
       {mobileMenuOpen && (

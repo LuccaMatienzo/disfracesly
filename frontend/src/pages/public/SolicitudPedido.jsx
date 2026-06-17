@@ -97,7 +97,7 @@ export default function SolicitudPedido() {
   if (!disfraz) {
     // Si llegan directo sin state, redirigir al catálogo
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-[100dvh] bg-background">
         <PublicNavbar />
         <div className="pt-32 text-center px-6">
           <span className="material-symbols-outlined text-6xl text-tertiary block mb-4">chat</span>
@@ -114,7 +114,7 @@ export default function SolicitudPedido() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-[100dvh] bg-background">
       <PublicNavbar />
 
       <main className="pt-24 pb-20 px-6 md:px-10 max-w-5xl mx-auto">

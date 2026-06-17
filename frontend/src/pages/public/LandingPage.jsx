@@ -112,7 +112,7 @@ export default function LandingPage() {
   }, [proximoEvento.nombre]);
 
   return (
-    <div className="min-h-screen bg-background text-on-background overflow-x-hidden">
+    <div className="min-h-[100dvh] bg-background text-on-background overflow-x-hidden">
       <PublicNavbar />
 
       {/* ── Hero ────────────────────────────────────────────────────────────── */}

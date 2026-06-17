@@ -48,7 +48,7 @@ export default function DetalleDisfraz() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-[100dvh] bg-background">
         <PublicNavbar />
         <div className="pt-28 max-w-7xl mx-auto px-6 md:px-10 grid grid-cols-1 lg:grid-cols-12 gap-12 animate-pulse">
           <div className="lg:col-span-7 aspect-[4/5] bg-surface-container rounded-2xl" />
@@ -65,7 +65,7 @@ export default function DetalleDisfraz() {
 
   if (error || !disfraz) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-[100dvh] bg-background">
         <PublicNavbar />
         <div className="pt-32 text-center px-6">
           <span className="material-symbols-outlined text-6xl text-error block mb-4">error</span>
@@ -81,7 +81,7 @@ export default function DetalleDisfraz() {
   const imgs = disfraz.imagenes?.length ? disfraz.imagenes : [PLACEHOLDER];
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className="min-h-[100dvh] bg-background overflow-x-hidden">
       <PublicNavbar />
 
       <main className="pt-24 pb-16 px-6 md:px-10 max-w-7xl mx-auto">
