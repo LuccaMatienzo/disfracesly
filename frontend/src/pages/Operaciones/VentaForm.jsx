@@ -69,7 +69,7 @@ export default function VentaForm() {
 
       // Mostrar modal de éxito y redirigir
       showSuccess('La operación se registró correctamente.', () => {
-        navigate('/admin/operaciones');
+        navigate(-1);
       });
     } catch (err) {
       const msg = err?.response?.data?.details?.[0]?.message ?? err?.response?.data?.error ?? 'Ocurrió un error al crear la venta.';

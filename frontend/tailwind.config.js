@@ -17,6 +17,10 @@
 
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: ['variant', [
+    '@media (prefers-color-scheme: dark) { &:not([data-theme="light"] *) }',
+    '&:is([data-theme="dark"] *)',
+  ]],
   content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}'],
   theme: {
     extend: {

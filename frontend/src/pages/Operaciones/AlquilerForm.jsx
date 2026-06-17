@@ -125,7 +125,7 @@ export default function AlquilerForm() {
 
       // Mostrar modal de éxito y redirigir tras aceptar
       showSuccess('La operación se registró correctamente.', () => {
-        navigate('/admin/operaciones');
+        navigate(-1);
       });
     } catch (err) {
       const msg =

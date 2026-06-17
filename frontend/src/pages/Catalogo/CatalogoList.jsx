@@ -47,7 +47,7 @@ export default function CatalogoList() {
 
   // Bloquear scroll en mobile cuando el bottom sheet está abierto
   useEffect(() => {
-    if (isMobileMenuOpen) {
+    if (isMobileMenuOpen || showFilters) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -55,7 +55,7 @@ export default function CatalogoList() {
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isMobileMenuOpen]);
+  }, [isMobileMenuOpen, showFilters]);
 
   // ─── Queries ──────────────────────────────────────────────────────────────
   const { data: categoriasData } = useQuery({
@@ -185,7 +185,7 @@ export default function CatalogoList() {
   const piezasCols = [
     { key: 'id_pieza', label: '#', width: '60px' },
     { key: 'nombre', label: 'Nombre', render: (_, r) => <span className={r.deleted_at ? 'text-coral font-medium' : ''}>{r.nombre}</span> },
-    { key: 'descripcion', label: 'Descripción', render: (_, r) => <span className={r.deleted_at ? 'text-coral' : ''}>{r.descripcion || '—'}</span> },
+    { key: 'descripcion', label: 'Descripción', render: (_, r) => <span className={r.deleted_at ? 'text-coral line-clamp-3 md:line-clamp-none' : 'line-clamp-3 md:line-clamp-none whitespace-normal'}>{r.descripcion || '—'}</span> },
     {
       key: 'categorias',
       label: 'Categorías',
@@ -228,7 +228,7 @@ export default function CatalogoList() {
   const disfrazCols = [
     { key: 'id_disfraz', label: '#', width: '60px' },
     { key: 'nombre', label: 'Nombre', render: (_, r) => <span className={r.deleted_at ? 'text-coral font-medium' : ''}>{r.nombre}</span> },
-    { key: 'descripcion', label: 'Descripción', render: (_, r) => <span className={r.deleted_at ? 'text-coral' : ''}>{r.descripcion || '—'}</span> },
+    { key: 'descripcion', label: 'Descripción', render: (_, r) => <span className={r.deleted_at ? 'text-coral line-clamp-3 md:line-clamp-none' : 'line-clamp-3 md:line-clamp-none whitespace-normal'}>{r.descripcion || '—'}</span> },
     {
       key: 'categorias',
       label: 'Categorías',
@@ -273,7 +273,7 @@ export default function CatalogoList() {
   const categoriaCols = [
     { key: 'id_categoria_motivo', label: '#', width: '60px' },
     { key: 'nombre', label: 'Nombre', render: (_, r) => <span className={r.deleted_at ? 'text-coral font-medium' : ''}>{r.nombre}</span> },
-    { key: 'descripcion', label: 'Descripción', render: (_, r) => <span className={r.deleted_at ? 'text-coral' : ''}>{r.descripcion ?? '—'}</span> },
+    { key: 'descripcion', label: 'Descripción', render: (_, r) => <span className={r.deleted_at ? 'text-coral line-clamp-3 md:line-clamp-none' : 'line-clamp-3 md:line-clamp-none whitespace-normal'}>{r.descripcion ?? '—'}</span> },
     {
       key: 'acciones',
       label: 'Acciones',
@@ -481,7 +481,7 @@ export default function CatalogoList() {
           onClick={() => setShowFilters(false)}
         >
           <div 
-            className="bg-surface-container-lowest w-full rounded-t-3xl shadow-elevated p-5 sm:p-6 flex flex-col animate-slide-up relative max-h-[90vh] overflow-hidden" 
+            className="bg-surface-container-lowest w-full rounded-t-3xl shadow-elevated p-5 sm:p-6 flex flex-col animate-slide-up relative h-auto max-h-[80vh] overflow-hidden" 
             onClick={e => e.stopPropagation()}
           >
             {/* Handle visual */}

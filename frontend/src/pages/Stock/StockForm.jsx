@@ -39,7 +39,7 @@ export default function StockForm() {
     const payload = { ...data, id_pieza: Number(data.id_pieza) };
     if (isEditing) await updateStock.mutateAsync({ id, data: payload });
     else await createStock.mutateAsync(payload);
-    navigate('/admin/stock');
+    navigate(-1);
   };
 
 

@@ -53,7 +53,7 @@ export default function ClienteForm({ isModal = false, onSuccessCallback, onCanc
         if (isModal && onSuccessCallback) {
           onSuccessCallback(data);
         } else {
-          navigate('/admin/clientes');
+          navigate(-1);
         }
       });
     },

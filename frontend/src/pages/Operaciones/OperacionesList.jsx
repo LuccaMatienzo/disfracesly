@@ -48,6 +48,18 @@ export default function OperacionesList() {
   const [deleteTarget, setDeleteTarget] = useState(null); // { id, label }
   const [viewId, setViewId] = useState(null);             // id de operación en modal Ver
 
+  // Bloquear scroll en mobile cuando el bottom sheet está abierto
+  useEffect(() => {
+    if (showFilters) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showFilters]);
+
   // ─── Query ────────────────────────────────────────────────────────────────
   const queryFilters = { ...filters, tipo };
   const { data, isLoading } = useOperaciones(queryFilters);
@@ -84,21 +96,21 @@ export default function OperacionesList() {
       showError('El navegador bloqueó la ventana emergente.');
       return;
     }
-    
+
     newWin.document.open();
     newWin.document.write('<html><body><p style="font-family: sans-serif; padding: 20px;">Cargando comprobante...</p></body></html>');
     newWin.document.close();
-    
+
     try {
       const res = await api.get(`/operaciones/${operacionBase.id_operacion}`);
       const operacion = res.data.data || res.data;
       const estadoFinanciero = operacion.estado_financiero || {};
-      
+
       const isAlquiler = !!operacion.alquiler;
       const details = operacion.alquiler || operacion.venta || {};
-      
+
       newWin.document.open();
-      
+
       if (tipoComprobante === 'detalles') {
         newWin.document.write(`
           <html>
@@ -202,11 +214,11 @@ export default function OperacionesList() {
               <table>
                 <tr><th>Pieza</th><th style="text-align: center;">Talle</th><th>Descripción</th></tr>
                 ${operacion.detalles.map(d => {
-                  const nombre = d.piezaStock?.pieza?.nombre || 'Desconocida';
-                  const talle = d.piezaStock?.talle || '—';
-                  const desc = d.piezaStock?.descripcion || '—';
-                  return `<tr><td>${nombre}</td><td style="text-align: center;">${talle}</td><td>${desc}</td></tr>`;
-                }).join('')}
+          const nombre = d.piezaStock?.pieza?.nombre || 'Desconocida';
+          const talle = d.piezaStock?.talle || '—';
+          const desc = d.piezaStock?.descripcion || '—';
+          return `<tr><td>${nombre}</td><td style="text-align: center;">${talle}</td><td>${desc}</td></tr>`;
+        }).join('')}
               </table>
               ` : '<p>Sin piezas registradas</p>'}
               
@@ -219,19 +231,19 @@ export default function OperacionesList() {
       } else {
         // comprobante para cliente
         const interaccionRetiro = (operacion.interacciones || []).find(i => i.tipo === 'RETIRO');
-        const retiraNombre = interaccionRetiro 
+        const retiraNombre = interaccionRetiro
           ? `${interaccionRetiro.persona?.nombre ?? ''} ${interaccionRetiro.persona?.apellido ?? ''}`.trim()
           : `${operacion.cliente?.persona?.nombre ?? ''} ${operacion.cliente?.persona?.apellido ?? ''}`.trim();
-        
+
         const fechaRetiroReal = interaccionRetiro?.fecha_hora ? new Date(interaccionRetiro.fecha_hora) : new Date();
         const opcionesFecha = { weekday: 'long', day: 'numeric', month: 'numeric' };
-        
+
         const formatearFechaStr = (fecha) => {
           let str = fecha.toLocaleDateString('es-AR', opcionesFecha);
           str = str.replace(/-/g, '/'); // Forzar separador barra
           return str.charAt(0).toUpperCase() + str.slice(1);
         };
-        
+
         const retiroStr = formatearFechaStr(fechaRetiroReal);
         const devolucionStr = isAlquiler && details.fecha_devolucion ? formatearFechaStr(new Date(details.fecha_devolucion)) : '';
         const obsRetiro = interaccionRetiro?.observaciones?.trim() || '—';
@@ -320,11 +332,11 @@ export default function OperacionesList() {
               <table>
                 <tr><th>Pieza</th><th style="text-align: center;">Talle</th><th>Descripción</th></tr>
                 ${operacion.detalles.map(d => {
-                  const nombre = d.piezaStock?.pieza?.nombre || 'Desconocida';
-                  const talle = d.piezaStock?.talle || '—';
-                  const desc = d.piezaStock?.descripcion || '—';
-                  return `<tr><td>${nombre}</td><td style="text-align: center;">${talle}</td><td>${desc}</td></tr>`;
-                }).join('')}
+          const nombre = d.piezaStock?.pieza?.nombre || 'Desconocida';
+          const talle = d.piezaStock?.talle || '—';
+          const desc = d.piezaStock?.descripcion || '—';
+          return `<tr><td>${nombre}</td><td style="text-align: center;">${talle}</td><td>${desc}</td></tr>`;
+        }).join('')}
               </table>
               ` : '<p>Sin piezas registradas</p>'}
               
@@ -343,7 +355,7 @@ export default function OperacionesList() {
           </html>
         `);
       }
-      
+
       newWin.document.close();
     } catch (error) {
       console.error('Error al obtener el detalle de la operación para imprimir:', error);
@@ -491,7 +503,7 @@ export default function OperacionesList() {
           <div className="flex-1 min-w-0 relative">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none text-[20px]">search</span>
             <Input
-              placeholder="Buscar por ID o Nombre de cliente…"
+              placeholder="Buscar por ID o Cliente..."
               value={localSearch}
               onChange={(e) => setLocalSearch(e.target.value)}
               className="pl-10"
@@ -499,11 +511,10 @@ export default function OperacionesList() {
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`md:hidden flex-shrink-0 h-11 w-11 flex items-center justify-center rounded-xl transition-colors border ${
-              showFilters || includeDeleted || etapa || sort.field
-                ? 'bg-primary/10 text-primary border-primary/20'
-                : 'bg-surface-container-high text-on-surface-variant border-transparent dark:border-zinc-800 hover:bg-surface-container-highest'
-            }`}
+            className={`md:hidden flex-shrink-0 h-11 w-11 flex items-center justify-center rounded-xl transition-colors border ${showFilters || includeDeleted || etapa || sort.field
+              ? 'bg-primary/10 text-primary border-primary/20'
+              : 'bg-surface-container-high text-on-surface-variant border-transparent dark:border-zinc-800 hover:bg-surface-container-highest'
+              }`}
             title="Filtros y Orden"
           >
             <span className="material-symbols-outlined text-[20px]">
@@ -561,7 +572,7 @@ export default function OperacionesList() {
               Ordenar:
             </span>
           </div>
-          
+
           <div className="flex flex-row items-center gap-2 shrink-0 lg:flex-nowrap">
             <SortToggle
               label="Fecha Const."
@@ -602,12 +613,12 @@ export default function OperacionesList() {
 
       {/* Bottom Sheet de Filtros (Mobile) */}
       {showFilters && createPortal(
-        <div 
-          className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40 md:hidden animate-fade-in" 
+        <div
+          className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40 md:hidden animate-fade-in"
           onClick={() => setShowFilters(false)}
         >
-          <div 
-            className="bg-surface-container-lowest w-full rounded-t-3xl shadow-elevated p-5 sm:p-6 flex flex-col animate-slide-up relative max-h-[90vh] overflow-hidden" 
+          <div
+            className="bg-surface-container-lowest w-full rounded-t-3xl shadow-elevated p-5 sm:p-6 flex flex-col animate-slide-up relative h-auto max-h-[80vh] overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
             {/* Handle visual */}
@@ -615,8 +626,8 @@ export default function OperacionesList() {
 
             <div className="flex items-center justify-between mb-6 shrink-0">
               <h3 className="text-title-lg font-bold text-on-surface">Filtros y Orden</h3>
-              <button 
-                onClick={() => setShowFilters(false)} 
+              <button
+                onClick={() => setShowFilters(false)}
                 className="text-on-surface-variant hover:text-on-surface flex items-center justify-center w-8 h-8 rounded-full bg-surface-container-high transition-colors"
               >
                 <span className="material-symbols-outlined text-[20px]">close</span>
@@ -704,10 +715,10 @@ export default function OperacionesList() {
             </div>
 
             <div className="pt-5 mt-2 border-t border-divider flex gap-3 shrink-0">
-              <Button 
+              <Button
                 onClick={() => {
                   updateFilters({ etapa: null, include_deleted: false, sort_field: null, sort_direction: null, page: 1 });
-                }} 
+                }}
                 className="flex-1 h-12 flex justify-center items-center bg-surface-container-high text-on-surface hover:bg-surface-container-highest"
               >
                 Limpiar

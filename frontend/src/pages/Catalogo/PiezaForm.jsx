@@ -82,7 +82,7 @@ export default function PiezaForm({ isModal = false, onSuccessCallback, onCancel
       qc.invalidateQueries({ queryKey: ['piezas'] });
       showSuccess(isEditing ? 'Pieza actualizada con éxito' : 'Pieza creada con éxito', () => {
         if (isModal && onSuccessCallback) onSuccessCallback(data);
-        else navigate('/admin/catalogo');
+        else navigate(-1);
       });
     },
     onError: (err) => {

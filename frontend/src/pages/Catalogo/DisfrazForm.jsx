@@ -82,7 +82,7 @@ export default function DisfrazForm() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['disfraces'] });
       showSuccess(isEditing ? 'Disfraz actualizado con éxito' : 'Disfraz creado con éxito', () => {
-        navigate('/admin/catalogo');
+        navigate('/admin/catalogo?tab=disfraces');
       });
     },
     onError: (err) => {

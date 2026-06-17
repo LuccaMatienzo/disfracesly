@@ -310,6 +310,13 @@
 }
 
 /* ── Base ──────────────────────────────────────────────────────────────────── */
+@layer base {
+  input::placeholder,
+  textarea::placeholder {
+    @apply text-sm sm:text-base;
+  }
+}
+
 *,
 *::before,
 *::after {

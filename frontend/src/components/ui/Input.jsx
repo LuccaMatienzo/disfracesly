@@ -22,7 +22,7 @@ const Input = forwardRef(function Input(
           'bg-surface-container-high text-on-surface text-body-md',
           'border-0 outline-none',
           'transition-all duration-150',
-          'placeholder:text-on-surface-variant/50',
+          'placeholder:text-on-surface-variant/50 placeholder:text-sm sm:placeholder:text-base',
           'focus:ring-2 focus:ring-primary/30 focus:bg-surface-container-lowest',
           '[&::-ms-reveal]:hidden [&::-webkit-credentials-auto-fill-button]:hidden',
           error ? 'ring-2 ring-error' : '',

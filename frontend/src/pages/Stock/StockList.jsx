@@ -43,6 +43,18 @@ export default function StockList() {
   const [deleteTarget, setDeleteTarget] = useState(null); // { id, nombre }
   const [viewId, setViewId] = useState(null);             // id de stock en modal Ver
 
+  // Bloquear scroll en mobile cuando el bottom sheet está abierto
+  useEffect(() => {
+    if (showFilters) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showFilters]);
+
   // ─── Query ────────────────────────────────────────────────────────────────
   const { data, isLoading } = useStock(filters);
 
@@ -81,15 +93,15 @@ export default function StockList() {
   // ─── Columnas ─────────────────────────────────────────────────────────────
   const columns = [
     { key: 'id_pieza_stock', label: '#', width: '60px' },
-    { 
-      key: 'pieza', 
-      label: 'Pieza', 
+    {
+      key: 'pieza',
+      label: 'Pieza',
       render: (_, r) => <span className={r.deleted_at ? 'text-coral font-medium' : ''}>{r.pieza?.nombre || '—'}</span>
     },
-    { 
-      key: 'talle', 
-      label: 'Talle', 
-      align: 'center', 
+    {
+      key: 'talle',
+      label: 'Talle',
+      align: 'center',
       render: (_, r) => <span className={r.deleted_at ? 'text-coral' : ''}>{r.talle || '—'}</span>
     },
     {
@@ -105,10 +117,10 @@ export default function StockList() {
       label: 'Estado',
       render: (_, r) => <Badge value={r.deleted_at ? 'DE_BAJA' : r.estado_pieza_stock} />,
     },
-    { 
-      key: 'descripcion', 
-      label: 'Descripción', 
-      render: (_, r) => <span className={r.deleted_at ? 'text-coral' : ''}>{r.descripcion || '—'}</span>
+    {
+      key: 'descripcion',
+      label: 'Descripción',
+      render: (_, r) => <span className={r.deleted_at ? 'text-coral line-clamp-3 md:line-clamp-none' : 'line-clamp-3 md:line-clamp-none whitespace-normal'}>{r.descripcion || '—'}</span>
     },
     {
       key: 'acciones',
@@ -166,7 +178,7 @@ export default function StockList() {
           <div className="flex-1 min-w-0 relative">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none text-[20px]">search</span>
             <Input
-              placeholder="Buscar por nombre de pieza…"
+              placeholder="Buscar por Nombre de pieza…"
               value={localSearch}
               onChange={(e) => setLocalSearch(e.target.value)}
               className="pl-10"
@@ -174,11 +186,10 @@ export default function StockList() {
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`md:hidden flex-shrink-0 h-11 w-11 flex items-center justify-center rounded-xl transition-colors border ${
-              showFilters || includeDeleted || categoria || estado || talle
+            className={`md:hidden flex-shrink-0 h-11 w-11 flex items-center justify-center rounded-xl transition-colors border ${showFilters || includeDeleted || categoria || estado || talle
                 ? 'bg-primary/10 text-primary border-primary/20'
                 : 'bg-surface-container-high text-on-surface-variant border-transparent dark:border-zinc-800 hover:bg-surface-container-highest'
-            }`}
+              }`}
             title="Filtros"
           >
             <span className="material-symbols-outlined text-[20px]">
@@ -220,7 +231,7 @@ export default function StockList() {
               </select>
               <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant size-3.5" />
             </div>
-            
+
             {/* Filtro por Etapas (Nativo) */}
             <div className="relative inline-block shrink-0">
               <select
@@ -269,12 +280,12 @@ export default function StockList() {
 
       {/* Bottom Sheet de Filtros (Mobile) */}
       {showFilters && createPortal(
-        <div 
-          className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40 md:hidden animate-fade-in" 
+        <div
+          className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40 md:hidden animate-fade-in"
           onClick={() => setShowFilters(false)}
         >
-          <div 
-            className="bg-surface-container-lowest w-full rounded-t-3xl shadow-elevated p-5 sm:p-6 flex flex-col animate-slide-up relative max-h-[90vh] overflow-hidden" 
+          <div
+            className="bg-surface-container-lowest w-full rounded-t-3xl shadow-elevated p-5 sm:p-6 flex flex-col animate-slide-up relative h-auto max-h-[80vh] overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
             {/* Handle visual */}
@@ -282,8 +293,8 @@ export default function StockList() {
 
             <div className="flex items-center justify-between mb-6 shrink-0">
               <h3 className="text-title-lg font-bold text-on-surface">Filtros</h3>
-              <button 
-                onClick={() => setShowFilters(false)} 
+              <button
+                onClick={() => setShowFilters(false)}
                 className="text-on-surface-variant hover:text-on-surface flex items-center justify-center w-8 h-8 rounded-full bg-surface-container-high transition-colors"
               >
                 <span className="material-symbols-outlined text-[20px]">close</span>
@@ -364,10 +375,10 @@ export default function StockList() {
             </div>
 
             <div className="pt-5 mt-2 border-t border-divider flex gap-3 shrink-0">
-              <Button 
+              <Button
                 onClick={() => {
                   updateFilters({ categoria: null, estado: null, talle: null, include_deleted: false, page: 1 });
-                }} 
+                }}
                 className="flex-1 h-12 flex justify-center items-center bg-surface-container-high text-on-surface hover:bg-surface-container-highest"
               >
                 Limpiar

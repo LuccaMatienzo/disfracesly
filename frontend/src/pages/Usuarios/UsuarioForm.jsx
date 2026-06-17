@@ -79,7 +79,7 @@ export default function UsuarioForm() {
       }
 
       showSuccess(isEditing ? 'Usuario actualizado con éxito' : 'Usuario creado con éxito', () => {
-        navigate('/admin/usuarios');
+        navigate(-1);
       });
     },
     onError: (err) => {
