@@ -44,7 +44,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center relative overflow-hidden p-4">
+    <div className="min-h-[100dvh] w-full bg-background flex items-center justify-center relative overflow-hidden p-4">
 
       {/* ── Blobs decorativos ─────────────────────────────────────────────── */}
       <div className="absolute -top-40 -right-40 size-[600px] rounded-full bg-primary/15 blur-3xl pointer-events-none" />
