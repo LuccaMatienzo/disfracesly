@@ -96,7 +96,7 @@ export default function Login() {
                 onChange={(e) => setForm((p) => ({ ...p, correo: e.target.value }))}
                 onBlur={() => setTouched((p) => ({ ...p, correo: true }))}
                 required
-                className="w-full pl-12 pr-4 py-4 rounded-xl bg-surface-container-low border border-divider text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
+                className="w-full pl-12 pr-4 py-4 rounded-xl bg-surface-container-low border border-divider text-on-surface placeholder:text-tertiary placeholder:text-sm sm:placeholder:text-base focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
               />
             </div>
             {touched.correo && form.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.correo) && (
@@ -125,7 +125,7 @@ export default function Login() {
                 onChange={(e) => setForm((p) => ({ ...p, contrasena: e.target.value }))}
                 onBlur={() => setTouched((p) => ({ ...p, contrasena: true }))}
                 required
-                className="w-full pl-12 pr-12 py-4 rounded-xl bg-surface-container-low border border-divider text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 focus:ring-primary/40 transition [&::-ms-reveal]:hidden [&::-ms-clear]:hidden"
+                className="w-full pl-12 pr-12 py-4 rounded-xl bg-surface-container-low border border-divider text-on-surface placeholder:text-tertiary placeholder:text-sm sm:placeholder:text-base focus:outline-none focus:ring-2 focus:ring-primary/40 transition [&::-ms-reveal]:hidden [&::-ms-clear]:hidden"
               />
               <button
                 type="button"
