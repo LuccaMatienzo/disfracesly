@@ -23,6 +23,9 @@ const personaRoutes   = require('./modules/personas/personas.routes');
 
 const app = express();
 
+// Confiar en el proxy de Render (necesario para express-rate-limit)
+app.set('trust proxy', 1);
+
 // ─── Seguridad ────────────────────────────────────────────────────────────────
 // helmet aplica cabeceras HTTP de seguridad estándar (CSP, HSTS, etc.).
 app.use(helmet());
