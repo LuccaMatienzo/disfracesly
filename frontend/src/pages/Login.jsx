@@ -130,10 +130,10 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => setShowPass((p) => !p)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-tertiary hover:text-primary transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center text-tertiary hover:text-primary transition-colors"
                 aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}
               >
-                <span className="material-symbols-outlined text-xl">
+                <span className="material-symbols-outlined text-xl leading-none">
                   {showPass ? 'visibility_off' : 'visibility'}
                 </span>
               </button>
