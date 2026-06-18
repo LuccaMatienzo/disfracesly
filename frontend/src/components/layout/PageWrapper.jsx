@@ -12,6 +12,8 @@
  */
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import api from '@/api/axios.instance';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/useToast';
 import ToastContainer from '@/components/ui/Toast';
@@ -42,6 +44,7 @@ export default function PageWrapper() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const toast = useToast();
+  const queryClient = useQueryClient();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -75,6 +78,26 @@ export default function PageWrapper() {
   ].filter(Boolean).join('').toUpperCase() || '?';
 
   const filteredNavItems = NAV_ITEMS.filter(item => item.roles.includes(user?.rol));
+
+  const handlePrefetch = (path) => {
+    switch (path) {
+      case '/admin':
+        queryClient.prefetchQuery({ queryKey: ['dashboard'], queryFn: async () => (await api.get('/dashboard')).data, staleTime: 120000 });
+        break;
+      case '/admin/operaciones':
+        queryClient.prefetchQuery({ queryKey: ['operaciones', { limit: 50, page: 1 }], queryFn: async () => (await api.get('/operaciones', { params: { limit: 50, page: 1 } })).data, staleTime: 60000 });
+        break;
+      case '/admin/stock':
+        queryClient.prefetchQuery({ queryKey: ['stock', { limit: 50, page: 1 }], queryFn: async () => (await api.get('/stock', { params: { limit: 50, page: 1 } })).data, staleTime: 60000 });
+        break;
+      case '/admin/finanzas':
+        queryClient.prefetchQuery({ queryKey: ['pagos', { limit: 50, page: 1 }], queryFn: async () => (await api.get('/pagos', { params: { limit: 50, page: 1 } })).data, staleTime: 60000 });
+        break;
+      case '/admin/clientes':
+        queryClient.prefetchQuery({ queryKey: ['clientes', { limit: 50, page: 1 }], queryFn: async () => (await api.get('/clientes', { params: { limit: 50, page: 1 } })).data, staleTime: 60000 });
+        break;
+    }
+  };
 
   return (
     <div className="flex min-h-[100dvh] bg-surface-container-low">
@@ -147,6 +170,7 @@ export default function PageWrapper() {
               key={to}
               to={to}
               end={end}
+              onMouseEnter={() => handlePrefetch(to)}
               className={({ isActive }) => `
                 relative flex items-center gap-3 px-3 py-3 rounded-xl
                 font-label font-medium transition-all duration-150 group

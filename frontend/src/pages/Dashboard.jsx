@@ -7,9 +7,9 @@
  * Los sub-componentes (KpiCards, DonutChart, MovimientosTable, etc.) son
  * componentes funcionales privados del módulo para reducir la superficie pública.
  */
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
-import { useAuth } from '@/context/AuthContext';
 import { MdOutlinePendingActions } from 'react-icons/md';
 import { LuPackageOpen } from 'react-icons/lu';
 import { BsBagCheck } from 'react-icons/bs';
@@ -527,10 +527,21 @@ function SkeletonCard() {
  */
 export default function Dashboard() {
   const { user, hasRol } = useAuth();
-  const [dashboard, setDashboard] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   
+  const {
+    data: dashboard,
+    isLoading: loading,
+    error
+  } = useQuery({
+    queryKey: ['dashboard'],
+    queryFn: async () => {
+      const { data } = await api.get('/dashboard');
+      return data;
+    },
+    staleTime: 2 * 60 * 1000,
+    refetchOnWindowFocus: true,
+  });
+
   // States para modales de KPIs
   const [activeOpsModalOpen, setActiveOpsModalOpen] = useState(false);
   const [overdueOpsModalOpen, setOverdueOpsModalOpen] = useState(false);
@@ -587,22 +598,6 @@ export default function Dashboard() {
     }
   ], [activeOpsColumns]);
 
-  useEffect(() => {
-    async function fetchDashboard() {
-      try {
-        setLoading(true);
-        const { data } = await api.get('/dashboard');
-        setDashboard(data);
-      } catch (err) {
-        console.error('[Dashboard] Error al cargar datos del dashboard:', err);
-        setError('No se pudo cargar el dashboard');
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchDashboard();
-  }, []);
-
   const hora = new Date().getHours();
   const saludo = hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches';
 
@@ -627,7 +622,7 @@ export default function Dashboard() {
       <div className="space-y-8 animate-fade-in">
         <div className="bg-error/10 text-error p-6 rounded-2xl text-center">
           <span className="material-symbols-outlined text-4xl mb-2 block">error</span>
-          <p className="font-semibold">{error}</p>
+          <p className="font-semibold">No se pudo cargar el dashboard</p>
           <button
             onClick={() => window.location.reload()}
             className="mt-4 px-4 py-2 bg-error text-white rounded-xl text-sm font-semibold hover:bg-error/90 transition-colors"
