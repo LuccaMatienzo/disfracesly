@@ -58,6 +58,7 @@ export default function Table({ columns, data, loading, emptyMessage = 'Sin resu
               >
                 {columns.map((col) => {
                   const isActions = col.key === 'acciones';
+                  const isDescription = col.key === 'descripcion';
                   const mdAlign =
                     col.align === 'center'
                       ? 'md:text-center'
@@ -73,10 +74,12 @@ export default function Table({ columns, data, loading, emptyMessage = 'Sin resu
                         ${rowClassName ? '' : 'text-on-surface'}
                         ${isActions
                           ? 'block pt-3 mt-2 border-t border-divider text-center md:table-cell md:border-t-0 md:mt-0 md:pt-0'
-                          : `flex justify-between items-center gap-4 py-1.5 text-right
-                             before:content-[attr(data-label)] before:font-semibold
-                             before:text-on-surface-variant before:uppercase before:text-xs before:tracking-wide
-                             md:table-cell md:before:content-none`
+                          : isDescription
+                            ? 'flex flex-col gap-1 py-2 text-left before:content-[attr(data-label)] before:font-semibold before:text-on-surface-variant before:uppercase before:text-xs before:tracking-wide md:table-cell md:before:content-none'
+                            : `flex justify-between items-center gap-4 py-1.5 text-right
+                               before:content-[attr(data-label)] before:font-semibold
+                               before:text-on-surface-variant before:uppercase before:text-xs before:tracking-wide
+                               md:table-cell md:before:content-none`
                         }
                         md:px-4 md:py-3.5 ${mdAlign}
                       `}

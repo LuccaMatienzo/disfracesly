@@ -60,13 +60,13 @@ export default function ActionButtons({ onView, onEdit, onDelete, onDetail, onPa
             <FiPrinter />
           </button>
           {printMenuOpen && (
-            <div className="absolute top-full right-0 mt-2 w-64 bg-surface-container-high rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] z-[300] flex flex-col p-1 border border-outline-variant animate-scale-in origin-top-right">
+            <div className="absolute top-full left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-0 mt-2 w-[240px] sm:w-64 bg-surface-container-high rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.16)] z-[9999] flex flex-col p-1 border border-outline-variant animate-scale-in origin-top sm:origin-top-right">
                {printOptions.map((opt, i) => (
                   <button 
                     key={i} 
                     onClick={(e) => { e.stopPropagation(); opt.onClick(); setPrintMenuOpen(false); }} 
                     disabled={opt.disabled} 
-                    className="text-left w-full px-3 py-2.5 hover:bg-surface-container-highest rounded-lg disabled:opacity-40 text-sm text-on-surface transition-colors flex items-center gap-3"
+                    className="text-left w-full px-3 py-2.5 hover:bg-surface-container-highest rounded-lg disabled:opacity-40 text-[13px] sm:text-sm font-medium text-on-surface transition-colors flex items-center gap-3"
                   >
                      {opt.icon && <span className="material-symbols-outlined text-[18px]">{opt.icon}</span>}
                      {opt.label}

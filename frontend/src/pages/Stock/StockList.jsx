@@ -120,7 +120,7 @@ export default function StockList() {
     {
       key: 'descripcion',
       label: 'Descripción',
-      render: (_, r) => <span className={r.deleted_at ? 'text-coral line-clamp-3 md:line-clamp-none' : 'line-clamp-3 md:line-clamp-none whitespace-normal'}>{r.descripcion || '—'}</span>
+      render: (_, r) => <span className={r.deleted_at ? 'text-coral whitespace-normal text-[13px] md:text-sm leading-relaxed' : 'whitespace-normal text-[13px] md:text-sm leading-relaxed'}>{r.descripcion || ''}</span>
     },
     {
       key: 'acciones',

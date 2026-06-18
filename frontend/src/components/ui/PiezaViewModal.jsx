@@ -59,20 +59,24 @@ export default function PiezaViewModal({ id, open, onClose }) {
                 {data.stocks.map((s, i) => (
                   <div
                     key={s.id_pieza_stock ?? i}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-surface-container-low"
+                    className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 px-3 py-2.5 rounded-xl bg-surface-container-low"
                   >
-                    <div className="flex items-center gap-2 sm:gap-3 flex-wrap min-w-0">
-                      <span className="text-on-surface-variant text-label-lg">#{String(s.id_pieza_stock)}</span>
-                      <span className="text-body-md text-on-surface">
-                        {s.talle ? `Talle ${s.talle}` : 'Sin talle'}
-                      </span>
+                    <div className="flex flex-col gap-1 flex-1 min-w-0">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <span className="text-on-surface-variant text-label-lg">#{String(s.id_pieza_stock)}</span>
+                        <span className="text-body-md text-on-surface font-medium">
+                          {s.talle ? `Talle ${s.talle}` : 'Sin talle'}
+                        </span>
+                      </div>
                       {s.descripcion && (
-                        <span className="text-body-md text-on-surface-variant truncate max-w-[160px] sm:max-w-xs">
-                          — {s.descripcion}
+                        <span className="text-body-md text-on-surface-variant whitespace-normal leading-relaxed">
+                          {s.descripcion}
                         </span>
                       )}
                     </div>
-                    <Badge value={s.estado_pieza_stock} />
+                    <div className="shrink-0 pt-0.5">
+                      <Badge value={s.estado_pieza_stock} />
+                    </div>
                   </div>
                 ))}
               </div>

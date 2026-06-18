@@ -26,21 +26,22 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Hidratación del estado desde localStorage al montar el proveedor
+  // Hidratación del estado desde localStorage o sessionStorage al montar el proveedor
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    const stored = localStorage.getItem('user');
+    const storage = localStorage.getItem('accessToken') ? localStorage : sessionStorage;
+    const token = storage.getItem('accessToken');
+    const stored = storage.getItem('user');
     if (token && stored) {
       try {
         const parsed = JSON.parse(stored);
         // Normalizar: versiones antiguas podían guardar rol como objeto { nombre }
         if (parsed?.rol && typeof parsed.rol === 'object') {
           parsed.rol = parsed.rol.nombre;
-          localStorage.setItem('user', JSON.stringify(parsed));
+          storage.setItem('user', JSON.stringify(parsed));
         }
         setUser(parsed);
       } catch {
-        localStorage.clear();
+        storage.clear();
       }
     }
     setIsLoading(false);
@@ -48,17 +49,19 @@ export function AuthProvider({ children }) {
 
   /**
    * Inicia sesión con correo y contraseña.
-   * Almacena los tokens y el perfil del usuario en localStorage.
+   * Almacena los tokens y el perfil del usuario en localStorage o sessionStorage.
    *
    * @param {string} correo
    * @param {string} contrasena
+   * @param {boolean} rememberMe - Si es true usa localStorage, sino sessionStorage
    * @returns {Promise<object>} Perfil del usuario autenticado
    */
-  const login = useCallback(async (correo, contrasena) => {
+  const login = useCallback(async (correo, contrasena, rememberMe = true) => {
     const { data } = await api.post('/auth/login', { correo, contrasena });
-    localStorage.setItem('accessToken', data.accessToken);
-    localStorage.setItem('refreshToken', data.refreshToken);
-    localStorage.setItem('user', JSON.stringify(data.usuario));
+    const storage = rememberMe ? localStorage : sessionStorage;
+    storage.setItem('accessToken', data.accessToken);
+    storage.setItem('refreshToken', data.refreshToken);
+    storage.setItem('user', JSON.stringify(data.usuario));
     setUser(data.usuario);
     return data.usuario;
   }, []);
@@ -66,7 +69,7 @@ export function AuthProvider({ children }) {
   /**
    * Cierra la sesión del usuario.
    * Intenta notificar al servidor (stateless, puede fallar silenciosamente)
-   * y limpia todos los datos de sesión del localStorage.
+   * y limpia todos los datos de sesión del localStorage y sessionStorage.
    *
    * @returns {Promise<void>}
    */
@@ -75,11 +78,14 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
+    sessionStorage.removeItem('accessToken');
+    sessionStorage.removeItem('refreshToken');
+    sessionStorage.removeItem('user');
     setUser(null);
   }, []);
 
   /**
-   * Actualiza parcialmente el perfil del usuario en el estado global y en localStorage
+   * Actualiza parcialmente el perfil del usuario en el estado global y en el storage
    * sin requerir un re-login. Usado tras actualizaciones de perfil (nombre, foto, etc.).
    *
    * @param {Partial<object>} updatedData - Campos actualizados del perfil
@@ -94,7 +100,8 @@ export function AuthProvider({ children }) {
       if (newUser.rol && typeof newUser.rol === 'object') {
         newUser.rol = newUser.rol.nombre;
       }
-      localStorage.setItem('user', JSON.stringify(newUser));
+      const storage = localStorage.getItem('accessToken') ? localStorage : sessionStorage;
+      storage.setItem('user', JSON.stringify(newUser));
       return newUser;
     });
   }, []);

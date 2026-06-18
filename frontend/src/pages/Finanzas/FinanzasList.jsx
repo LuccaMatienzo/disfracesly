@@ -187,9 +187,11 @@ export default function FinanzasList() {
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6">
             {/* Gráfica de Tendencia (AreaChart) */}
             <div className="xl:col-span-2 bg-surface-container-lowest rounded-2xl shadow-card p-4 md:p-6 flex flex-col min-h-[300px]">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-title-md font-headline font-semibold text-on-surface">Recaudación Histórica (Últimos 6 meses)</h3>
-                <div className="flex items-center gap-4 text-xs font-medium text-on-surface-variant">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 md:gap-0 mb-4">
+                <h3 className="text-title-sm sm:text-title-md font-headline font-semibold text-on-surface leading-tight">
+                  Recaudación Histórica (Últimos 6 meses)
+                </h3>
+                <div className="flex items-center gap-4 text-xs font-medium text-on-surface-variant shrink-0">
                   <div className="flex items-center gap-1.5">
                     <span className="w-2.5 h-2.5 rounded-full bg-[#84cc16]"></span>
                     Alquileres

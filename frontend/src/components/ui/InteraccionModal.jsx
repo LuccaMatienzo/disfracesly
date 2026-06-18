@@ -91,7 +91,7 @@ export default function InteraccionModal({ open, onClose, onSubmit, loading, tip
     const payload = {
       tipo,
       observaciones: formData.observaciones || undefined,
-      persona: isNuevaPersona 
+      persona: isNuevaPersona
         ? { documento: formData.documento, nombre: formData.nombre, apellido: formData.apellido }
         : { id_persona: cliente?.id_persona ? Number(cliente.id_persona) : undefined },
     };
@@ -100,14 +100,14 @@ export default function InteraccionModal({ open, onClose, onSubmit, loading, tip
 
   if (!operacion) return null;
 
-  const tituloModal = isRetiro 
-    ? (isVenta ? 'Confirmar Entrega' : 'Confirmar Retiro') 
+  const tituloModal = isRetiro
+    ? (isVenta ? 'Confirmar Entrega' : 'Confirmar Retiro')
     : 'Confirmar Devolución';
-    
-  const textoBoton = isRetiro 
-    ? (isVenta ? 'Registrar Entrega' : 'Registrar Retiro') 
+
+  const textoBoton = isRetiro
+    ? (isVenta ? 'Registrar Entrega' : 'Registrar Retiro')
     : 'Registrar Devolución';
-    
+
   const textoAccion = isRetiro
     ? (isVenta ? 'la entrega' : 'el retiro')
     : 'la devolución';
@@ -130,21 +130,20 @@ export default function InteraccionModal({ open, onClose, onSubmit, loading, tip
     >
       <form id="interaccion-form" onSubmit={handleSubmit} className="space-y-5">
         <p className="text-sm text-on-surface-variant bg-surface-container-low p-3 rounded-xl border border-divider">
-          Esta acción registrará {textoAccion} y avanzará la operación a la siguiente etapa.
+          Esta acción es irreversible, registrará {textoAccion} y no se podrá volver atrás.
         </p>
 
         {/* Quién realiza la acción */}
         <div className="space-y-3">
           <h3 className="text-sm font-label font-semibold uppercase tracking-widest text-on-surface-variant">
-            ¿A quién se le realiza {textoAccion}?
+            ¿Quién realiza {textoAccion}?
           </h3>
-          
+
           <div className="grid grid-cols-2 gap-3">
-            <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
-              !isNuevaPersona 
-                ? 'border-primary bg-primary/5' 
-                : 'border-divider hover:bg-surface-container-low'
-            }`}>
+            <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${!isNuevaPersona
+              ? 'border-primary bg-primary/5'
+              : 'border-divider hover:bg-surface-container-low'
+              }`}>
               <input
                 type="radio"
                 name="persona_tipo"
@@ -160,11 +159,10 @@ export default function InteraccionModal({ open, onClose, onSubmit, loading, tip
               </div>
             </label>
 
-            <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
-              isNuevaPersona 
-                ? 'border-primary bg-primary/5' 
-                : 'border-divider hover:bg-surface-container-low'
-            }`}>
+            <label className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${isNuevaPersona
+              ? 'border-primary bg-primary/5'
+              : 'border-divider hover:bg-surface-container-low'
+              }`}>
               <input
                 type="radio"
                 name="persona_tipo"
@@ -206,18 +204,17 @@ export default function InteraccionModal({ open, onClose, onSubmit, loading, tip
                     onFocus={() => {
                       if (suggestions.length > 0) setShowSuggestions(true);
                     }}
-                    className={`w-full bg-surface-container-lowest border rounded-xl px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-1 transition-all ${
-                      errors.documento 
-                        ? 'border-error focus:border-error focus:ring-error' 
-                        : 'border-divider focus:border-primary focus:ring-primary'
-                    }`}
+                    className={`w-full bg-surface-container-lowest border rounded-xl px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-1 transition-all ${errors.documento
+                      ? 'border-error focus:border-error focus:ring-error'
+                      : 'border-divider focus:border-primary focus:ring-primary'
+                      }`}
                     placeholder="Ej: 12345678"
                     autoComplete="off"
                   />
                   {showSuggestions && suggestions.length > 0 && (
                     <ul className="absolute z-50 w-full mt-1 bg-surface-container-lowest border border-divider rounded-xl shadow-lg max-h-48 overflow-y-auto">
                       {suggestions.map((sug) => (
-                        <li 
+                        <li
                           key={sug.id_persona}
                           onMouseDown={() => handleSelectSuggestion(sug)}
                           className="px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low cursor-pointer transition-colors border-b border-divider last:border-b-0"
@@ -244,11 +241,10 @@ export default function InteraccionModal({ open, onClose, onSubmit, loading, tip
                       if (errors.nombre) setErrors({ ...errors, nombre: '' });
                     }}
                     onBlur={validate}
-                    className={`w-full bg-surface-container-lowest border rounded-xl px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-1 transition-all ${
-                      errors.nombre 
-                        ? 'border-error focus:border-error focus:ring-error' 
-                        : 'border-divider focus:border-primary focus:ring-primary'
-                    }`}
+                    className={`w-full bg-surface-container-lowest border rounded-xl px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-1 transition-all ${errors.nombre
+                      ? 'border-error focus:border-error focus:ring-error'
+                      : 'border-divider focus:border-primary focus:ring-primary'
+                      }`}
                     placeholder="Nombre"
                   />
                   {errors.nombre && <span className="text-error text-xs font-medium mt-1 block">{errors.nombre}</span>}
@@ -266,11 +262,10 @@ export default function InteraccionModal({ open, onClose, onSubmit, loading, tip
                       if (errors.apellido) setErrors({ ...errors, apellido: '' });
                     }}
                     onBlur={validate}
-                    className={`w-full bg-surface-container-lowest border rounded-xl px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-1 transition-all ${
-                      errors.apellido 
-                        ? 'border-error focus:border-error focus:ring-error' 
-                        : 'border-divider focus:border-primary focus:ring-primary'
-                    }`}
+                    className={`w-full bg-surface-container-lowest border rounded-xl px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-1 transition-all ${errors.apellido
+                      ? 'border-error focus:border-error focus:ring-error'
+                      : 'border-divider focus:border-primary focus:ring-primary'
+                      }`}
                     placeholder="Apellido"
                   />
                   {errors.apellido && <span className="text-error text-xs font-medium mt-1 block">{errors.apellido}</span>}

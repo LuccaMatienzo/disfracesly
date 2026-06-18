@@ -126,9 +126,9 @@ export default function AccountModal({ isOpen, onClose }) {
           </div>
 
           {/* Body */}
-          <div className="p-5 space-y-6 overflow-y-auto">
+          <div className="px-5 pt-2 pb-5 space-y-4 overflow-y-auto">
             {/* Perfil */}
-            <section className="space-y-4">
+            <section className="space-y-3">
               <div className="flex items-center gap-2 text-on-surface font-medium border-b border-divider pb-2">
                 <FiUser className="text-primary" />
                 <h3>Perfil</h3>
@@ -138,9 +138,14 @@ export default function AccountModal({ isOpen, onClose }) {
                 <div className="size-16 rounded-full gradient-secondary flex items-center justify-center text-white font-headline font-bold text-2xl shadow-sm shrink-0">
                   {initials}
                 </div>
-                <button className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
-                  Cambiar foto
-                </button>
+                <div className="flex-1 min-w-0">
+                  <p className="text-title-md font-headline font-semibold text-on-surface truncate">
+                    ¡Hola, {nombre || user?.persona?.nombre}!
+                  </p>
+                  <p className="text-body-sm text-on-surface-variant truncate mt-0.5">
+                    {user?.correo || user?.email || ''}
+                  </p>
+                </div>
               </div>
 
               <div className="space-y-3">
@@ -164,21 +169,11 @@ export default function AccountModal({ isOpen, onClose }) {
                     />
                   </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-tertiary mb-1">Correo electrónico</label>
-                  <input 
-                    type="email" 
-                    value={user?.correo || user?.email || ''}
-                    readOnly
-                    disabled
-                    className="w-full bg-surface-container border border-divider text-on-surface rounded-xl px-4 py-2 opacity-60 cursor-not-allowed" 
-                  />
-                </div>
               </div>
             </section>
 
             {/* Seguridad */}
-            <section className="space-y-4">
+            <section className="space-y-3">
               <div className="flex items-center gap-2 text-on-surface font-medium border-b border-divider pb-2">
                 <FiLock className="text-primary" />
                 <h3>Seguridad</h3>
@@ -242,11 +237,7 @@ export default function AccountModal({ isOpen, onClose }) {
             <button 
               onClick={handleSaveClick}
               disabled={isLoading || !canSave}
-              className={`px-4 py-2 rounded-xl font-medium text-white shadow-sm transition-colors ${
-                isLoading || !canSave 
-                  ? 'bg-primary/50 cursor-not-allowed' 
-                  : 'bg-primary hover:bg-primary/90'
-              }`}
+              className="px-4 py-2 rounded-xl font-medium text-white shadow-sm transition-colors bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary"
             >
               Guardar cambios
             </button>

@@ -10,12 +10,15 @@
  */
 import { useState, useRef, useEffect } from 'react';
 import api from '@/api/axios.instance';
+import Button from '@/components/ui/Button';
+import Modal from '@/components/ui/Modal';
 
 export default function NotificationsDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [hasUnread, setHasUnread] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const dropdownRef = useRef(null);
   const scrollContainerRef = useRef(null);
 
@@ -29,26 +32,26 @@ export default function NotificationsDropdown() {
   const formatTime = (dateStr) => {
     if (!dateStr) return '';
     if (['Urgente', 'Hoy', 'Ahora'].includes(dateStr)) return dateStr;
-    
+
     const now = new Date();
     const date = new Date(dateStr);
     if (isNaN(date.getTime())) return dateStr;
 
     const diffMs = now - date;
     const diffMin = Math.floor(diffMs / 60000);
-    
+
     if (diffMin < 1) return 'recién';
     if (diffMin < 60) return `hace ${diffMin} min`;
-    
+
     const diffHrs = Math.floor(diffMin / 60);
     if (diffHrs < 24) return `hace ${diffHrs}h`;
-    
+
     const diffDays = Math.floor(diffHrs / 24);
     if (diffDays < 7) return `hace ${diffDays} día${diffDays > 1 ? 's' : ''}`;
-    
+
     const diffWeeks = Math.floor(diffDays / 7);
     if (diffWeeks < 4) return `hace ${diffWeeks} sem`;
-    
+
     return date.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' });
   };
 
@@ -60,12 +63,15 @@ export default function NotificationsDropdown() {
     try {
       setLoading(true);
       const { data } = await api.get('/dashboard/notifications');
-      setNotifications(data || []);
-      
+
+      const clearedIds = JSON.parse(localStorage.getItem('cleared_notifs') || '[]');
+      const activeNotifs = (data || []).filter(n => !clearedIds.includes(n.id));
+
+      setNotifications(activeNotifs);
+
       const lastSeenId = localStorage.getItem('last_notif_id');
-      if (data && data.length > 0) {
-        // We consider there are unread notifications if the last seen ID is different from the top one
-        if (lastSeenId !== data[0].id) {
+      if (activeNotifs && activeNotifs.length > 0) {
+        if (lastSeenId !== activeNotifs[0].id) {
           setHasUnread(true);
         }
       }
@@ -78,20 +84,25 @@ export default function NotificationsDropdown() {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Evitamos cerrar el dropdown si el modal de confirmación está abierto 
+      // o si se hizo clic dentro de algún modal global.
+      if (showClearConfirm) return;
+      if (event.target.closest('[role="dialog"]') || event.target.closest('.z-\\[200\\]')) return;
+      
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [showClearConfirm]);
 
   // Handle scroll to bottom to mark as read
   const handleScroll = () => {
     if (!scrollContainerRef.current || !hasUnread) return;
-    
+
     const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
-    
+
     // If scrolled to bottom (or close to bottom) or if there's no scrollbar because list is short
     if (scrollTop + clientHeight >= scrollHeight - 20) {
       markAsRead();
@@ -115,6 +126,17 @@ export default function NotificationsDropdown() {
     setHasUnread(false);
   };
 
+  const handleClearAll = () => {
+    const idsToClear = notifications.map(n => n.id);
+    const previouslyCleared = JSON.parse(localStorage.getItem('cleared_notifs') || '[]');
+    // Keep max 100 to avoid bloat in localStorage
+    const newCleared = [...new Set([...previouslyCleared, ...idsToClear])].slice(-100);
+    localStorage.setItem('cleared_notifs', JSON.stringify(newCleared));
+    setNotifications([]);
+    setHasUnread(false);
+    setShowClearConfirm(false);
+  };
+
   /**
    * Determina el icono y colores según el tipo de notificación.
    *
@@ -135,9 +157,9 @@ export default function NotificationsDropdown() {
   return (
     <div className="relative" ref={dropdownRef}>
       {/* Trigger Button */}
-      <button 
+      <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative size-9 rounded-xl hover:bg-surface-container transition-colors flex items-center justify-center group" 
+        className="relative size-9 rounded-xl hover:bg-surface-container transition-colors flex items-center justify-center group"
         aria-label="Notificaciones"
       >
         <span className="material-symbols-outlined text-tertiary text-xl group-hover:text-on-surface transition-colors">
@@ -153,16 +175,26 @@ export default function NotificationsDropdown() {
         <div className="fixed top-[60px] left-3 right-3 sm:absolute sm:top-full sm:left-auto sm:right-0 sm:mt-2 sm:w-96 bg-card-panel rounded-2xl shadow-xl border border-divider overflow-hidden z-[9999] animate-fade-in origin-top sm:origin-top-right flex flex-col max-h-[85vh]">
           {/* Header */}
           <div className="px-5 py-4 border-b border-divider flex items-center justify-between bg-surface-container-lowest shrink-0">
-            <h3 className="font-headline font-semibold text-on-surface text-base">Notificaciones</h3>
-            {hasUnread && (
-              <span className="text-[10px] font-bold text-secondary-container bg-secondary-container/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                Nuevas
-              </span>
+            <div className="flex items-center gap-2">
+              <h3 className="font-headline font-semibold text-on-surface text-base">Notificaciones</h3>
+              {hasUnread && (
+                <span className="text-[10px] font-bold text-secondary-container bg-secondary-container/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                  Nuevas
+                </span>
+              )}
+            </div>
+            {notifications.length > 0 && (
+              <button
+                onClick={() => setShowClearConfirm(true)}
+                className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
+              >
+                Limpiar todo
+              </button>
             )}
           </div>
 
           {/* List */}
-          <div 
+          <div
             className="overflow-y-auto overscroll-contain flex-1"
             ref={scrollContainerRef}
             onScroll={handleScroll}
@@ -181,8 +213,8 @@ export default function NotificationsDropdown() {
                 {notifications.map((notif) => {
                   const ui = getIconForType(notif.type);
                   return (
-                    <div 
-                      key={notif.id} 
+                    <div
+                      key={notif.id}
                       className="p-4 hover:bg-surface-container/50 transition-colors flex gap-4 items-start"
                     >
                       <div className={`size-10 rounded-full flex items-center justify-center shrink-0 ${ui.bg}`}>
@@ -208,7 +240,7 @@ export default function NotificationsDropdown() {
                 })}
               </div>
             )}
-            
+
             {/* Scroll indicator for unread */}
             {hasUnread && notifications.length > 4 && (
               <div className="p-3 text-center bg-card-panel sticky bottom-0 border-t border-divider shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.1)] z-10">
@@ -220,6 +252,32 @@ export default function NotificationsDropdown() {
           </div>
         </div>
       )}
+      {/* Modal Confirmación de Limpieza */}
+      <Modal
+        open={showClearConfirm}
+        onClose={() => setShowClearConfirm(false)}
+        title="Limpiar Notificaciones"
+        size="sm"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setShowClearConfirm(false)}>
+              Cancelar
+            </Button>
+            <Button variant="primary" onClick={handleClearAll}>
+              Limpiar todo
+            </Button>
+          </>
+        }
+      >
+        <div className="text-center">
+          <p className="text-body-lg text-on-surface">
+            ¿Estás seguro de que quieres limpiar todas las notificaciones?
+          </p>
+          <p className="text-sm text-on-surface-variant mt-2">
+            Esta acción es irreversible
+          </p>
+        </div>
+      </Modal>
     </div>
   );
 }

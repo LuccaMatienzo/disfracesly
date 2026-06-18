@@ -44,8 +44,8 @@ export default function Modal({ open, onClose, title, children, size = 'md', foo
         `}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-divider shrink-0">
-          <h2 className="font-headline text-title-lg md:text-headline-md text-on-surface">{title}</h2>
+        <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-divider shrink-0 gap-4">
+          <h2 className="font-headline text-title-md md:text-title-lg text-on-surface leading-tight break-words">{title}</h2>
           <button
             onClick={onClose}
             className="size-9 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-surface-container text-on-surface-variant transition-colors"
