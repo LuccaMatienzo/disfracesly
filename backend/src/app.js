@@ -1,30 +1,31 @@
 const express = require('express');
-const cors    = require('cors');
-const helmet  = require('helmet');
-const morgan  = require('morgan');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
-const path    = require('path');
+const path = require('path');
 const cookieParser = require('cookie-parser');
 
-const { env }             = require('./config/env');
+const { env } = require('./config/env');
 const { errorMiddleware } = require('./middleware/error.middleware');
 
 // ─── Módulos de rutas ─────────────────────────────────────────────────────────
-const authRoutes      = require('./modules/auth/auth.routes');
-const usuarioRoutes   = require('./modules/usuarios/usuarios.routes');
-const clienteRoutes   = require('./modules/clientes/clientes.routes');
-const catalogoRoutes  = require('./modules/catalogo/catalogo.routes');
-const stockRoutes     = require('./modules/stock/stock.routes');
+const authRoutes = require('./modules/auth/auth.routes');
+const usuarioRoutes = require('./modules/usuarios/usuarios.routes');
+const clienteRoutes = require('./modules/clientes/clientes.routes');
+const catalogoRoutes = require('./modules/catalogo/catalogo.routes');
+const stockRoutes = require('./modules/stock/stock.routes');
 const operacionRoutes = require('./modules/operaciones/operaciones.routes');
-const pagoRoutes      = require('./modules/pagos/pagos.routes');
-const imagenRoutes    = require('./modules/imagenes/imagenes.routes');
+const pagoRoutes = require('./modules/pagos/pagos.routes');
+const imagenRoutes = require('./modules/imagenes/imagenes.routes');
 const dashboardRoutes = require('./modules/dashboard/dashboard.routes');
-const personaRoutes   = require('./modules/personas/personas.routes');
+const personaRoutes = require('./modules/personas/personas.routes');
 
 const app = express();
 
-// Confiar en el proxy de Render (necesario para express-rate-limit)
-app.set('trust proxy', 1);
+// Confiar en los 2 proxies (Vercel -> Render) para express-rate-limit
+app.set('trust proxy', 2);
+
 
 // ─── Seguridad ────────────────────────────────────────────────────────────────
 // helmet aplica cabeceras HTTP de seguridad estándar (CSP, HSTS, etc.).
@@ -106,16 +107,16 @@ app.get('/api/health', (_req, res) => {
 });
 
 // ─── Rutas de la API ──────────────────────────────────────────────────────────
-app.use('/api/auth',       authLimiter, authRoutes);
-app.use('/api/usuarios',   apiLimiter,  usuarioRoutes);
-app.use('/api/clientes',   apiLimiter,  clienteRoutes);
-app.use('/api/catalogo',   apiLimiter,  catalogoRoutes);
-app.use('/api/stock',      apiLimiter,  stockRoutes);
-app.use('/api/operaciones',apiLimiter,  operacionRoutes);
-app.use('/api/pagos',      apiLimiter,  pagoRoutes);
-app.use('/api/imagenes',   apiLimiter,  imagenRoutes);
-app.use('/api/dashboard',  apiLimiter,  dashboardRoutes);
-app.use('/api/personas',   apiLimiter,  personaRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/usuarios', apiLimiter, usuarioRoutes);
+app.use('/api/clientes', apiLimiter, clienteRoutes);
+app.use('/api/catalogo', apiLimiter, catalogoRoutes);
+app.use('/api/stock', apiLimiter, stockRoutes);
+app.use('/api/operaciones', apiLimiter, operacionRoutes);
+app.use('/api/pagos', apiLimiter, pagoRoutes);
+app.use('/api/imagenes', apiLimiter, imagenRoutes);
+app.use('/api/dashboard', apiLimiter, dashboardRoutes);
+app.use('/api/personas', apiLimiter, personaRoutes);
 
 // ─── 404 – Ruta no encontrada ─────────────────────────────────────────────────
 app.use((_req, res) => {
