@@ -29,14 +29,33 @@ export default function Table({ columns, data, loading, emptyMessage = 'Sin resu
         {/* Body */}
         <tbody className="block md:table-row-group">
           {loading ? (
-            <tr className="block md:table-row">
-              <td colSpan={columns.length} className="block md:table-cell py-12 text-center">
-                <div className="inline-flex items-center gap-2 text-on-surface-variant">
-                  <div className="size-5 border-2 border-primary-container border-t-primary rounded-full animate-spin" />
-                  <span>Cargando…</span>
-                </div>
-              </td>
-            </tr>
+            Array.from({ length: 5 }).map((_, i) => (
+              <tr 
+                key={`skel-${i}`} 
+                className={`
+                  block mb-3 last:mb-0 p-4 rounded-xl border border-divider
+                  bg-surface-container-lowest shadow-sm
+                  md:table-row md:mb-0 md:p-0 md:rounded-none md:border-0 md:shadow-none
+                  ${i % 2 === 0 ? 'md:bg-background' : 'md:bg-surface-container-low'}
+                `}
+              >
+                {columns.map((col, idx) => (
+                  <td 
+                    key={col.key || idx} 
+                    className={`block md:table-cell px-4 py-3 border-b border-divider/30 md:border-0 ${idx === columns.length - 1 ? 'border-0' : ''}`}
+                  >
+                    <div 
+                      className="h-4 bg-surface-container/60 animate-pulse rounded" 
+                      style={{ 
+                        width: col.key === 'acciones' ? '40px' : Math.floor(Math.random() * (90 - 40 + 1) + 40) + '%',
+                        marginLeft: col.align === 'center' ? 'auto' : '0',
+                        marginRight: col.align === 'center' ? 'auto' : (col.align === 'right' ? '0' : 'auto')
+                      }} 
+                    />
+                  </td>
+                ))}
+              </tr>
+            ))
           ) : data?.length === 0 ? (
             <tr className="block md:table-row">
               <td colSpan={columns.length} className="block md:table-cell py-12 text-center text-on-surface-variant">

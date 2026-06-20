@@ -77,14 +77,14 @@ async function loginService({ correo, contrasena }) {
     },
   });
 
-  if (!usuario) throw ApiError.unauthorized('La cuenta no existe.');
+  if (!usuario) throw ApiError.unauthorized('El correo electrónico ingresado no pertenece a ningún usuario registrado');
 
   if (usuario.deleted_at !== null) {
-    throw ApiError.unauthorized('La cuenta está dada de baja. Debe comunicarse con el administrador.');
+    throw ApiError.unauthorized('La cuenta está inactiva. Debe comunicarse con el administrador del sistema');
   }
 
   const valid = await bcrypt.compare(contrasena, usuario.contrasena);
-  if (!valid) throw ApiError.unauthorized('La Contraseña igresada es incorrecta.');
+  if (!valid) throw ApiError.unauthorized('La contraseña ingresada es incorrecta');
 
   const payload = { sub: usuario.id_usuario.toString(), correo: usuario.correo, rol: usuario.rol.nombre };
   const tokens = generateTokens(payload);

@@ -36,10 +36,44 @@ const DisfrazForm      = lazy(() => import('@/pages/Catalogo/DisfrazForm'));
  */
 function PageLoading() {
   return (
-    <div className="flex items-center justify-center min-h-[100dvh] bg-background">
-      <div className="flex flex-col items-center gap-4">
-        <div className="size-10 border-4 border-primary-container border-t-primary rounded-full animate-spin" />
-        <p className="text-sm text-on-surface-variant font-label tracking-wider uppercase">Cargando…</p>
+    <div className="flex h-[100dvh] bg-background overflow-hidden w-full pointer-events-none">
+      {/* Sidebar Skeleton (oculto en mobile) */}
+      <div className="hidden lg:flex flex-col w-[280px] border-r border-divider bg-surface-container-lowest p-6">
+        <div className="h-10 w-40 bg-surface-container/60 animate-pulse rounded-xl mb-10" />
+        <div className="space-y-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="h-12 w-full bg-surface-container/40 animate-pulse rounded-xl" />
+          ))}
+        </div>
+        <div className="mt-auto flex items-center gap-3">
+          <div className="size-10 rounded-full bg-surface-container/60 animate-pulse shrink-0" />
+          <div className="flex-1 space-y-2">
+            <div className="h-3 w-24 bg-surface-container/60 animate-pulse rounded-full" />
+            <div className="h-2 w-16 bg-surface-container/40 animate-pulse rounded-full" />
+          </div>
+        </div>
+      </div>
+      
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header Skeleton */}
+        <div className="h-[72px] shrink-0 border-b border-divider bg-surface-container-lowest flex items-center px-4 md:px-8 justify-between">
+          <div className="h-10 w-10 bg-surface-container/60 animate-pulse rounded-xl lg:hidden" />
+          <div className="flex items-center gap-4 ml-auto">
+             <div className="size-9 bg-surface-container/40 animate-pulse rounded-xl hidden md:block" />
+             <div className="size-10 bg-surface-container/60 animate-pulse rounded-full" />
+          </div>
+        </div>
+        
+        {/* Content Area Skeleton */}
+        <div className="flex-1 p-4 md:p-8 overflow-hidden bg-background">
+          <div className="h-8 md:h-10 w-48 md:w-64 bg-surface-container/60 animate-pulse rounded-xl mb-6 md:mb-8" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-32 bg-card-panel border border-divider rounded-2xl animate-pulse" />
+            ))}
+            <div className="h-64 bg-card-panel border border-divider rounded-2xl animate-pulse sm:col-span-2 lg:col-span-3" />
+          </div>
+        </div>
       </div>
     </div>
   );
