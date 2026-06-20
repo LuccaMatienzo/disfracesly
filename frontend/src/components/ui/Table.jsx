@@ -9,22 +9,24 @@ export default function Table({ columns, data, loading, emptyMessage = 'Sin resu
   return (
     <div className="w-full md:overflow-x-auto md:rounded-xl" style={{ WebkitOverflowScrolling: 'touch' }}>
       <table className="w-full md:border-collapse text-body-md md:min-w-[540px]">
-        {/* Header — visible solo en md+ */}
-        <thead className="hidden md:table-header-group">
-          <tr className="bg-surface-container">
-            {columns.map((col) => (
-              <th
-                key={col.key}
-                className={`px-4 py-3 text-label-lg font-label font-medium uppercase tracking-wide text-on-surface-variant ${
-                  col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'
-                }`}
-                style={{ width: col.width }}
-              >
-                {col.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
+        {/* Header — visible solo en md+ y no cuando hay loading skeleton */}
+        {!loading && (
+          <thead className="hidden md:table-header-group">
+            <tr className="bg-surface-container">
+              {columns.map((col) => (
+                <th
+                  key={col.key}
+                  className={`px-4 py-3 text-label-lg font-label font-medium uppercase tracking-wide text-on-surface-variant ${
+                    col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'
+                  }`}
+                  style={{ width: col.width }}
+                >
+                  {col.label}
+                </th>
+              ))}
+            </tr>
+          </thead>
+        )}
 
         {/* Body */}
         <tbody className="block md:table-row-group">
@@ -40,16 +42,9 @@ export default function Table({ columns, data, loading, emptyMessage = 'Sin resu
                 `}
               >
                 {columns.map((col, idx) => {
-                  // Lógica genérica y modular para calcular el ancho del skeleton sin hardcodes
-                  let skelWidth = '65%'; // Default genérico
-                  if (col.width) {
-                    skelWidth = col.width;
-                  } else if (idx === 0) {
-                    skelWidth = '30px'; // Usualmente la primera col es ID o check
-                  } else if (idx === columns.length - 1 || col.align === 'center' || col.align === 'right') {
-                    skelWidth = '70px'; // Usualmente acciones, fechas o montos
-                  }
-
+                  const isId = col.label === '#' || col.key === 'id' || col.key === 'id_operacion' || col.key === 'id_pieza';
+                  const isAcciones = col.key === 'acciones';
+                  const isShort = col.key === 'monto' || col.key === 'etapa' || col.key === 'fecha' || col.key === 'estado' || col.key === 'tipo';
                   return (
                     <td 
                       key={col.key || idx} 
@@ -57,7 +52,9 @@ export default function Table({ columns, data, loading, emptyMessage = 'Sin resu
                     >
                       <div 
                         className={`h-4 skeleton-box rounded max-w-full ${col.align === 'center' ? 'mx-auto' : col.align === 'right' ? 'ml-auto' : ''}`}
-                        style={{ width: skelWidth }} 
+                        style={{ 
+                          width: isId ? '24px' : isAcciones ? '80px' : isShort ? '80px' : '65%',
+                        }} 
                       />
                     </td>
                   );
