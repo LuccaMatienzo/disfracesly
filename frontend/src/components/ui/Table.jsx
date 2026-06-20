@@ -39,21 +39,29 @@ export default function Table({ columns, data, loading, emptyMessage = 'Sin resu
                   ${i % 2 === 0 ? 'md:bg-background' : 'md:bg-surface-container-low'}
                 `}
               >
-                {columns.map((col, idx) => (
-                  <td 
-                    key={col.key || idx} 
-                    className={`block md:table-cell px-4 py-3 border-b border-divider/30 md:border-0 ${idx === columns.length - 1 ? 'border-0' : ''}`}
-                  >
-                    <div 
-                      className="h-4 bg-surface-container/60 animate-pulse rounded" 
-                      style={{ 
-                        width: col.key === 'acciones' ? '40px' : Math.floor(Math.random() * (90 - 40 + 1) + 40) + '%',
-                        marginLeft: col.align === 'center' ? 'auto' : '0',
-                        marginRight: col.align === 'center' ? 'auto' : (col.align === 'right' ? '0' : 'auto')
-                      }} 
-                    />
-                  </td>
-                ))}
+                {columns.map((col, idx) => {
+                  // Lógica genérica y modular para calcular el ancho del skeleton sin hardcodes
+                  let skelWidth = '65%'; // Default genérico
+                  if (col.width) {
+                    skelWidth = col.width;
+                  } else if (idx === 0) {
+                    skelWidth = '30px'; // Usualmente la primera col es ID o check
+                  } else if (idx === columns.length - 1 || col.align === 'center' || col.align === 'right') {
+                    skelWidth = '70px'; // Usualmente acciones, fechas o montos
+                  }
+
+                  return (
+                    <td 
+                      key={col.key || idx} 
+                      className={`block md:table-cell px-4 py-4 md:py-3 border-b border-divider/30 md:border-0 ${idx === columns.length - 1 ? 'border-0' : ''}`}
+                    >
+                      <div 
+                        className={`h-4 skeleton-box rounded max-w-full ${col.align === 'center' ? 'mx-auto' : col.align === 'right' ? 'ml-auto' : ''}`}
+                        style={{ width: skelWidth }} 
+                      />
+                    </td>
+                  );
+                })}
               </tr>
             ))
           ) : data?.length === 0 ? (

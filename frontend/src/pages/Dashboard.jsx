@@ -607,14 +607,14 @@ export default function Dashboard() {
       <div className="space-y-5 md:space-y-8 w-full pointer-events-none">
         {/* Header Skeleton */}
         <div className="flex flex-col gap-2">
-          <div className="h-8 md:h-10 w-48 md:w-64 bg-surface-container/60 animate-pulse rounded-xl" />
-          <div className="h-4 md:h-5 w-32 md:w-48 bg-surface-container/40 animate-pulse rounded-lg" />
+          <div className="h-8 md:h-10 w-48 md:w-64 skeleton-box rounded-xl" />
+          <div className="h-4 md:h-5 w-32 md:w-48 skeleton-box rounded-lg" />
         </div>
         
         {/* KPIs Skeleton */}
         <div className={`grid grid-cols-1 sm:grid-cols-2 ${hasRol('Empleado') ? 'xl:grid-cols-3' : 'xl:grid-cols-4'} gap-3 md:gap-4`}>
           {[1, 2, 3, 4].slice(0, hasRol('Empleado') ? 3 : 4).map((i) => (
-            <div key={i} className="bg-card-panel rounded-2xl shadow-card p-4 md:p-5 h-[120px] md:h-[140px] animate-pulse flex flex-col justify-between">
+            <div key={i} className="bg-card-panel rounded-2xl shadow-card p-4 md:p-5 h-[120px] md:h-[140px] skeleton-box flex flex-col justify-between border border-transparent">
               <div className="h-3 md:h-4 w-24 bg-surface-container/60 rounded-full" />
               <div className="h-10 md:h-12 w-16 bg-surface-container/80 rounded-xl" />
               <div className="h-2.5 md:h-3 w-32 bg-surface-container/40 rounded-full" />
@@ -624,7 +624,7 @@ export default function Dashboard() {
 
         {/* Bento Skeleton */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-          <div className="lg:col-span-2 h-[300px] md:h-[400px] bg-card-panel rounded-2xl shadow-card p-4 md:p-6 animate-pulse flex flex-col gap-6">
+          <div className="lg:col-span-2 h-[300px] md:h-[400px] bg-card-panel rounded-2xl shadow-card p-4 md:p-6 skeleton-box flex flex-col gap-6 border border-transparent">
              <div className="h-6 w-48 bg-surface-container/60 rounded-xl" />
              <div className="space-y-4 flex-1">
                {[1, 2, 3, 4].map(i => (
@@ -634,14 +634,14 @@ export default function Dashboard() {
           </div>
           <div className="flex flex-col gap-4 md:gap-6">
             {!hasRol('Empleado') && (
-              <div className="h-[200px] bg-card-panel rounded-2xl shadow-card p-4 md:p-6 animate-pulse flex flex-col gap-4">
+              <div className="h-[200px] bg-card-panel rounded-2xl shadow-card p-4 md:p-6 skeleton-box flex flex-col gap-4 border border-transparent">
                 <div className="h-6 w-40 bg-surface-container/60 rounded-xl" />
                 {[1, 2, 3].map(i => (
                   <div key={i} className="h-10 w-full bg-surface-container/30 rounded-xl" />
                 ))}
               </div>
             )}
-            <div className="flex-1 h-[200px] bg-card-panel rounded-2xl shadow-card p-4 md:p-6 animate-pulse flex flex-col justify-between items-center">
+            <div className="flex-1 h-[200px] bg-card-panel rounded-2xl shadow-card p-4 md:p-6 skeleton-box flex flex-col justify-between items-center border border-transparent">
                <div className="h-6 w-40 bg-surface-container/60 rounded-xl self-start mb-4" />
                <div className="size-32 md:size-40 rounded-full border-[16px] border-surface-container/30" />
             </div>
