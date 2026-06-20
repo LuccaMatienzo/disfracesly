@@ -10,6 +10,7 @@
 
 import { FiEye, FiEdit2, FiTrash2, FiArrowRight, FiRotateCcw, FiKey, FiPrinter } from 'react-icons/fi';
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 const baseBtn =
   'inline-flex items-center justify-center rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 disabled:opacity-40 disabled:pointer-events-none min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0';
@@ -22,17 +23,45 @@ const sizeMap = {
 export default function ActionButtons({ onView, onEdit, onDelete, onDetail, onPassword, onRestore, onPrint, printOptions, size = 'sm' }) {
   const sz = sizeMap[size] ?? sizeMap.sm;
   const [printMenuOpen, setPrintMenuOpen] = useState(false);
+  const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
   const printMenuRef = useRef(null);
+  const printBtnRef = useRef(null);
+
+  const togglePrintMenu = (e) => {
+    e.stopPropagation();
+    if (!printMenuOpen && printBtnRef.current) {
+      const rect = printBtnRef.current.getBoundingClientRect();
+      setMenuPos({
+        top: rect.bottom + 8,
+        right: window.innerWidth - rect.right
+      });
+    }
+    setPrintMenuOpen(!printMenuOpen);
+  };
 
   useEffect(() => {
     function handleClickOutside(event) {
-      if (printMenuRef.current && !printMenuRef.current.contains(event.target)) {
+      if (
+        printMenuRef.current && !printMenuRef.current.contains(event.target) &&
+        printBtnRef.current && !printBtnRef.current.contains(event.target)
+      ) {
         setPrintMenuOpen(false);
       }
     }
+    
+    function handleScroll() {
+      setPrintMenuOpen(false);
+    }
+
     if (printMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      document.addEventListener('scroll', handleScroll, true);
+      window.addEventListener('resize', handleScroll);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('scroll', handleScroll, true);
+        window.removeEventListener('resize', handleScroll);
+      };
     }
   }, [printMenuOpen]);
 
@@ -50,17 +79,25 @@ export default function ActionButtons({ onView, onEdit, onDelete, onDetail, onPa
       )}
 
       {printOptions && printOptions.length > 0 ? (
-        <div className="relative flex items-center" ref={printMenuRef}>
+        <div className="relative flex items-center">
           <button
+            ref={printBtnRef}
             type="button"
-            onClick={(e) => { e.stopPropagation(); setPrintMenuOpen(!printMenuOpen); }}
+            onClick={togglePrintMenu}
             title="Opciones de Impresión"
-            className={`${baseBtn} ${sz} text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface`}
+            className={`${baseBtn} ${sz} text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface ${printMenuOpen ? 'bg-surface-container-high text-on-surface' : ''}`}
           >
             <FiPrinter />
           </button>
-          {printMenuOpen && (
-            <div className="absolute top-full left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-0 mt-2 w-[240px] sm:w-64 bg-surface-container-high rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.16)] z-[9999] flex flex-col p-1 border border-outline-variant animate-scale-in origin-top sm:origin-top-right">
+          {printMenuOpen && createPortal(
+            <div 
+              ref={printMenuRef}
+              className="fixed w-[240px] sm:w-64 bg-surface-container-high rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.16)] z-[99999] flex flex-col p-1 border border-outline-variant animate-scale-in origin-top-right"
+              style={{
+                top: `${menuPos.top}px`,
+                right: window.innerWidth < 640 ? '16px' : `${menuPos.right}px`
+              }}
+            >
                {printOptions.map((opt, i) => (
                   <button 
                     key={i} 
@@ -72,7 +109,8 @@ export default function ActionButtons({ onView, onEdit, onDelete, onDetail, onPa
                      {opt.label}
                   </button>
                ))}
-            </div>
+            </div>,
+            document.body
           )}
         </div>
       ) : onPrint && (

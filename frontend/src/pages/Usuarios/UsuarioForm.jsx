@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
 import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
+import Input, { Select } from '@/components/ui/Input';
 import Modal from '@/components/ui/Modal';
 import { useFeedback } from '@/context/FeedbackContext';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -152,19 +152,16 @@ export default function UsuarioForm() {
               autoComplete="new-password"
               {...register('correo')} />
             
-            <div className="flex flex-col gap-1.5">
-              <label className="text-label-lg font-label font-medium text-on-surface-variant uppercase tracking-wide">Rol</label>
-              <select
-                {...register('id_rol', { valueAsNumber: true })}
-                className={`w-full rounded-lg px-4 py-3 bg-surface-container-high text-on-surface text-body-md border-0 outline-none transition-all duration-150 focus:ring-2 focus:ring-primary/30 focus:bg-surface-container-lowest ${errors.id_rol ? 'ring-2 ring-error' : ''}`}
-              >
-                <option value="">Seleccionar rol…</option>
-                {roles.map(rol => (
-                  <option key={rol.id_rol} value={rol.id_rol}>{rol.nombre}</option>
-                ))}
-              </select>
-              {errors.id_rol && <p className="text-label-lg text-error">{errors.id_rol.message}</p>}
-            </div>
+            <Select
+              label="Rol"
+              error={errors.id_rol?.message}
+              {...register('id_rol', { valueAsNumber: true })}
+            >
+              <option value="">Seleccionar rol…</option>
+              {roles.map(rol => (
+                <option key={rol.id_rol} value={rol.id_rol}>{rol.nombre}</option>
+              ))}
+            </Select>
 
             {!isEditing && (
               <div className="sm:col-span-2 relative">
