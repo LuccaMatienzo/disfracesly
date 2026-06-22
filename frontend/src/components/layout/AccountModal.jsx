@@ -3,6 +3,7 @@ import { FiX, FiUser, FiLock } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext';
 import { useFeedback } from '@/context/FeedbackContext';
 import api from '@/api/axios.instance';
+import ConfirmActionModal from '@/components/ui/ConfirmActionModal';
 
 export default function AccountModal({ isOpen, onClose }) {
   const { user, updateLocalUser } = useAuth();
@@ -36,14 +37,21 @@ export default function AccountModal({ isOpen, onClose }) {
   const isProfileValid = trimmedNombre.length > 0 && trimmedApellido.length > 0;
   
   const isPasswordEmpty = currentPassword === '' && password === '' && confirmPassword === '';
-  const isPasswordValid = currentPassword.length > 0 && password.length >= 8 && password === confirmPassword;
+  const isCurrentPasswordMissing = !isPasswordEmpty && currentPassword.length === 0;
+  const isNewPasswordTooShort = !isPasswordEmpty && password.length > 0 && password.length < 8;
+  const isConfirmPasswordMismatch = !isPasswordEmpty && confirmPassword.length > 0 && password !== confirmPassword;
+  
+  const isPasswordValid = !isPasswordEmpty && currentPassword.length > 0 && password.length >= 8 && password === confirmPassword;
   
   // Guardar solo si el perfil es válido Y 
   // O bien hay cambios de perfil sin tocar la contraseña
-  // O bien hay una contraseña completada y válida
+  // O bien hay una contraseña completada y válida sin errores
   const canSave = isProfileValid && ((hasProfileChanges && isPasswordEmpty) || isPasswordValid);
 
   if (!isOpen) return null;
+
+  const handleNameChange = (e) => setNombre(e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s']/g, ''));
+  const handleLastNameChange = (e) => setApellido(e.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s']/g, ''));
 
   const handleSaveClick = (e) => {
     e?.preventDefault?.();
@@ -155,7 +163,7 @@ export default function AccountModal({ isOpen, onClose }) {
                     <input 
                       type="text" 
                       value={nombre}
-                      onChange={(e) => setNombre(e.target.value)}
+                      onChange={handleNameChange}
                       className="w-full bg-surface-container border border-divider text-on-surface rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" 
                     />
                   </div>
@@ -164,7 +172,7 @@ export default function AccountModal({ isOpen, onClose }) {
                     <input 
                       type="text" 
                       value={apellido}
-                      onChange={(e) => setApellido(e.target.value)}
+                      onChange={handleLastNameChange}
                       className="w-full bg-surface-container border border-divider text-on-surface rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" 
                     />
                   </div>
@@ -187,8 +195,17 @@ export default function AccountModal({ isOpen, onClose }) {
                     placeholder="••••••••"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full bg-surface-container border border-divider text-on-surface rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" 
+                    className={`w-full bg-surface-container border text-on-surface rounded-xl px-4 py-2 focus:outline-none focus:ring-2 transition-all ${
+                      isCurrentPasswordMissing
+                        ? 'border-red-500/50 focus:ring-red-500/50'
+                        : 'border-divider focus:ring-primary/50'
+                    }`} 
                   />
+                  {isCurrentPasswordMissing && (
+                    <p className="text-red-400 text-xs mt-1.5 ml-1 animate-fade-in">
+                      Debe ingresar su contraseña actual
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-tertiary mb-1">Nueva Contraseña</label>
@@ -197,8 +214,17 @@ export default function AccountModal({ isOpen, onClose }) {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-surface-container border border-divider text-on-surface rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" 
+                    className={`w-full bg-surface-container border text-on-surface rounded-xl px-4 py-2 focus:outline-none focus:ring-2 transition-all ${
+                      isNewPasswordTooShort
+                        ? 'border-red-500/50 focus:ring-red-500/50'
+                        : 'border-divider focus:ring-primary/50'
+                    }`} 
                   />
+                  {isNewPasswordTooShort && (
+                    <p className="text-red-400 text-xs mt-1.5 ml-1 animate-fade-in">
+                      La contraseña debe tener al menos 8 caracteres
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-tertiary mb-1">Confirmar Contraseña</label>
@@ -208,16 +234,14 @@ export default function AccountModal({ isOpen, onClose }) {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className={`w-full bg-surface-container border text-on-surface rounded-xl px-4 py-2 focus:outline-none focus:ring-2 transition-all ${
-                      !isPasswordEmpty && !isPasswordValid
+                      isConfirmPasswordMismatch
                         ? 'border-red-500/50 focus:ring-red-500/50'
                         : 'border-divider focus:ring-primary/50'
                     }`} 
                   />
-                  {!isPasswordEmpty && !isPasswordValid && (
+                  {isConfirmPasswordMismatch && (
                     <p className="text-red-400 text-xs mt-1.5 ml-1 animate-fade-in">
-                      {password.length < 8 
-                        ? 'La contraseña debe tener al menos 8 caracteres'
-                        : 'Las contraseñas no coinciden'}
+                      Las contraseñas no coinciden
                     </p>
                   )}
                 </div>
@@ -245,34 +269,16 @@ export default function AccountModal({ isOpen, onClose }) {
         </div>
       </div>
 
-      {/* Confirmation Modal */}
-      {showConfirm && (
-        <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: 70 }}>
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => !isLoading && setShowConfirm(false)} />
-          <div className="relative bg-card-panel border border-divider rounded-2xl shadow-2xl w-full max-w-sm p-6 animate-fade-in">
-            <h3 className="text-lg font-headline font-semibold text-on-surface mb-2">¿Guardar cambios?</h3>
-            <p className="text-sm text-on-surface-variant mb-6">
-              ¿Estás seguro que deseas aplicar estas modificaciones a tu cuenta?
-            </p>
-            <div className="flex justify-end gap-3">
-              <button 
-                onClick={() => setShowConfirm(false)}
-                disabled={isLoading}
-                className="px-4 py-2 rounded-xl font-medium text-on-surface-variant hover:bg-surface-container transition-colors disabled:opacity-50"
-              >
-                Cancelar
-              </button>
-              <button 
-                onClick={handleConfirmSave}
-                disabled={isLoading}
-                className="px-4 py-2 rounded-xl font-medium text-white bg-primary hover:bg-primary/90 shadow-sm transition-colors disabled:opacity-50"
-              >
-                {isLoading ? 'Guardando…' : 'Sí, confirmar'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmActionModal
+        open={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleConfirmSave}
+        title="¿Guardar cambios?"
+        message="¿Estás seguro que deseas aplicar estas modificaciones a tu cuenta?"
+        confirmText="Sí, confirmar"
+        confirmVariant="primary"
+        loading={isLoading}
+      />
 
     </>
   );

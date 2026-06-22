@@ -11,7 +11,7 @@
 import { useState, useRef, useEffect } from 'react';
 import api from '@/api/axios.instance';
 import Button from '@/components/ui/Button';
-import Modal from '@/components/ui/Modal';
+import ConfirmActionModal from '@/components/ui/ConfirmActionModal';
 
 export default function NotificationsDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -253,31 +253,16 @@ export default function NotificationsDropdown() {
         </div>
       )}
       {/* Modal Confirmación de Limpieza */}
-      <Modal
+      <ConfirmActionModal
         open={showClearConfirm}
         onClose={() => setShowClearConfirm(false)}
+        onConfirm={handleClearAll}
         title="Limpiar Notificaciones"
-        size="sm"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setShowClearConfirm(false)}>
-              Cancelar
-            </Button>
-            <Button variant="primary" onClick={handleClearAll}>
-              Limpiar todo
-            </Button>
-          </>
-        }
-      >
-        <div className="text-center">
-          <p className="text-body-lg text-on-surface">
-            ¿Estás seguro de que quieres limpiar todas las notificaciones?
-          </p>
-          <p className="text-sm text-on-surface-variant mt-2">
-            Esta acción es irreversible
-          </p>
-        </div>
-      </Modal>
+        message="¿Estás seguro de que quieres limpiar todas las notificaciones? Esta acción es irreversible."
+        confirmText="Limpiar todo"
+        confirmVariant="primary"
+        icon="alert"
+      />
     </div>
   );
 }

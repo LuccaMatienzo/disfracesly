@@ -31,10 +31,26 @@ export default function ActionButtons({ onView, onEdit, onDelete, onDetail, onPa
     e.stopPropagation();
     if (!printMenuOpen && printBtnRef.current) {
       const rect = printBtnRef.current.getBoundingClientRect();
-      setMenuPos({
-        top: rect.bottom + 8,
-        right: window.innerWidth - rect.right
-      });
+      // Calcular una altura más segura y dinámica (50px por opción + margen general y de seguridad)
+      const safeMenuHeight = (printOptions.length * 50) + 60; 
+      const spaceBelow = window.innerHeight - rect.bottom;
+      
+      let newPos = { right: window.innerWidth - rect.right };
+      
+      // Si el espacio hacia abajo es muy ajustado, forzamos abrir hacia arriba.
+      if (spaceBelow < safeMenuHeight) {
+        // Abrir hacia arriba
+        newPos.bottom = window.innerHeight - rect.top + 8;
+        newPos.top = 'auto';
+        newPos.origin = 'origin-bottom-right';
+      } else {
+        // Abrir hacia abajo
+        newPos.top = rect.bottom + 8;
+        newPos.bottom = 'auto';
+        newPos.origin = 'origin-top-right';
+      }
+      
+      setMenuPos(newPos);
     }
     setPrintMenuOpen(!printMenuOpen);
   };
@@ -92,9 +108,10 @@ export default function ActionButtons({ onView, onEdit, onDelete, onDetail, onPa
           {printMenuOpen && createPortal(
             <div 
               ref={printMenuRef}
-              className="fixed w-[240px] sm:w-64 bg-surface-container-high rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.16)] z-[99999] flex flex-col p-1 border border-outline-variant animate-scale-in origin-top-right"
+              className={`fixed w-[240px] sm:w-64 bg-surface-container-high rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.16)] z-[99999] flex flex-col p-1 border border-outline-variant animate-scale-in ${menuPos.origin || 'origin-top-right'}`}
               style={{
-                top: `${menuPos.top}px`,
+                top: menuPos.top !== 'auto' ? `${menuPos.top}px` : 'auto',
+                bottom: menuPos.bottom !== 'auto' ? `${menuPos.bottom}px` : 'auto',
                 right: window.innerWidth < 640 ? '16px' : `${menuPos.right}px`
               }}
             >

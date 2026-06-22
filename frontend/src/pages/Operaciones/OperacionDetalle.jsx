@@ -7,6 +7,7 @@ import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import ActionButtons from '@/components/ui/ActionButtons';
+import ConfirmActionModal from '@/components/ui/ConfirmActionModal';
 import ConfirmDeleteModal from '@/components/ui/ConfirmDeleteModal';
 import CierreWarningModal from '@/components/ui/CierreWarningModal';
 import PagoFormModal from '@/components/ui/PagoFormModal';
@@ -874,31 +875,17 @@ export default function OperacionDetalle() {
       />
 
       {/* Cancelación de operación */}
-      <Modal
+      <ConfirmActionModal
         open={showCancelModal}
         onClose={() => setShowCancelModal(false)}
+        onConfirm={handleCancel}
         title="Cancelar operación"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setShowCancelModal(false)}>
-              Volver
-            </Button>
-            <Button variant="danger" onClick={handleCancel} loading={advanceLoading}>
-              Sí, cancelar
-            </Button>
-          </>
-        }
-      >
-        <div className="text-center py-4">
-          <span className="material-symbols-outlined text-5xl text-error mb-3 block">warning</span>
-          <p className="text-on-surface font-medium">
-            ¿Estás seguro de que querés cancelar el {tipo.toLowerCase()} #{op.id_operacion}?
-          </p>
-          <p className="text-sm text-on-surface-variant mt-2">
-            Esta acción devolverá las piezas al estado <strong>Disponible</strong> y no se puede deshacer.
-          </p>
-        </div>
-      </Modal>
+        message={`¿Estás seguro de que querés cancelar el ${tipo.toLowerCase()} #${op.id_operacion}? Esta acción devolverá las piezas al estado Disponible y no se puede deshacer.`}
+        confirmText="Sí, cancelar"
+        confirmVariant="danger"
+        icon="alert"
+        loading={advanceLoading}
+      />
 
       {/* Interacción (Retiro/Devolución) */}
       <InteraccionModal

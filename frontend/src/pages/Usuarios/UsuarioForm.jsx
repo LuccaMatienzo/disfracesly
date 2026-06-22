@@ -83,7 +83,7 @@ export default function UsuarioForm() {
       });
     },
     onError: (err) => {
-      showError(err?.response?.data?.message || 'Error al guardar el usuario');
+      showError(err?.response?.data?.error || err?.response?.data?.message || 'Error al guardar el usuario');
     }
   });
 

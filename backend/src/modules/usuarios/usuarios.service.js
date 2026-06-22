@@ -20,9 +20,9 @@ const { parsePagination, paginatedResponse } = require('../../utils/pagination')
  * Las reglas de formato de DNI y nombre son estrictas para garantizar integridad de datos.
  */
 const createUsuarioSchema = z.object({
-  correo: z.string().email(),
+  correo: z.string().email('Debe ser un correo electrónico válido'),
   contrasena: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
-  id_rol: z.number().int().positive(),
+  id_rol: z.number({ required_error: 'Debe seleccionar un rol para el usuario', invalid_type_error: 'Debe seleccionar un rol para el usuario' }).int().positive('Debe seleccionar un rol para el usuario'),
   persona: z.object({
     documento: z.string().min(7, "El DNI debe tener al menos 7 números").max(8, "El DNI no puede exceder 8 números").regex(/^[0-9]+$/, "El DNI solo puede contener números"),
     nombre: z.string().min(1, "Requerido").max(100).regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s']+$/, "El nombre contiene caracteres inválidos"),
@@ -54,7 +54,7 @@ const updateUsuarioSchema = z.object({
  * Permite cambiar nombre, apellido, foto y contraseña (con verificación de la actual).
  */
 const updateProfileSchema = z.object({
-  nombre:   z.string().trim().min(1, 'El nombre no puede estar vacío').max(100).regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s']+$/, "El nombre contiene caracteres inválidos").optional(),
+  nombre: z.string().trim().min(1, 'El nombre no puede estar vacío').max(100).regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s']+$/, "El nombre contiene caracteres inválidos").optional(),
   apellido: z.string().trim().min(1, 'El apellido no puede estar vacío').max(100).regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s']+$/, "El apellido contiene caracteres inválidos").optional(),
   foto_url: z.string().url().optional().nullable(),
   currentPassword: z.string().optional().or(z.literal('')),
@@ -96,10 +96,10 @@ async function checkRoleHierarchy(currentUserRoleName, targetRoleId) {
  * de dirección que se rellena en `buildOrderBy`).
  */
 const SORT_WHITELIST = {
-  nombre:     { persona: { nombre: undefined } },
-  apellido:   { persona: { apellido: undefined } },
-  documento:  { persona: { documento: undefined } },
-  correo:     { correo: undefined },
+  nombre: { persona: { nombre: undefined } },
+  apellido: { persona: { apellido: undefined } },
+  documento: { persona: { documento: undefined } },
+  correo: { correo: undefined },
   id_usuario: { id_usuario: undefined },
 };
 
@@ -225,6 +225,11 @@ async function createUsuario(data, reqUser) {
   const hashed = await hashPassword(contrasena);
 
   return prisma.$transaction(async (tx) => {
+    const existingCorreo = await tx.usuario.findUnique({ where: { correo: usuData.correo } });
+    if (existingCorreo) {
+      throw ApiError.conflict('El correo electrónico ya está en uso por otro usuario');
+    }
+
     let targetPersona = await tx.persona.findUnique({ where: { documento: persona.documento } });
 
     if (targetPersona) {
@@ -286,6 +291,13 @@ async function updateUsuario(id, data, reqUser) {
   const { persona, contrasena, ...usuData } = data;
 
   return prisma.$transaction(async (tx) => {
+    if (usuData.correo && usuData.correo !== usuario.correo) {
+      const existingCorreo = await tx.usuario.findUnique({ where: { correo: usuData.correo } });
+      if (existingCorreo) {
+        throw ApiError.conflict('El correo electrónico ya está en uso por otro usuario');
+      }
+    }
+
     if (persona) {
       // Verificar unicidad del documento solo si cambió respecto al actual
       if (persona.documento && persona.documento !== usuario.persona.documento) {
@@ -408,21 +420,21 @@ async function updateProfile(id, { nombre, apellido, foto_url, password, current
     select: {
       id_usuario: true,
       id_persona: true,
-      id_rol:     true,
-      correo:     true,
-      foto_url:   true,
-      persona:    { select: { nombre: true, apellido: true } },
-      rol:        { select: { nombre: true } },
+      id_rol: true,
+      correo: true,
+      foto_url: true,
+      persona: { select: { nombre: true, apellido: true } },
+      rol: { select: { nombre: true } },
     },
   });
 
   return {
     id_usuario: updated.id_usuario,
     id_persona: updated.id_persona,
-    correo:     updated.correo,
-    foto_url:   updated.foto_url,
-    rol:        updated.rol.nombre,
-    persona:    updated.persona,
+    correo: updated.correo,
+    foto_url: updated.foto_url,
+    rol: updated.rol.nombre,
+    persona: updated.persona,
   };
 }
 

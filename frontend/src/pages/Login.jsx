@@ -162,9 +162,9 @@ export default function Login() {
 
           {/* Error general */}
           {error && (
-            <div className="bg-error/10 text-error text-sm rounded-xl px-4 py-3 flex items-start gap-3 animate-slide-up">
-              <span className="material-symbols-outlined text-xl mt-0.5 shrink-0">error_outline</span>
-              <span>{error}</span>
+            <div className="bg-error/10 text-error text-sm rounded-xl px-4 py-3 flex items-center gap-2 animate-slide-up">
+              <span className="material-symbols-outlined text-[20px] shrink-0 leading-none">error_outline</span>
+              <span className="leading-tight">{error}</span>
             </div>
           )}
 
