@@ -259,7 +259,7 @@ export default function NotificationsDropdown() {
         onConfirm={handleClearAll}
         title="Limpiar Notificaciones"
         message="¿Estás seguro de que quieres limpiar todas las notificaciones? Esta acción es irreversible."
-        confirmText="Limpiar todo"
+        confirmText="Sí, confirmar"
         confirmVariant="primary"
         icon="alert"
       />

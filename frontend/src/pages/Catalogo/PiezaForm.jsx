@@ -6,6 +6,8 @@ import api from '@/api/axios.instance';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { useFeedback } from '@/context/FeedbackContext';
+import ConfirmActionModal from '@/components/ui/ConfirmActionModal';
+import { useState } from 'react';
 
 /* ── Chip individual de categoría ──────────────────────────────────────── */
 function CatChip({ cat, isSelected, onToggle }) {
@@ -62,6 +64,9 @@ export default function PiezaForm({ isModal = false, onSuccessCallback, onCancel
   const { showSuccess, showError } = useFeedback();
   const isEditing = !!id;
 
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [pendingData, setPendingData] = useState(null);
+
   const { data: pieza } = useQuery({
     queryKey: ['piezas', id],
     queryFn: () => api.get(`/catalogo/piezas/${id}`).then((r) => r.data),
@@ -79,16 +84,29 @@ export default function PiezaForm({ isModal = false, onSuccessCallback, onCancel
         ? api.put(`/catalogo/piezas/${id}`, data).then((r) => r.data)
         : api.post('/catalogo/piezas', data).then((r) => r.data),
     onSuccess: (data) => {
+      setShowConfirm(false);
       qc.invalidateQueries({ queryKey: ['piezas'] });
-      showSuccess(isEditing ? 'Pieza actualizada con éxito' : 'Pieza creada con éxito', () => {
+      showSuccess(isEditing ? 'La pieza ha sido modificada exitosamente.' : 'La nueva pieza se ha creado con éxito.', () => {
         if (isModal && onSuccessCallback) onSuccessCallback(data);
         else navigate(-1);
       });
     },
     onError: (err) => {
+      setShowConfirm(false);
       showError(err?.response?.data?.message || 'Error al guardar la pieza');
     }
   });
+
+  const onSubmit = (data) => {
+    setPendingData({ ...data, categoria_ids: (data.categoria_ids ?? []).map(Number) });
+    setShowConfirm(true);
+  };
+
+  const handleConfirmSave = () => {
+    if (pendingData) {
+      mutation.mutate(pendingData);
+    }
+  };
 
   const { register, handleSubmit, reset, setValue, getValues, control, formState: { isSubmitting } } = useForm({
     defaultValues: { nombre: '', descripcion: '', categoria_ids: [] },
@@ -151,9 +169,7 @@ export default function PiezaForm({ isModal = false, onSuccessCallback, onCancel
 
       <div className="bg-surface-container-lowest rounded-2xl shadow-card p-4 md:p-6 flex flex-col flex-1 min-h-0">
         <form
-          onSubmit={handleSubmit((data) =>
-            mutation.mutate({ ...data, categoria_ids: (data.categoria_ids ?? []).map(Number) })
-          )}
+          onSubmit={handleSubmit(onSubmit)}
           className="flex flex-col gap-6 flex-1 min-h-0"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 shrink-0">
@@ -245,6 +261,17 @@ export default function PiezaForm({ isModal = false, onSuccessCallback, onCancel
           </div>
         </form>
       </div>
+
+      <ConfirmActionModal
+        open={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleConfirmSave}
+        title={isEditing ? 'Confirmar modificación' : 'Confirmar creación'}
+        message={isEditing ? '¿Estás seguro que deseas modificar esta pieza del catálogo?' : '¿Confirmás la creación de esta nueva pieza de catálogo?'}
+        confirmText="Sí, confirmar"
+        confirmVariant="primary"
+        loading={mutation.isPending}
+      />
     </div>
   );
 }

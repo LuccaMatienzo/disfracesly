@@ -14,12 +14,14 @@ import { FiSettings, FiUser, FiLogOut } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/useToast';
+import ConfirmActionModal from '@/components/ui/ConfirmActionModal';
 
 export default function ProfileDropdown({ onOpenSettings, onOpenAccount }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
   const [isOpen, setIsOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const dropdownRef = useRef(null);
 
   const initials = [
@@ -37,7 +39,13 @@ export default function ProfileDropdown({ onOpenSettings, onOpenAccount }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = async () => {
+  const handleLogoutClick = () => {
+    setIsOpen(false);
+    setShowLogoutConfirm(true);
+  };
+
+  const handleConfirmLogout = async () => {
+    setShowLogoutConfirm(false);
     await logout();
     toast.info('Sesión cerrada');
     navigate('/acceso');
@@ -101,7 +109,7 @@ export default function ProfileDropdown({ onOpenSettings, onOpenAccount }) {
           {/* Danger Zone */}
           <div className="px-2">
             <button
-              onClick={handleLogout}
+              onClick={handleLogoutClick}
               className="w-full text-left px-4 py-2 text-sm text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors flex items-center gap-3 font-medium"
             >
               <FiLogOut className="text-lg shrink-0" />
@@ -110,6 +118,17 @@ export default function ProfileDropdown({ onOpenSettings, onOpenAccount }) {
           </div>
         </div>
       )}
+
+      <ConfirmActionModal
+        open={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={handleConfirmLogout}
+        title="Cerrar Sesión"
+        message="¿Estás seguro que deseas cerrar tu sesión actual?"
+        confirmText="Sí, confirmar"
+        confirmVariant="danger"
+        icon="logout"
+      />
     </div>
   );
 }

@@ -5,6 +5,8 @@ import { z } from 'zod';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import ConfirmActionModal from '@/components/ui/ConfirmActionModal';
+import { useState } from 'react';
 
 const schema = z.object({
   nombre: z.string().min(1, 'El nombre es requerido').max(100),
@@ -21,6 +23,21 @@ export default function CategoriaFormModal({ open, onClose, onSubmit, initialDat
     resolver: zodResolver(schema),
     defaultValues: { nombre: '', descripcion: '' },
   });
+
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [pendingData, setPendingData] = useState(null);
+
+  const handleFormSubmit = (data) => {
+    setPendingData(data);
+    setShowConfirm(true);
+  };
+
+  const handleConfirmSave = () => {
+    setShowConfirm(false);
+    if (pendingData) {
+      onSubmit(pendingData);
+    }
+  };
 
   useEffect(() => {
     if (open) {
@@ -39,7 +56,7 @@ export default function CategoriaFormModal({ open, onClose, onSubmit, initialDat
       title={initialData ? 'Editar Categoría' : 'Nueva Categoría'}
       icon="category"
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
         <div className="space-y-4">
           <Input
             label="Nombre de Categoría *"
@@ -65,6 +82,17 @@ export default function CategoriaFormModal({ open, onClose, onSubmit, initialDat
           </Button>
         </div>
       </form>
+
+      <ConfirmActionModal
+        open={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleConfirmSave}
+        title={initialData ? 'Confirmar modificación' : 'Confirmar creación'}
+        message={initialData ? '¿Estás seguro que deseas modificar esta categoría?' : '¿Confirmás la creación de esta nueva categoría?'}
+        confirmText="Sí, confirmar"
+        confirmVariant="primary"
+        loading={loading}
+      />
     </Modal>
   );
 }

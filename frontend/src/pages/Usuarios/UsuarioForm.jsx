@@ -11,6 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
 import { useAuth } from '@/context/AuthContext';
+import ConfirmActionModal from '@/components/ui/ConfirmActionModal';
 
 const baseSchema = z.object({
   correo: z.string().email('Correo inválido'),
@@ -52,6 +53,8 @@ export default function UsuarioForm() {
   const isEditing = !!id;
 
   const [showPass, setShowPass] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [pendingData, setPendingData] = useState(null);
 
   const { data: usuario } = useQuery({
     queryKey: ['usuarios', id],
@@ -70,6 +73,7 @@ export default function UsuarioForm() {
         ? api.put(`/usuarios/${id}`, data).then((r) => r.data)
         : api.post('/usuarios', data).then((r) => r.data),
     onSuccess: (data) => {
+      setShowConfirm(false);
       qc.invalidateQueries({ queryKey: ['usuarios'] });
       
       // Si el usuario actualizó su propio perfil desde el módulo de usuarios, 
@@ -78,14 +82,30 @@ export default function UsuarioForm() {
         updateLocalUser(data);
       }
 
-      showSuccess(isEditing ? 'Usuario actualizado con éxito' : 'Usuario creado con éxito', () => {
+      showSuccess(isEditing ? 'El usuario ha sido modificado exitosamente.' : 'El nuevo usuario se ha creado con éxito.', () => {
         navigate(-1);
       });
     },
     onError: (err) => {
+      setShowConfirm(false);
       showError(err?.response?.data?.error || err?.response?.data?.message || 'Error al guardar el usuario');
     }
   });
+
+  const onSubmit = (formData) => {
+    const payload = {
+      ...formData,
+      id_rol: Number(formData.id_rol)
+    };
+    setPendingData(payload);
+    setShowConfirm(true);
+  };
+
+  const handleConfirmSave = () => {
+    if (pendingData) {
+      mutation.mutate(pendingData);
+    }
+  };
 
   const schema = isEditing ? updateSchema : createSchema;
 
@@ -114,16 +134,11 @@ export default function UsuarioForm() {
     }
   }, [usuario, isEditing, reset]);
 
-  const onSubmit = (formData) => {
-    const payload = {
-      ...formData,
-      id_rol: Number(formData.id_rol)
-    };
-    mutation.mutate(payload);
-  };
+
 
   return (
-    <div className="w-full">
+    <>
+      <div className="w-full">
       <div className="mb-4 md:mb-5 shrink-0 flex items-center justify-between w-full gap-3">
         <h1 className="font-display text-title-lg md:text-headline-sm font-semibold text-on-surface m-0">
           {isEditing ? 'Editar usuario' : 'Nuevo usuario'}
@@ -194,5 +209,17 @@ export default function UsuarioForm() {
       </div>
 
     </div>
+
+      <ConfirmActionModal
+        open={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleConfirmSave}
+        title={isEditing ? 'Confirmar modificación' : 'Confirmar creación'}
+        message={isEditing ? '¿Estás seguro que deseas modificar este usuario?' : '¿Confirmás la creación de este nuevo usuario?'}
+        confirmText="Sí, confirmar"
+        confirmVariant="primary"
+        loading={mutation.isPending}
+      />
+    </>
   );
 }

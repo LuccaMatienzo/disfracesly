@@ -4,10 +4,13 @@ import { useForm, Controller } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/api/axios.instance';
 import { useCreateStock, useUpdateStock, useStockItem } from '@/hooks/useStock';
+import { useFeedback } from '@/context/FeedbackContext';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { Select } from '@/components/ui/Input';
 import PiezaCombobox from '@/components/ui/PiezaCombobox';
+import ConfirmActionModal from '@/components/ui/ConfirmActionModal';
+import { useState } from 'react';
 
 export default function StockForm() {
   const { id } = useParams();
@@ -35,11 +38,31 @@ export default function StockForm() {
     }
   }, [item, isEditing, reset]);
 
-  const onSubmit = async (data) => {
-    const payload = { ...data, id_pieza: Number(data.id_pieza) };
-    if (isEditing) await updateStock.mutateAsync({ id, data: payload });
-    else await createStock.mutateAsync(payload);
-    navigate(-1);
+  const { showSuccess } = useFeedback();
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [pendingData, setPendingData] = useState(null);
+
+  const onSubmit = (data) => {
+    setPendingData(data);
+    setShowConfirm(true);
+  };
+
+  const handleConfirmSave = async () => {
+    if (!pendingData) return;
+    const payload = { ...pendingData, id_pieza: Number(pendingData.id_pieza) };
+    try {
+      setShowConfirm(false);
+      if (isEditing) {
+        await updateStock.mutateAsync({ id, data: payload });
+        showSuccess('La pieza de stock ha sido modificada exitosamente.', () => navigate(-1));
+      } else {
+        await createStock.mutateAsync(payload);
+        showSuccess('La nueva pieza de stock se ha creado con éxito.', () => navigate(-1));
+      }
+    } catch (error) {
+      setShowConfirm(false);
+      console.error(error);
+    }
   };
 
 
@@ -105,6 +128,17 @@ export default function StockForm() {
           </div>
         </form>
       </div>
+
+      <ConfirmActionModal
+        open={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleConfirmSave}
+        title={isEditing ? 'Confirmar modificación' : 'Confirmar creación'}
+        message={isEditing ? '¿Estás seguro que deseas modificar esta pieza de stock?' : '¿Confirmás la creación de esta nueva pieza de stock?'}
+        confirmText="Sí, confirmar"
+        confirmVariant="primary"
+        loading={isEditing ? updateStock.isPending : createStock.isPending}
+      />
     </div>
   );
 }

@@ -6,6 +6,8 @@ import api from '@/api/axios.instance';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { useFeedback } from '@/context/FeedbackContext';
+import ConfirmActionModal from '@/components/ui/ConfirmActionModal';
+import { useState } from 'react';
 
 /* ── Chip individual de pieza ──────────────────────────────────────── */
 function PiezaChip({ pieza, isSelected, onToggle }) {
@@ -62,6 +64,9 @@ export default function DisfrazForm() {
   const { showSuccess, showError } = useFeedback();
   const isEditing = !!id;
 
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [pendingData, setPendingData] = useState(null);
+
   // Si quisiéramos modo editar después, esto ya queda preparado
   const { data: disfraz } = useQuery({
     queryKey: ['disfraces', id],
@@ -80,15 +85,28 @@ export default function DisfrazForm() {
         ? api.put(`/catalogo/disfraces/${id}`, data).then((r) => r.data)
         : api.post('/catalogo/disfraces', data).then((r) => r.data),
     onSuccess: () => {
+      setShowConfirm(false);
       qc.invalidateQueries({ queryKey: ['disfraces'] });
-      showSuccess(isEditing ? 'Disfraz actualizado con éxito' : 'Disfraz creado con éxito', () => {
+      showSuccess(isEditing ? 'El disfraz ha sido modificado exitosamente.' : 'El nuevo disfraz se ha creado con éxito.', () => {
         navigate('/admin/catalogo?tab=disfraces');
       });
     },
     onError: (err) => {
+      setShowConfirm(false);
       showError(err?.response?.data?.message || 'Error al guardar el disfraz');
     }
   });
+
+  const onSubmit = (data) => {
+    setPendingData({ ...data, pieza_ids: (data.pieza_ids ?? []).map(Number) });
+    setShowConfirm(true);
+  };
+
+  const handleConfirmSave = () => {
+    if (pendingData) {
+      mutation.mutate(pendingData);
+    }
+  };
 
   const { register, handleSubmit, reset, setValue, getValues, control, formState: { isSubmitting } } = useForm({
     defaultValues: { nombre: '', descripcion: '', pieza_ids: [] },
@@ -168,9 +186,7 @@ export default function DisfrazForm() {
 
       <div className="bg-surface-container-lowest rounded-2xl shadow-card p-4 md:p-6 flex flex-col flex-1 min-h-0">
         <form
-          onSubmit={handleSubmit((data) =>
-            mutation.mutate({ ...data, pieza_ids: (data.pieza_ids ?? []).map(Number) })
-          )}
+          onSubmit={handleSubmit(onSubmit)}
           className="flex flex-col gap-6 flex-1 min-h-0"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 shrink-0">
@@ -293,6 +309,17 @@ export default function DisfrazForm() {
           </div>
         </form>
       </div>
+
+      <ConfirmActionModal
+        open={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleConfirmSave}
+        title={isEditing ? 'Confirmar modificación' : 'Confirmar creación'}
+        message={isEditing ? '¿Estás seguro que deseas modificar este disfraz?' : '¿Confirmás la creación de este nuevo disfraz?'}
+        confirmText="Sí, confirmar"
+        confirmVariant="primary"
+        loading={mutation.isPending}
+      />
     </div>
   );
 }

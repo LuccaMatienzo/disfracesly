@@ -12,6 +12,7 @@ import Badge from '@/components/ui/Badge';
 import ToastContainer from '@/components/ui/Toast';
 import { useState } from 'react';
 import ClienteCombobox from '@/components/ui/ClienteCombobox';
+import ConfirmActionModal from '@/components/ui/ConfirmActionModal';
 
 const handlePositiveNumbersOnly = (e) => {
   if (['-', '+', 'e', 'E'].includes(e.key)) {
@@ -49,11 +50,22 @@ export default function VentaForm() {
     });
   };
 
-  const onSubmit = async (data) => {
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [pendingData, setPendingData] = useState(null);
+
+  const onSubmit = (data) => {
     if (selectedPiezas.size === 0) {
       toast.error('Seleccioná al menos una pieza antes de continuar.');
       return;
     }
+    setPendingData(data);
+    setShowConfirm(true);
+  };
+
+  const handleConfirmSave = async () => {
+    if (!pendingData) return;
+    const data = pendingData;
+    setShowConfirm(false);
 
     try {
       await createVenta.mutateAsync({
@@ -68,10 +80,11 @@ export default function VentaForm() {
       });
 
       // Mostrar modal de éxito y redirigir
-      showSuccess('La operación se registró correctamente.', () => {
+      showSuccess('La nueva operación de venta se ha registrado con éxito.', () => {
         navigate(-1);
       });
     } catch (err) {
+      setShowConfirm(false);
       const msg = err?.response?.data?.details?.[0]?.message ?? err?.response?.data?.error ?? 'Ocurrió un error al crear la venta.';
       showError(msg);
     }
@@ -204,7 +217,7 @@ export default function VentaForm() {
             <div className="bg-surface-container-lowest rounded-2xl shadow-card p-5 flex flex-col sm:flex-row xl:flex-col gap-3">
               <Button type="submit" variant="primary" className="w-full justify-center" loading={isSubmitting} disabled={!isValid || selectedPiezas.size === 0 || isSubmitting}>
                 <span className="material-symbols-outlined mr-2">check_circle</span>
-                Confirmar venta
+                Crear venta
               </Button>
               <Button type="button" variant="secondary" className="w-full justify-center" onClick={() => navigate(-1)}>
                 Cancelar
@@ -213,6 +226,17 @@ export default function VentaForm() {
           </div>
         </form>
       </div>
+
+      <ConfirmActionModal
+        open={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleConfirmSave}
+        title="Confirmar creación"
+        message="¿Confirmás la creación de esta nueva operación de venta?"
+        confirmText="Sí, confirmar"
+        confirmVariant="primary"
+        loading={createVenta.isPending}
+      />
     </>
   );
 }

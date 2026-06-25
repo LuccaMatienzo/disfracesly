@@ -21,6 +21,7 @@ import ProfileDropdown from './ProfileDropdown';
 import NotificationsDropdown from './NotificationsDropdown';
 import SettingsModal from './SettingsModal';
 import AccountModal from './AccountModal';
+import ConfirmActionModal from '@/components/ui/ConfirmActionModal';
 
 const NAV_ITEMS = [
   { to: '/admin', label: 'Panel General', icon: 'grid_view', end: true, roles: ['Administrador', 'Jefe', 'Empleado'] },
@@ -49,6 +50,7 @@ export default function PageWrapper() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -66,7 +68,13 @@ export default function PageWrapper() {
     };
   }, [mobileMenuOpen]);
 
-  const handleLogout = async () => {
+  const handleLogoutClick = () => {
+    setShowLogoutConfirm(true);
+    setMobileMenuOpen(false); // Por si se hace desde el sidebar móvil
+  };
+
+  const handleConfirmLogout = async () => {
+    setShowLogoutConfirm(false);
     await logout();
     toast.info('Sesión cerrada');
     navigate('/acceso');
@@ -211,7 +219,7 @@ export default function PageWrapper() {
             </div>
           </div>
           <button
-            onClick={handleLogout}
+            onClick={handleLogoutClick}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mt-1 text-on-surface-variant hover:text-error hover:bg-error/5 transition-all text-sm ${!sidebarOpen ? 'lg:justify-center' : ''}`}
           >
             <span className="material-symbols-outlined text-xl shrink-0">logout</span>
@@ -268,6 +276,17 @@ export default function PageWrapper() {
       <AccountModal
         isOpen={isAccountOpen}
         onClose={() => setIsAccountOpen(false)}
+      />
+
+      <ConfirmActionModal
+        open={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={handleConfirmLogout}
+        title="Cerrar Sesión"
+        message="¿Estás seguro que deseas cerrar tu sesión actual?"
+        confirmText="Sí, confirmar"
+        confirmVariant="danger"
+        icon="logout"
       />
     </div>
   );

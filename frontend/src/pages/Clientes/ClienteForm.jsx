@@ -8,6 +8,7 @@ import Input from '@/components/ui/Input';
 import { useFeedback } from '@/context/FeedbackContext';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import ConfirmActionModal from '@/components/ui/ConfirmActionModal';
 
 const schema = z.object({
   persona: z.object({
@@ -35,6 +36,8 @@ export default function ClienteForm({ isModal = false, onSuccessCallback, onCanc
   const { showSuccess, showError, showInfo } = useFeedback();
   const isEditing = !!id;
   const [isAutocompleted, setIsAutocompleted] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [pendingData, setPendingData] = useState(null);
 
   const { data: cliente } = useQuery({
     queryKey: ['clientes', id],
@@ -48,8 +51,9 @@ export default function ClienteForm({ isModal = false, onSuccessCallback, onCanc
         ? api.put(`/clientes/${id}`, data).then((r) => r.data)
         : api.post('/clientes', data).then((r) => r.data),
     onSuccess: (data) => {
+      setShowConfirm(false);
       qc.invalidateQueries({ queryKey: ['clientes'] });
-      showSuccess(isEditing ? 'Cliente actualizado con éxito' : 'Cliente creado con éxito', () => {
+      showSuccess(isEditing ? 'El cliente ha sido modificado exitosamente.' : 'El nuevo cliente se ha creado con éxito.', () => {
         if (isModal && onSuccessCallback) {
           onSuccessCallback(data);
         } else {
@@ -58,9 +62,21 @@ export default function ClienteForm({ isModal = false, onSuccessCallback, onCanc
       });
     },
     onError: (err) => {
+      setShowConfirm(false);
       showError(err?.response?.data?.message || 'Error al guardar el cliente');
     }
   });
+
+  const onSubmit = (data) => {
+    setPendingData(data);
+    setShowConfirm(true);
+  };
+
+  const handleConfirmSave = () => {
+    if (pendingData) {
+      mutation.mutate(pendingData);
+    }
+  };
 
   const { register, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(schema),
@@ -122,7 +138,7 @@ export default function ClienteForm({ isModal = false, onSuccessCallback, onCanc
         </div>
       )}
       <div className="bg-surface-container-lowest rounded-2xl shadow-card p-6">
-        <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="flex flex-col gap-5" autoComplete="off">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5" autoComplete="off">
           <h2 className="font-headline text-title-md text-on-surface">Datos personales</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="DNI / Documento" error={errors.persona?.documento?.message}
@@ -144,6 +160,17 @@ export default function ClienteForm({ isModal = false, onSuccessCallback, onCanc
           </div>
         </form>
       </div>
+
+      <ConfirmActionModal
+        open={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleConfirmSave}
+        title={isEditing ? 'Confirmar modificación' : 'Confirmar creación'}
+        message={isEditing ? '¿Estás seguro que deseas modificar este cliente?' : '¿Confirmás la creación de este nuevo cliente?'}
+        confirmText="Sí, confirmar"
+        confirmVariant="primary"
+        loading={mutation.isPending}
+      />
     </div>
   );
 }

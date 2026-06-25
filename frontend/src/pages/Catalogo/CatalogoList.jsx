@@ -135,7 +135,7 @@ export default function CatalogoList() {
     mutationFn: (data) => api.post('/catalogo/categorias', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categorias'] });
-      showSuccess('Categoría creada correctamente');
+      showSuccess('La nueva categoría se ha creado con éxito.');
       setIsCategoriaModalOpen(false);
     },
     onError: (err) => {
@@ -147,7 +147,7 @@ export default function CatalogoList() {
     mutationFn: ({ id, data }) => api.put(`/catalogo/categorias/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categorias'] });
-      showSuccess('Categoría actualizada correctamente');
+      showSuccess('La categoría ha sido modificada exitosamente.');
       setIsCategoriaModalOpen(false);
     },
     onError: (err) => {

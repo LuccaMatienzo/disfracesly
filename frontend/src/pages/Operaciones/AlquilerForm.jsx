@@ -12,6 +12,7 @@ import Badge from '@/components/ui/Badge';
 import ToastContainer from '@/components/ui/Toast';
 import { useState, useEffect } from 'react';
 import ClienteCombobox from '@/components/ui/ClienteCombobox';
+import ConfirmActionModal from '@/components/ui/ConfirmActionModal';
 
 // Formato datetime-local: YYYY-MM-DDThh:mm
 const getLocalDatetimeStr = (date) => {
@@ -98,11 +99,22 @@ export default function AlquilerForm() {
     });
   };
 
-  const onSubmit = async (data) => {
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [pendingData, setPendingData] = useState(null);
+
+  const onSubmit = (data) => {
     if (selectedPiezas.size === 0) {
       toast.error('Seleccioná al menos una pieza antes de continuar.');
       return;
     }
+    setPendingData(data);
+    setShowConfirm(true);
+  };
+
+  const handleConfirmSave = async () => {
+    if (!pendingData) return;
+    const data = pendingData;
+    setShowConfirm(false);
 
     // Convertir datetime-local a ISO 8601 con timezone (lo que exige el backend)
     const toISO = (dateStr) => {
@@ -124,10 +136,11 @@ export default function AlquilerForm() {
       });
 
       // Mostrar modal de éxito y redirigir tras aceptar
-      showSuccess('La operación se registró correctamente.', () => {
+      showSuccess('La nueva operación de alquiler se ha registrado con éxito.', () => {
         navigate(-1);
       });
     } catch (err) {
+      setShowConfirm(false);
       const msg =
         err?.response?.data?.details?.[0]?.message ??
         err?.response?.data?.error ??
@@ -303,7 +316,7 @@ export default function AlquilerForm() {
             <div className="bg-surface-container-lowest rounded-2xl shadow-card p-5 flex flex-col sm:flex-row xl:flex-col gap-3">
               <Button type="submit" variant="primary" className="w-full justify-center" loading={isSubmitting} disabled={!isValid || selectedPiezas.size === 0 || isSubmitting}>
                 <span className="material-symbols-outlined mr-2">check_circle</span>
-                Confirmar alquiler
+                Crear alquiler
               </Button>
               <Button type="button" variant="secondary" className="w-full justify-center" onClick={() => navigate(-1)}>
                 Cancelar
@@ -312,6 +325,17 @@ export default function AlquilerForm() {
           </div>
         </form>
       </div>
+
+      <ConfirmActionModal
+        open={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleConfirmSave}
+        title="Confirmar creación"
+        message="¿Confirmás la creación de esta nueva operación de alquiler?"
+        confirmText="Sí, confirmar"
+        confirmVariant="primary"
+        loading={createAlquiler.isPending}
+      />
     </>
   );
 }

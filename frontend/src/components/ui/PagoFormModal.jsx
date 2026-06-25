@@ -228,7 +228,7 @@ export default function PagoFormModal({ open, onClose, onSubmit, loading, initia
             ? '¿Estás seguro que querés guardar los cambios de este pago?'
             : `¿Confirmás el registro de este pago por $${montoNum || 0}?`
         }
-        confirmText="Confirmar"
+        confirmText="Sí, confirmar"
         confirmVariant="primary"
         loading={loading}
       />
