@@ -45,7 +45,12 @@ async function newVenta(req, res, next) {
  * @route PATCH /api/operaciones/:id/alquiler/etapa
  */
 async function avanzarAlquiler(req, res, next) {
-  try { res.json(await svc.avanzarEtapaAlquiler(req.params.id, req.body)); } catch (e) { next(e); }
+  try {
+    if (req.body.etapa === 'CANCELADO' && req.user.rol === 'Empleado') {
+      return res.status(403).json({ message: 'No tiene permisos para cancelar operaciones' });
+    }
+    res.json(await svc.avanzarEtapaAlquiler(req.params.id, req.body));
+  } catch (e) { next(e); }
 }
 
 /**
@@ -53,7 +58,12 @@ async function avanzarAlquiler(req, res, next) {
  * @route PATCH /api/operaciones/:id/venta/etapa
  */
 async function avanzarVenta(req, res, next) {
-  try { res.json(await svc.avanzarEtapaVenta(req.params.id, req.body)); } catch (e) { next(e); }
+  try {
+    if (req.body.etapa === 'CANCELADO' && req.user.rol === 'Empleado') {
+      return res.status(403).json({ message: 'No tiene permisos para cancelar operaciones' });
+    }
+    res.json(await svc.avanzarEtapaVenta(req.params.id, req.body));
+  } catch (e) { next(e); }
 }
 
 /**

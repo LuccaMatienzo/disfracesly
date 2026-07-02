@@ -32,7 +32,7 @@ const resetPasswordSchema = z.object({
 export default function UsuariosList() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, hasRol } = useAuth();
   const { filters, updateFilters, goToPage, reset } = useUrlFilters();
   const { search, include_deleted: includeDeleted, sort_field: sortField, sort_direction: sortDirection, page, limit, id_rol: roleFilter = '' } = filters;
   const sort = { field: sortField, direction: sortDirection };
@@ -122,7 +122,7 @@ export default function UsuariosList() {
         return <Badge variant="neutral">{rol}</Badge>;
       },
     },
-    {
+    ...(!hasRol('Empleado') ? [{
       key: 'acciones',
       label: 'Acciones',
       width: '140px',
@@ -132,14 +132,18 @@ export default function UsuariosList() {
         const isDeleted = !!r.deleted_at;
         return (
           <ActionButtons
-            onEdit={!isDeleted ? () => navigate(`/admin/usuarios/${r.id_usuario}/editar`) : undefined}
-            onPassword={!isDeleted ? () => { setResetTarget(r.id_usuario); setResetModalOpen(true); } : undefined}
-            onDelete={!isDeleted ? () => setDeleteTarget({ id: r.id_usuario, nombre: nombreCompleto }) : undefined}
-            onRestore={isDeleted ? () => restoreMutation.mutate(r.id_usuario) : undefined}
+            {...(!hasRol('Empleado') && !isDeleted && {
+              onEdit: () => navigate(`/admin/usuarios/${r.id_usuario}/editar`),
+              onPassword: () => { setResetTarget(r.id_usuario); setResetModalOpen(true); },
+              onDelete: () => setDeleteTarget({ id: r.id_usuario, nombre: nombreCompleto })
+            })}
+            {...(hasRol('Administrador') && isDeleted && {
+              onRestore: () => restoreMutation.mutate(r.id_usuario)
+            })}
           />
         );
       },
-    },
+    }] : [])
   ];
 
   return (

@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useMemo } from 'react';
 import { useOperacion, useAvanzarEtapaAlquiler, useAvanzarEtapaVenta, useCreateInteraccion, useUpdateOperacionMontos, useUpdateOperacionPiezas } from '@/hooks/useOperaciones';
 import { usePagos } from '@/hooks/usePagos';
+import { useAuth } from '@/context/AuthContext';
 import { useFeedback } from '@/context/FeedbackContext';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
@@ -174,6 +175,8 @@ export default function OperacionDetalle() {
   const { data: op, isLoading, isError } = useOperacion(id);
   const { createPago, updatePago, deletePago } = usePagos(id);
   const { showSuccess, showError } = useFeedback();
+  const { hasRol } = useAuth();
+  const canModifyFinances = hasRol('Administrador', 'Jefe');
 
   const avanzarAlquiler = useAvanzarEtapaAlquiler();
   const avanzarVenta = useAvanzarEtapaVenta();
@@ -430,7 +433,7 @@ export default function OperacionDetalle() {
                 <span className="truncate">{transition.label}</span>
               </Button>
             )}
-            {!isTerminal && (
+            {!isTerminal && canModifyFinances && (
               <Button variant="danger" onClick={() => setShowCancelModal(true)} className="flex-1 sm:flex-none justify-center text-error border-error/20 bg-error/5 hover:bg-error/10">
                 <span className="material-symbols-outlined text-[18px]">close</span>
                 Cancelar
@@ -483,7 +486,7 @@ export default function OperacionDetalle() {
                   <p className="text-body-md text-on-surface-variant">Items incluidos en la operación</p>
                 </div>
               </div>
-              {!isTerminal && (
+              {!isTerminal && canModifyFinances && (
                 <Button size="sm" variant="secondary" onClick={() => setPiezasModalOpen(true)}>
                   <span className="material-symbols-outlined text-base">edit</span>
                   Editar
@@ -568,7 +571,7 @@ export default function OperacionDetalle() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-divider">
-                        {['Tipo', 'Método', 'Monto', 'Fecha', 'Responsable', 'Acciones'].map(h => (
+                        {['Tipo', 'Método', 'Monto', 'Fecha', 'Responsable', ...((!isTerminal && canModifyFinances) ? ['Acciones'] : [])].map(h => (
                           <th key={h} className={`text-left px-3 py-2.5 text-[10px] font-label font-bold uppercase tracking-widest text-on-surface-variant ${h === 'Acciones' ? 'text-center' : ''}`}>
                             {h}
                           </th>
@@ -611,12 +614,14 @@ export default function OperacionDetalle() {
                                 ? `${pago.persona.nombre} ${pago.persona.apellido}`
                                 : '—'}
                             </td>
-                            <td className="px-3 py-2.5">
-                              <ActionButtons
-                                onEdit={!isTerminal ? () => setPagoModal({ open: true, data: pago }) : undefined}
-                                onDelete={!isTerminal ? () => setPagoDeleteTarget(pago) : undefined}
-                              />
-                            </td>
+                            {(!isTerminal && canModifyFinances) && (
+                              <td className="px-3 py-2.5">
+                                <ActionButtons
+                                  onEdit={() => setPagoModal({ open: true, data: pago })}
+                                  onDelete={() => setPagoDeleteTarget(pago)}
+                                />
+                              </td>
+                            )}
                           </tr>
                         );
                       })}
@@ -657,12 +662,14 @@ export default function OperacionDetalle() {
                               Por: <span className="text-on-surface">{pago.persona ? `${pago.persona.nombre} ${pago.persona.apellido}` : '—'}</span>
                             </span>
                           </div>
-                          <div className="-mb-2 -mr-3 shrink-0">
-                            <ActionButtons
-                              onEdit={!isTerminal ? () => setPagoModal({ open: true, data: pago }) : undefined}
-                              onDelete={!isTerminal ? () => setPagoDeleteTarget(pago) : undefined}
-                            />
-                          </div>
+                          {(!isTerminal && canModifyFinances) && (
+                            <div className="-mb-2 -mr-3 shrink-0">
+                              <ActionButtons
+                                onEdit={() => setPagoModal({ open: true, data: pago })}
+                                onDelete={() => setPagoDeleteTarget(pago)}
+                              />
+                            </div>
+                          )}
                         </div>
                       </div>
                     );
@@ -727,7 +734,7 @@ export default function OperacionDetalle() {
                 <span className="material-symbols-outlined text-lg text-primary">receipt_long</span>
                 Resumen financiero
               </h2>
-              {!isTerminal && (
+              {!isTerminal && canModifyFinances && (
                 <Button size="sm" variant="secondary" onClick={() => setMontosModalOpen(true)}>
                   <span className="material-symbols-outlined text-base">edit</span>
                   Editar

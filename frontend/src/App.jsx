@@ -127,6 +127,27 @@ function PrivateRoute({ children }) {
 }
 
 /**
+ * Guarda de ruta basada en roles (RBAC frontend).
+ * Protege el renderizado de la ruta verificando si el rol del usuario
+ * está incluido en los roles permitidos. Si no tiene acceso, lo redirige
+ * silenciosamente al Dashboard.
+ *
+ * @param {{ allowedRoles: string[], children: JSX.Element }} props
+ * @returns {JSX.Element}
+ */
+function RoleRoute({ allowedRoles, children }) {
+  const { hasRol, isLoading } = useAuth();
+  
+  if (isLoading) return <PageLoading />;
+  
+  if (!hasRol(...allowedRoles)) {
+    return <Navigate to="/admin" replace />;
+  }
+  
+  return children;
+}
+
+/**
  * Guarda de ruta de acceso (login).
  * Si el usuario ya está autenticado, lo redirige directamente al portal
  * de administración (/admin) para evitar que vea la pantalla de login
@@ -218,17 +239,17 @@ export default function App() {
           <Route path="operaciones/venta/nuevo" element={<VentaForm />} />
 
           {/* Clientes */}
-          <Route path="clientes" element={<ClientesList />} />
-          <Route path="clientes/nuevo" element={<ClienteForm />} />
-          <Route path="clientes/:id/editar" element={<ClienteForm />} />
+          <Route path="clientes" element={<RoleRoute allowedRoles={['Administrador', 'Jefe']}><ClientesList /></RoleRoute>} />
+          <Route path="clientes/nuevo" element={<RoleRoute allowedRoles={['Administrador', 'Jefe']}><ClienteForm /></RoleRoute>} />
+          <Route path="clientes/:id/editar" element={<RoleRoute allowedRoles={['Administrador', 'Jefe']}><ClienteForm /></RoleRoute>} />
 
           {/* Usuarios */}
-          <Route path="usuarios" element={<UsuariosList />} />
-          <Route path="usuarios/nuevo" element={<UsuarioForm />} />
-          <Route path="usuarios/:id/editar" element={<UsuarioForm />} />
+          <Route path="usuarios" element={<RoleRoute allowedRoles={['Administrador']}><UsuariosList /></RoleRoute>} />
+          <Route path="usuarios/nuevo" element={<RoleRoute allowedRoles={['Administrador']}><UsuarioForm /></RoleRoute>} />
+          <Route path="usuarios/:id/editar" element={<RoleRoute allowedRoles={['Administrador']}><UsuarioForm /></RoleRoute>} />
 
           {/* Finanzas */}
-          <Route path="finanzas" element={<FinanzasList />} />
+          <Route path="finanzas" element={<RoleRoute allowedRoles={['Administrador', 'Jefe']}><FinanzasList /></RoleRoute>} />
 
           {/* Catálogo (panel administrativo) */}
           <Route path="catalogo" element={<CatalogoList />} />

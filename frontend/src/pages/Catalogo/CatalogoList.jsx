@@ -274,7 +274,7 @@ export default function CatalogoList() {
     { key: 'id_categoria_motivo', label: '#', width: '60px' },
     { key: 'nombre', label: 'Nombre', render: (_, r) => <span className={r.deleted_at ? 'text-coral font-medium' : ''}>{r.nombre}</span> },
     { key: 'descripcion', label: 'Descripción', render: (_, r) => <span className={r.deleted_at ? 'text-coral whitespace-normal text-[13px] md:text-sm leading-relaxed' : 'whitespace-normal text-[13px] md:text-sm leading-relaxed'}>{r.descripcion || ''}</span> },
-    {
+    ...(!hasRol('Empleado') ? [{
       key: 'acciones',
       label: 'Acciones',
       width: '140px',
@@ -296,7 +296,7 @@ export default function CatalogoList() {
           />
         );
       },
-    },
+    }] : [])
   ];
 
   const activeData = tab === 'piezas' ? piezas : tab === 'disfraces' ? disfraces : categoriasTab;

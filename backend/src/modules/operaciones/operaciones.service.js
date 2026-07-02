@@ -373,8 +373,25 @@ async function avanzarEtapaAlquiler(id, data) {
 
   const piezaIds = operacion.detalles.map((d) => d.id_pieza_stock);
 
+  const { etapa } = data;
+  const etapaActual = operacion.alquiler.etapa;
+
+  // Validación 1: No cancelar si ya se entregó
+  if (etapa === 'CANCELADO' && ['RETIRADO', 'DEVUELTO'].includes(etapaActual)) {
+    throw ApiError.badRequest('No se puede cancelar un alquiler que ya se encuentra en estado RETIRADO o DEVUELTO.');
+  }
+
+  // Validación 2: No retroceder etapas
+  const ordenAlquiler = ['RESERVADO', 'LISTO_PARA_RETIRO', 'RETIRADO', 'DEVUELTO'];
+  const idxActual = ordenAlquiler.indexOf(etapaActual);
+  const idxNuevo = ordenAlquiler.indexOf(etapa);
+  
+  if (etapa !== 'CANCELADO' && idxActual !== -1 && idxNuevo !== -1 && idxNuevo < idxActual) {
+    throw ApiError.badRequest(`Transición inválida: No se puede retroceder de ${etapaActual} a ${etapa}.`);
+  }
+
   return prisma.$transaction(async (tx) => {
-    const { etapa, deposito_devuelto_monto, deposito_motivo_retencion, motivo_diferencia_monto } = data;
+    const { deposito_devuelto_monto, deposito_motivo_retencion, motivo_diferencia_monto } = data;
 
     if (motivo_diferencia_monto !== undefined) {
       await tx.$executeRaw`UPDATE gestion.operacion SET motivo_diferencia_monto = ${motivo_diferencia_monto} WHERE id_operacion = ${operacion.id_operacion}`;
@@ -425,8 +442,25 @@ async function avanzarEtapaVenta(id, data) {
 
   const piezaIds = operacion.detalles.map((d) => d.id_pieza_stock);
 
+  const { etapa } = data;
+  const etapaActual = operacion.venta.etapa;
+
+  // Validación 1: No cancelar si ya se entregó
+  if (etapa === 'CANCELADO' && ['VENDIDO'].includes(etapaActual)) {
+    throw ApiError.badRequest('No se puede cancelar una venta que ya ha sido entregada (estado VENDIDO).');
+  }
+
+  // Validación 2: No retroceder etapas
+  const ordenVenta = ['RESERVADO', 'LISTO_PARA_ENTREGA', 'VENDIDO'];
+  const idxActualVenta = ordenVenta.indexOf(etapaActual);
+  const idxNuevoVenta = ordenVenta.indexOf(etapa);
+
+  if (etapa !== 'CANCELADO' && idxActualVenta !== -1 && idxNuevoVenta !== -1 && idxNuevoVenta < idxActualVenta) {
+    throw ApiError.badRequest(`Transición inválida: No se puede retroceder de ${etapaActual} a ${etapa}.`);
+  }
+
   return prisma.$transaction(async (tx) => {
-    const { etapa, motivo_diferencia_monto } = data;
+    const { motivo_diferencia_monto } = data;
 
     if (motivo_diferencia_monto !== undefined) {
       await tx.$executeRaw`UPDATE gestion.operacion SET motivo_diferencia_monto = ${motivo_diferencia_monto} WHERE id_operacion = ${operacion.id_operacion}`;

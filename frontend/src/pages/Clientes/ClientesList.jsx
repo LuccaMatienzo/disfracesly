@@ -26,7 +26,7 @@ import ToggleSwitch from '@/components/ui/ToggleSwitch';
 export default function ClientesList() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, hasRol } = useAuth();
   const { filters, updateFilters, goToPage, reset } = useUrlFilters();
   const { search, include_deleted: includeDeleted, sort_field: sortField, sort_direction: sortDirection, page, limit } = filters;
   const sort = { field: sortField, direction: sortDirection };
@@ -119,9 +119,13 @@ export default function ClientesList() {
         return (
           <ActionButtons
             onView={!isDeleted ? () => setViewId(r.id_cliente) : undefined}
-            onEdit={!isDeleted ? () => navigate(`/admin/clientes/${r.id_cliente}/editar`) : undefined}
-            onDelete={!isDeleted ? () => setDeleteTarget({ id: r.id_cliente, nombre: nombreCompleto }) : undefined}
-            onRestore={isDeleted ? () => restoreMutation.mutate(r.id_cliente) : undefined}
+            {...(!hasRol('Empleado') && !isDeleted && {
+              onEdit: () => navigate(`/admin/clientes/${r.id_cliente}/editar`),
+              onDelete: () => setDeleteTarget({ id: r.id_cliente, nombre: nombreCompleto })
+            })}
+            {...(hasRol('Administrador') && isDeleted && {
+              onRestore: () => restoreMutation.mutate(r.id_cliente)
+            })}
           />
         );
       },
