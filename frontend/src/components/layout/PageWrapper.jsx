@@ -101,6 +101,29 @@ export default function PageWrapper() {
     }
   }, [sidebarOpen]);
 
+  // Limpiar estilos en línea en modo móvil para solucionar conflicto con Tailwind
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        if (sidebarRef.current) sidebarRef.current.style.width = '';
+        if (mainRef.current) mainRef.current.style.marginLeft = '';
+        const texts = document.querySelectorAll('.sidebar-text-collapsible');
+        texts.forEach(t => t.style.opacity = '');
+      } else {
+        if (sidebarRef.current) sidebarRef.current.style.width = sidebarOpen ? '256px' : '72px';
+        if (mainRef.current) mainRef.current.style.marginLeft = sidebarOpen ? '256px' : '72px';
+        const texts = document.querySelectorAll('.sidebar-text-collapsible');
+        texts.forEach(t => t.style.opacity = sidebarOpen ? '1' : '0');
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    // Verificar en el montaje y cuando cambia sidebarOpen
+    handleResize();
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, [sidebarOpen]);
+
   // Page Transition Animation
   useEffect(() => {
     if (pageRef.current) {
