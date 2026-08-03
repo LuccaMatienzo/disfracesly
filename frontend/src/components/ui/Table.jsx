@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import anime from 'animejs';
+import { animate as anime, stagger } from 'animejs';
 
 /**
  * Table — Tabla de datos con "No-Line Rule" (sin bordes 1px, alternación de fondo).
@@ -18,7 +18,7 @@ export default function Table({ columns, data, loading, emptyMessage = 'Sin resu
         translateY: [20, 0],
         opacity: [0, 1],
         duration: 400,
-        delay: anime.stagger(50),
+        delay: stagger(50),
         easing: 'easeOutSine'
       });
     }

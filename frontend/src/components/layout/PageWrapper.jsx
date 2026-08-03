@@ -13,7 +13,7 @@
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import anime from 'animejs';
+import { animate as anime } from 'animejs';
 import api from '@/api/axios.instance';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/useToast';
