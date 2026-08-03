@@ -1,3 +1,6 @@
+import { useEffect, useRef } from 'react';
+import anime from 'animejs';
+
 /**
  * Table — Tabla de datos con "No-Line Rule" (sin bordes 1px, alternación de fondo).
  *
@@ -6,6 +9,21 @@
  * En desktop (≥md) mantiene el layout clásico de tabla.
  */
 export default function Table({ columns, data, loading, emptyMessage = 'Sin resultados', rowClassName }) {
+  const tbodyRef = useRef(null);
+
+  useEffect(() => {
+    if (!loading && data?.length > 0 && tbodyRef.current) {
+      anime({
+        targets: tbodyRef.current.children,
+        translateY: [20, 0],
+        opacity: [0, 1],
+        duration: 400,
+        delay: anime.stagger(50),
+        easing: 'easeOutSine'
+      });
+    }
+  }, [loading, data]);
+
   return (
     <div className="w-full md:overflow-x-auto md:rounded-xl" style={{ WebkitOverflowScrolling: 'touch' }}>
       <table className="w-full md:border-collapse text-body-md md:min-w-[540px]">
@@ -29,7 +47,7 @@ export default function Table({ columns, data, loading, emptyMessage = 'Sin resu
         )}
 
         {/* Body */}
-        <tbody className="block md:table-row-group">
+        <tbody ref={tbodyRef} className="block md:table-row-group">
           {loading ? (
             Array.from({ length: 5 }).map((_, i) => (
               <tr 
@@ -73,7 +91,7 @@ export default function Table({ columns, data, loading, emptyMessage = 'Sin resu
                 key={row.id ?? i}
                 className={`
                   block mb-3 last:mb-0 p-4 rounded-xl border border-divider
-                  bg-surface-container-lowest shadow-sm
+                  bg-surface-container-lowest shadow-sm opacity-0
                   md:table-row md:mb-0 md:p-0 md:rounded-none md:border-0 md:shadow-none
                   ${i % 2 === 0 ? 'md:bg-background' : 'md:bg-surface-container-low'}
                   md:hover:bg-primary/5 transition-colors duration-75

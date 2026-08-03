@@ -1,8 +1,9 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import anime from 'animejs';
 
 /**
- * Modal — Glassmorphism dialog overlay.
+ * Modal — Glassmorphism dialog overlay with animejs spring physics.
  *
  * Renderizado via createPortal en document.body para que el backdrop fixed
  * cubra toda la pantalla independientemente de la jerarquía del DOM
@@ -11,6 +12,9 @@ import { createPortal } from 'react-dom';
  * Cierra con Escape o al hacer clic en el backdrop.
  */
 export default function Modal({ open, onClose, title, children, size = 'md', footer }) {
+  const modalRef = useRef(null);
+  const backdropRef = useRef(null);
+
   const handleKey = useCallback(
     (e) => { if (e.key === 'Escape') onClose?.(); },
     [onClose]
@@ -20,7 +24,27 @@ export default function Modal({ open, onClose, title, children, size = 'md', foo
     if (open) {
       document.addEventListener('keydown', handleKey);
       document.body.style.overflow = 'hidden';
+      
+      // Animate entry
+      if (backdropRef.current && modalRef.current) {
+        anime({
+          targets: backdropRef.current,
+          opacity: [0, 1],
+          duration: 300,
+          easing: 'easeOutSine'
+        });
+        
+        anime({
+          targets: modalRef.current,
+          scale: [0.85, 1],
+          opacity: [0, 1],
+          translateY: [20, 0],
+          duration: 600,
+          easing: 'spring(1, 80, 10, 0)'
+        });
+      }
     }
+    
     return () => {
       document.removeEventListener('keydown', handleKey);
       document.body.style.overflow = '';
@@ -33,13 +57,15 @@ export default function Modal({ open, onClose, title, children, size = 'md', foo
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center p-4 size-screen bg-on-surface/20 backdrop-blur-sm animate-fade-in"
+      ref={backdropRef}
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4 size-screen bg-on-surface/20 backdrop-blur-sm opacity-0"
       onClick={(e) => e.target === e.currentTarget && onClose?.()}
     >
       <div
+        ref={modalRef}
         className={`
           glass border border-divider rounded-2xl shadow-float
-          w-[calc(100%-2rem)] sm:w-full ${sizes[size]} animate-scale-in
+          w-[calc(100%-2rem)] sm:w-full ${sizes[size]} opacity-0
           flex flex-col max-h-[85vh]
         `}
       >

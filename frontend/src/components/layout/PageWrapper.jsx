@@ -11,8 +11,9 @@
  * Usa `<Outlet />` de React Router para renderizar las rutas hijas.
  */
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import anime from 'animejs';
 import api from '@/api/axios.instance';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/useToast';
@@ -51,10 +52,53 @@ export default function PageWrapper() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const pageRef = useRef(null);
+  const sidebarRef = useRef(null);
+  const mainRef = useRef(null);
 
   // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
+  }, [pathname]);
+
+  // Sidebar toggle animation
+  useEffect(() => {
+    if (window.innerWidth >= 1024 && sidebarRef.current && mainRef.current) {
+      anime({
+        targets: sidebarRef.current,
+        width: sidebarOpen ? 256 : 72,
+        duration: 500,
+        easing: 'spring(1, 80, 15, 0)'
+      });
+      anime({
+        targets: mainRef.current,
+        marginLeft: sidebarOpen ? 256 : 72,
+        duration: 500,
+        easing: 'spring(1, 80, 15, 0)'
+      });
+      
+      // Animate opacity of texts when collapsing/expanding
+      anime({
+        targets: '.sidebar-text-collapsible',
+        opacity: sidebarOpen ? [0, 1] : [1, 0],
+        duration: sidebarOpen ? 400 : 200,
+        easing: 'easeOutSine',
+        delay: sidebarOpen ? 150 : 0
+      });
+    }
+  }, [sidebarOpen]);
+
+  // Page Transition Animation
+  useEffect(() => {
+    if (pageRef.current) {
+      anime({
+        targets: pageRef.current,
+        opacity: [0, 1],
+        translateY: [15, 0],
+        duration: 400,
+        easing: 'easeOutCubic'
+      });
+    }
   }, [pathname]);
 
   useEffect(() => {
@@ -107,6 +151,31 @@ export default function PageWrapper() {
     }
   };
 
+  const handleMouseEnterLink = (e) => {
+    anime({
+      targets: e.currentTarget.querySelector('.nav-icon'),
+      rotate: [0, 15, -15, 0],
+      scale: [1, 1.15, 1],
+      duration: 600,
+      easing: 'spring(1, 80, 10, 0)'
+    });
+    anime({
+      targets: e.currentTarget.querySelector('.nav-label'),
+      translateX: 4,
+      duration: 300,
+      easing: 'easeOutQuad'
+    });
+  };
+
+  const handleMouseLeaveLink = (e) => {
+    anime({
+      targets: e.currentTarget.querySelector('.nav-label'),
+      translateX: 0,
+      duration: 300,
+      easing: 'easeOutQuad'
+    });
+  };
+
   return (
     <div className="flex min-h-[100dvh] bg-surface-container-low">
 
@@ -120,17 +189,16 @@ export default function PageWrapper() {
 
       {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
       <aside
+        ref={sidebarRef}
         className={`
-          fixed top-0 left-0 h-full
+          fixed top-0 left-0 h-full overflow-hidden
           flex flex-col bg-card-panel border-r border-divider
-          shadow-glass transition-all duration-300
+          shadow-glass transition-transform duration-300
           
           ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:translate-x-0
           z-50 lg:z-30
-          w-64
-         
-          ${!sidebarOpen ? 'lg:w-[4.5rem]' : 'lg:w-64'}
+          w-64 lg:w-[256px]
         `}
       >
         {/* Logo + toggle */}
@@ -154,7 +222,7 @@ export default function PageWrapper() {
                 e.target.parentElement?.insertBefore(fallback, e.target);
               }}
             />
-            <div className={`min-w-0 ${!sidebarOpen ? 'lg:hidden' : ''}`}>
+            <div className={`min-w-0 sidebar-text-collapsible ${!sidebarOpen ? 'lg:hidden' : ''}`}>
               <p className="font-headline font-black text-on-surface truncate text-base leading-none">
                 DisfracesLy
               </p>
@@ -172,17 +240,21 @@ export default function PageWrapper() {
           </button>
         </div>
         {/* Nav */}
-        <nav className="flex-1 px-2 py-3 overflow-y-auto space-y-0.5">
+        <nav className="flex-1 px-2 py-3 overflow-y-auto space-y-0.5 relative overflow-x-hidden">
           {filteredNavItems.map(({ to, label, icon, end }) => (
             <NavLink
               key={to}
               to={to}
               end={end}
-              onMouseEnter={() => handlePrefetch(to)}
+              onMouseEnter={(e) => {
+                handlePrefetch(to);
+                handleMouseEnterLink(e);
+              }}
+              onMouseLeave={handleMouseLeaveLink}
               className={({ isActive }) => `
                 relative flex items-center gap-3 px-3 py-3 rounded-xl
-                font-label font-medium transition-all duration-150 group
-                w-[220px] ${!sidebarOpen ? 'lg:justify-center lg:w-full' : ''}
+                font-label font-medium transition-colors duration-150 group
+                w-[220px] ${!sidebarOpen ? 'lg:justify-center lg:w-[56px]' : ''}
                 ${isActive
                   ? 'bg-primary/10 text-primary'
                   : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
@@ -195,10 +267,10 @@ export default function PageWrapper() {
                   {isActive && (
                     <span className="absolute left-0 top-1/4 bottom-1/4 w-1 editorial-gradient rounded-r-full" />
                   )}
-                  <span className={`material-symbols-outlined text-xl shrink-0 ${isActive ? 'text-primary' : ''}`}>
+                  <span className={`nav-icon material-symbols-outlined text-xl shrink-0 ${isActive ? 'text-primary' : ''}`}>
                     {icon}
                   </span>
-                  <span className={`truncate text-sm ${!sidebarOpen ? 'lg:hidden' : ''}`}>{label}</span>
+                  <span className={`nav-label truncate text-sm sidebar-text-collapsible ${!sidebarOpen ? 'lg:hidden' : ''}`}>{label}</span>
                 </>
               )}
             </NavLink>
@@ -211,7 +283,7 @@ export default function PageWrapper() {
             <div className="size-8 rounded-full gradient-secondary flex items-center justify-center text-white text-xs font-bold shrink-0">
               {initials}
             </div>
-            <div className={`flex-1 min-w-0 ${!sidebarOpen ? 'lg:hidden' : ''}`}>
+            <div className={`flex-1 min-w-0 sidebar-text-collapsible ${!sidebarOpen ? 'lg:hidden' : ''}`}>
               <p className="text-sm font-medium text-on-surface truncate">
                 {user?.persona?.nombre} {user?.persona?.apellido}
               </p>
@@ -223,14 +295,15 @@ export default function PageWrapper() {
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mt-1 text-on-surface-variant hover:text-error hover:bg-error/5 transition-all text-sm ${!sidebarOpen ? 'lg:justify-center' : ''}`}
           >
             <span className="material-symbols-outlined text-xl shrink-0">logout</span>
-            <span className={!sidebarOpen ? 'lg:hidden' : ''}>Cerrar sesión</span>
+            <span className={`sidebar-text-collapsible ${!sidebarOpen ? 'lg:hidden' : ''}`}>Cerrar sesión</span>
           </button>
         </div>
       </aside>
 
       {/* ── Main content ─────────────────────────────────────────────────────── */}
       <main
-        className={`flex-1 flex flex-col transition-all duration-300 ml-0 min-w-0 ${sidebarOpen ? 'lg:ml-64' : 'lg:ml-[4.5rem]'}`}
+        ref={mainRef}
+        className={`flex-1 flex flex-col transition-none duration-0 ml-0 min-w-0 lg:ml-[256px]`}
       >
         {/* Top header */}
         <header className="sticky top-0 z-40 bg-card-panel/90 backdrop-blur-md border-b border-divider px-3 md:px-6 py-3 flex items-center gap-3 md:gap-4">
@@ -262,7 +335,7 @@ export default function PageWrapper() {
         </header>
 
         {/* Page content */}
-        <div className="flex-1 p-3 md:p-6 animate-fade-in min-w-0">
+        <div ref={pageRef} className="flex-1 p-3 md:p-6 min-w-0 opacity-0">
           <Outlet />
         </div>
       </main>
