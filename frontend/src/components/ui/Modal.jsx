@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { animate as anime } from 'animejs';
+import anime from 'animejs/lib/anime.es.js';
 
 /**
  * Modal — Glassmorphism dialog overlay with animejs spring physics.
