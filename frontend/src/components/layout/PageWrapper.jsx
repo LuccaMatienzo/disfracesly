@@ -23,15 +23,28 @@ import NotificationsDropdown from './NotificationsDropdown';
 import SettingsModal from './SettingsModal';
 import AccountModal from './AccountModal';
 import ConfirmActionModal from '@/components/ui/ConfirmActionModal';
+import { 
+  MdGridView, 
+  MdCalendarToday, 
+  MdInventory, 
+  MdCheckroom, 
+  MdPeople, 
+  MdManageAccounts, 
+  MdQueryStats, 
+  MdChevronLeft, 
+  MdChevronRight, 
+  MdLogout, 
+  MdMenu 
+} from 'react-icons/md';
 
 const NAV_ITEMS = [
-  { to: '/admin', label: 'Panel General', icon: 'grid_view', end: true, roles: ['Administrador', 'Jefe', 'Empleado'] },
-  { to: '/admin/operaciones', label: 'Operaciones', icon: 'calendar_today', end: false, roles: ['Administrador', 'Jefe', 'Empleado'] },
-  { to: '/admin/stock', label: 'Stock', icon: 'inventory_2', end: false, roles: ['Administrador', 'Jefe', 'Empleado'] },
-  { to: '/admin/catalogo', label: 'Catálogo', icon: 'apparel', end: false, roles: ['Administrador', 'Jefe', 'Empleado'] },
-  { to: '/admin/clientes', label: 'Clientes', icon: 'people', end: false, roles: ['Administrador', 'Jefe'] },
-  { to: '/admin/usuarios', label: 'Usuarios', icon: 'manage_accounts', end: false, roles: ['Administrador'] },
-  { to: '/admin/finanzas', label: 'Finanzas', icon: 'query_stats', end: false, roles: ['Administrador', 'Jefe'] },
+  { to: '/admin', label: 'Panel General', icon: <MdGridView />, end: true, roles: ['Administrador', 'Jefe', 'Empleado'] },
+  { to: '/admin/operaciones', label: 'Operaciones', icon: <MdCalendarToday />, end: false, roles: ['Administrador', 'Jefe', 'Empleado'] },
+  { to: '/admin/stock', label: 'Stock', icon: <MdInventory />, end: false, roles: ['Administrador', 'Jefe', 'Empleado'] },
+  { to: '/admin/catalogo', label: 'Catálogo', icon: <MdCheckroom />, end: false, roles: ['Administrador', 'Jefe', 'Empleado'] },
+  { to: '/admin/clientes', label: 'Clientes', icon: <MdPeople />, end: false, roles: ['Administrador', 'Jefe'] },
+  { to: '/admin/usuarios', label: 'Usuarios', icon: <MdManageAccounts />, end: false, roles: ['Administrador'] },
+  { to: '/admin/finanzas', label: 'Finanzas', icon: <MdQueryStats />, end: false, roles: ['Administrador', 'Jefe'] },
 ];
 
 /**
@@ -234,8 +247,8 @@ export default function PageWrapper() {
               }`}
             aria-label={sidebarOpen ? 'Colapsar menú' : 'Expandir menú'}
           >
-            <span className="material-symbols-outlined text-xl">
-              {sidebarOpen ? 'chevron_left' : 'chevron_right'}
+            <span className="text-2xl flex items-center justify-center">
+              {sidebarOpen ? <MdChevronLeft /> : <MdChevronRight />}
             </span>
           </button>
         </div>
@@ -267,7 +280,7 @@ export default function PageWrapper() {
                   {isActive && (
                     <span className="absolute left-0 top-1/4 bottom-1/4 w-1 editorial-gradient rounded-r-full" />
                   )}
-                  <span className={`nav-icon material-symbols-outlined text-xl shrink-0 ${isActive ? 'text-primary' : ''}`}>
+                  <span className={`nav-icon text-[22px] flex items-center justify-center shrink-0 ${isActive ? 'text-primary' : ''}`}>
                     {icon}
                   </span>
                   <span className={`nav-label truncate text-sm sidebar-text-collapsible ${!sidebarOpen ? 'lg:hidden' : ''}`}>{label}</span>
@@ -294,7 +307,7 @@ export default function PageWrapper() {
             onClick={handleLogoutClick}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mt-1 text-on-surface-variant hover:text-error hover:bg-error/5 transition-all text-sm ${!sidebarOpen ? 'lg:justify-center' : ''}`}
           >
-            <span className="material-symbols-outlined text-xl shrink-0">logout</span>
+            <span className="text-xl flex items-center justify-center shrink-0"><MdLogout /></span>
             <span className={`sidebar-text-collapsible ${!sidebarOpen ? 'lg:hidden' : ''}`}>Cerrar sesión</span>
           </button>
         </div>
@@ -314,7 +327,7 @@ export default function PageWrapper() {
             className="lg:hidden size-10 min-h-[44px] flex items-center justify-center rounded-xl hover:bg-surface-container text-on-surface-variant transition-colors"
             aria-label="Abrir menú"
           >
-            <span className="material-symbols-outlined text-2xl">menu</span>
+            <span className="text-2xl flex items-center justify-center"><MdMenu /></span>
           </button>
 
           <div className="ml-auto flex items-center gap-3">
