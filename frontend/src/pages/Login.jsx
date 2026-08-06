@@ -91,7 +91,7 @@ export default function Login() {
                 id="correo"
                 type="email"
                 autoComplete="email"
-                placeholder="empleado@disfracesly.ar"
+                placeholder="Correo electrónico"
                 value={form.correo}
                 onChange={(e) => setForm((p) => ({ ...p, correo: e.target.value }))}
                 onBlur={() => setTouched((p) => ({ ...p, correo: true }))}
@@ -120,7 +120,7 @@ export default function Login() {
                 id="contrasena"
                 type={showPass ? 'text' : 'password'}
                 autoComplete="current-password"
-                placeholder="••••••••••"
+                placeholder="Contraseña"
                 value={form.contrasena}
                 onChange={(e) => setForm((p) => ({ ...p, contrasena: e.target.value }))}
                 onBlur={() => setTouched((p) => ({ ...p, contrasena: true }))}

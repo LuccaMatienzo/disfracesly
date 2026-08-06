@@ -153,17 +153,17 @@ export default function UsuarioForm() {
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5" autoComplete="off">
           <h2 className="font-headline text-title-md text-on-surface">Datos personales</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input label="DNI / Documento" error={errors.persona?.documento?.message}
+            <Input label="DNI / Documento" placeholder="DNI o documento" error={errors.persona?.documento?.message}
               {...register('persona.documento')} />
-            <Input label="Nombre" error={errors.persona?.nombre?.message}
+            <Input label="Nombre" placeholder="Nombre" error={errors.persona?.nombre?.message}
               {...register('persona.nombre')} />
-            <Input label="Apellido" error={errors.persona?.apellido?.message}
+            <Input label="Apellido" placeholder="Apellido" error={errors.persona?.apellido?.message}
               {...register('persona.apellido')} className="sm:col-span-2" />
           </div>
 
           <h2 className="font-headline text-title-md text-on-surface mt-2">Acceso al sistema</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input label="Correo electrónico" type="email" error={errors.correo?.message}
+            <Input label="Correo electrónico" placeholder="Correo electrónico" type="email" error={errors.correo?.message}
               autoComplete="new-password"
               {...register('correo')} />
             
@@ -172,7 +172,7 @@ export default function UsuarioForm() {
               error={errors.id_rol?.message}
               {...register('id_rol', { valueAsNumber: true })}
             >
-              <option value="">Seleccionar rol…</option>
+              <option value="">Seleccionar rol</option>
               {roles.map(rol => (
                 <option key={rol.id_rol} value={rol.id_rol}>{rol.nombre}</option>
               ))}
@@ -181,6 +181,7 @@ export default function UsuarioForm() {
             {!isEditing && (
               <div className="sm:col-span-2 relative">
                 <Input 
+                  placeholder="Contraseña"
                   label="Contraseña" 
                   type={showPass ? 'text' : 'password'} 
                   error={errors.contrasena?.message}

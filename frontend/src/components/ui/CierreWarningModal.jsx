@@ -46,7 +46,7 @@ export default function CierreWarningModal({ open, onClose, onSubmit, requiereMo
         {requiereMonto && (
           <Input
             label="Motivo de Diferencia de Monto *"
-            placeholder="Ej. Descuento aplicado, deuda perdonada, etc."
+            placeholder="Motivo del descuento o deuda"
             value={motivoMonto}
             onChange={(e) => setMotivoMonto(e.target.value)}
             required
@@ -56,7 +56,7 @@ export default function CierreWarningModal({ open, onClose, onSubmit, requiereMo
         {requiereDeposito && (
           <Input
             label="Motivo de Retención de Depósito *"
-            placeholder="Ej. Prenda dañada, manchada, etc."
+            placeholder="Motivo del recargo"
             value={motivoDeposito}
             onChange={(e) => setMotivoDeposito(e.target.value)}
             required

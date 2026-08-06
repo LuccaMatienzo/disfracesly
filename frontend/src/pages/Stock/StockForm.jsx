@@ -101,8 +101,8 @@ export default function StockForm() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <Input label="Talle" placeholder="XS, S, M, L, XL…" {...register('talle')} />
-            <Input label="Medidas" placeholder="Ej: 90cm busto" {...register('medidas')} />
+            <Input label="Talle" placeholder="Talle" {...register('talle')} />
+            <Input label="Medidas" placeholder="Medidas" {...register('medidas')} />
           </div>
 
           {isEditing && (
@@ -114,7 +114,7 @@ export default function StockForm() {
 
           <Input
             label="Descripción"
-            placeholder="Detalles adicionales sobre esta pieza…"
+            placeholder="Detalles adicionales sobre esta pieza"
             {...register('descripcion')}
           />
 

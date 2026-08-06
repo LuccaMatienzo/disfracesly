@@ -132,7 +132,7 @@ export default function CatalogoPublico() {
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar disfraces…"
+                placeholder="Buscar disfraces"
                 className="w-full pl-10 pr-4 py-3 rounded-xl bg-card-panel border border-divider text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
               />
             </div>

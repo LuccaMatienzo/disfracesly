@@ -124,7 +124,7 @@ export default function VentaForm() {
 
             <div className="bg-surface-container-lowest rounded-2xl shadow-card p-5 flex flex-col h-full">
               <h2 className="font-headline text-title-md text-on-surface mb-4">Piezas disponibles</h2>
-              <Input placeholder="Buscar pieza…" value={stockSearch} onChange={(e) => setStockSearch(e.target.value)} className="mb-4" />
+              <Input placeholder="Buscar pieza" value={stockSearch} onChange={(e) => setStockSearch(e.target.value)} className="mb-4" />
               
               {selectedPiezas.size > 0 && (
                 <div className="mb-3 flex gap-2 flex-wrap">
@@ -183,6 +183,7 @@ export default function VentaForm() {
                   {...register('fecha_retiro')}
                 />
                 <Input 
+                  placeholder="Monto total"
                   label="Monto total ($)" 
                   type="number" 
                   min="0" 
@@ -196,6 +197,7 @@ export default function VentaForm() {
                   })} 
                 />
                 <Input 
+                  placeholder="Seña"
                   label="Seña ($)" 
                   type="number" 
                   min="0" 
@@ -208,8 +210,8 @@ export default function VentaForm() {
                     validate: (val) => parseFloat(val) <= parseFloat(watch('monto_total') || 0) || 'La seña no puede superar el monto total'
                   })} 
                 />
-                <Input label="Especificaciones de medidas" placeholder="Ej: 90cm busto, 70cm cintura" {...register('especificaciones_medidas')} />
-                <Input label="Observaciones" {...register('observaciones')} />
+                <Input label="Especificaciones de medidas" placeholder="Especificaciones de medidas" {...register('especificaciones_medidas')} />
+                <Input label="Observaciones" placeholder="Observaciones" {...register('observaciones')} />
               </div>
             </div>
 

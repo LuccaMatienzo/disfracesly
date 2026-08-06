@@ -173,8 +173,8 @@ export default function PiezaForm({ isModal = false, onSuccessCallback, onCancel
           className="flex flex-col gap-6 flex-1 min-h-0"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 shrink-0">
-            <Input label="Nombre" placeholder="Nombre de la pieza…" {...register('nombre', { required: true })} />
-            <Input label="Descripción" placeholder="Descripción opcional…" {...register('descripcion')} />
+            <Input label="Nombre" placeholder="Nombre de la pieza" {...register('nombre', { required: true })} />
+            <Input label="Descripción" placeholder="Descripción opcional" {...register('descripcion')} />
           </div>
 
           {/* ── Sección de categorías ────────────────────────────────── */}

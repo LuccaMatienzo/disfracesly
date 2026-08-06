@@ -59,7 +59,7 @@ export default function PiezaCombobox({ error, value, onChange, defaultSearchTer
     <div className="flex flex-row flex-nowrap w-full gap-2 items-start" ref={wrapperRef}>
       <div className="relative flex-1 min-w-0">
         <Input
-          placeholder="Buscar pieza por nombre..."
+          placeholder="Buscar pieza por nombre"
           value={searchTerm}
           onChange={handleChange}
           onFocus={() => setIsOpen(true)}

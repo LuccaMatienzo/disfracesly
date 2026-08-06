@@ -48,7 +48,7 @@ export default function ClienteCombobox({ error, value, onChange }) {
     <div className="flex flex-row flex-nowrap w-full gap-2 items-start" ref={wrapperRef}>
       <div className="relative flex-1 min-w-0">
         <Input
-          placeholder="Buscar cliente por dni, nombre o apellido"
+          placeholder="Buscar por DNI, nombre o apellido"
           value={searchTerm}
           onChange={handleChange}
           onFocus={() => setIsOpen(true)}

@@ -162,6 +162,7 @@ export default function AccountModal({ isOpen, onClose }) {
                     <label className="block text-xs font-medium text-tertiary mb-1">Nombre</label>
                     <input 
                       type="text" 
+                      placeholder="Nombre"
                       value={nombre}
                       onChange={handleNameChange}
                       className="w-full bg-surface-container border border-divider text-on-surface rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" 
@@ -171,6 +172,7 @@ export default function AccountModal({ isOpen, onClose }) {
                     <label className="block text-xs font-medium text-tertiary mb-1">Apellido</label>
                     <input 
                       type="text" 
+                      placeholder="Apellido"
                       value={apellido}
                       onChange={handleLastNameChange}
                       className="w-full bg-surface-container border border-divider text-on-surface rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" 
@@ -192,7 +194,7 @@ export default function AccountModal({ isOpen, onClose }) {
                   <label className="block text-xs font-medium text-tertiary mb-1">Contraseña Actual</label>
                   <input 
                     type="password" 
-                    placeholder="••••••••"
+                    placeholder="Contraseña actual"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     className={`w-full bg-surface-container border text-on-surface rounded-xl px-4 py-2 focus:outline-none focus:ring-2 transition-all ${
@@ -211,7 +213,7 @@ export default function AccountModal({ isOpen, onClose }) {
                   <label className="block text-xs font-medium text-tertiary mb-1">Nueva Contraseña</label>
                   <input 
                     type="password" 
-                    placeholder="••••••••"
+                    placeholder="Nueva contraseña"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className={`w-full bg-surface-container border text-on-surface rounded-xl px-4 py-2 focus:outline-none focus:ring-2 transition-all ${
@@ -230,7 +232,7 @@ export default function AccountModal({ isOpen, onClose }) {
                   <label className="block text-xs font-medium text-tertiary mb-1">Confirmar Contraseña</label>
                   <input 
                     type="password" 
-                    placeholder="••••••••"
+                    placeholder="Confirmar nueva contraseña"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className={`w-full bg-surface-container border text-on-surface rounded-xl px-4 py-2 focus:outline-none focus:ring-2 transition-all ${

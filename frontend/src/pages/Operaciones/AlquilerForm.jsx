@@ -186,7 +186,7 @@ export default function AlquilerForm() {
             <div className="bg-surface-container-lowest rounded-2xl shadow-card p-5 flex flex-col h-full">
               <h2 className="font-headline text-title-md text-on-surface mb-4">Piezas disponibles</h2>
               <Input
-                placeholder="Buscar pieza…"
+                placeholder="Buscar pieza"
                 value={stockSearch}
                 onChange={(e) => setStockSearch(e.target.value)}
                 className="mb-4"
@@ -306,7 +306,7 @@ export default function AlquilerForm() {
               <div className="mt-4">
                 <Input
                   label="Observaciones"
-                  placeholder="Notas adicionales…"
+                  placeholder="Notas adicionales"
                   {...register('observaciones')}
                 />
               </div>

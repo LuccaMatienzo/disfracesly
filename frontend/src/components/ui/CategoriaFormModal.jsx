@@ -60,14 +60,14 @@ export default function CategoriaFormModal({ open, onClose, onSubmit, initialDat
         <div className="space-y-4">
           <Input
             label="Nombre de Categoría *"
-            placeholder="Ej: Halloween, Superhéroes..."
+            placeholder="Nombre de la categoría"
             {...register('nombre')}
             error={errors.nombre?.message}
           />
 
           <Input
             label="Descripción (opcional)"
-            placeholder="Breve descripción de la categoría..."
+            placeholder="Descripción de la categoría"
             {...register('descripcion')}
             error={errors.descripcion?.message}
           />

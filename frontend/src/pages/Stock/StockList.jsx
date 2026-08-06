@@ -178,7 +178,7 @@ export default function StockList() {
           <div className="flex-1 min-w-0 relative">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none text-[20px]">search</span>
             <Input
-              placeholder="Buscar por Nombre de pieza…"
+              placeholder="Buscar por nombre de pieza"
               value={localSearch}
               onChange={(e) => setLocalSearch(e.target.value)}
               className="pl-10"
@@ -255,7 +255,7 @@ export default function StockList() {
             <div className="relative inline-block shrink-0 ml-1">
               <input
                 type="text"
-                placeholder="Talle..."
+                placeholder="Talle"
                 value={talle}
                 onChange={(e) => updateFilters({ talle: e.target.value, page: 1 })}
                 className="w-24 px-3 py-1 text-sm font-medium rounded-full border border-outline-variant bg-surface-container text-on-surface focus:outline-none focus:ring-1 focus:ring-primary placeholder-gray-500 dark:placeholder-gray-400"
@@ -366,7 +366,7 @@ export default function StockList() {
                 </span>
                 <input
                   type="text"
-                  placeholder="Ej: M, L, Único"
+                  placeholder="Talle"
                   value={talle}
                   onChange={(e) => updateFilters({ talle: e.target.value, page: 1 })}
                   className="w-full px-4 py-3 text-body-lg rounded-2xl border border-divider bg-surface-container-low text-on-surface focus:outline-none focus:ring-2 focus:ring-primary placeholder-on-surface-variant/50"

@@ -252,7 +252,7 @@ export default function SolicitudPedido() {
                         if (errors.nombre) setErrors({ ...errors, nombre: '' });
                       }}
                       onBlur={handleBlurNombre}
-                      placeholder="Tu nombre completo"
+                      placeholder="Nombre completo"
                       required
                       className={`w-full pl-12 pr-4 py-4 rounded-xl bg-card-panel border text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 transition ${errors.nombre
                         ? 'border-error focus:ring-error/40'
@@ -278,7 +278,7 @@ export default function SolicitudPedido() {
                         if (errors.telefono) setErrors({ ...errors, telefono: '' });
                       }}
                       onBlur={handleBlurTelefono}
-                      placeholder="Número de teléfono celular (3812345678)"
+                      placeholder="Número de teléfono celular"
                       required
                       className={`w-full pl-12 pr-4 py-4 rounded-xl bg-card-panel border text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 transition ${errors.telefono
                         ? 'border-error focus:ring-error/40'
@@ -297,7 +297,7 @@ export default function SolicitudPedido() {
                   <textarea
                     value={notas}
                     onChange={(e) => setNotas(e.target.value)}
-                    placeholder="Notas adicionales: talle exacto, evento, dudas…"
+                    placeholder="Notas adicionales"
                     rows={3}
                     className="w-full pl-12 pr-4 py-4 rounded-xl bg-card-panel border border-divider text-on-surface placeholder:text-tertiary focus:outline-none focus:ring-2 focus:ring-primary/40 transition resize-none"
                   />

@@ -173,7 +173,7 @@ export default function UsuariosList() {
           <div className="flex-1 min-w-0 relative">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none text-[20px]">search</span>
             <Input
-              placeholder="Buscar por nombre, apellido o correo…"
+              placeholder="Buscar por nombre, apellido o correo"
               value={localSearch}
               onChange={(e) => setLocalSearch(e.target.value)}
               className="pl-10"

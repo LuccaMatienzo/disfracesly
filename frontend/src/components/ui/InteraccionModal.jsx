@@ -208,7 +208,7 @@ export default function InteraccionModal({ open, onClose, onSubmit, loading, tip
                       ? 'border-error focus:border-error focus:ring-error'
                       : 'border-divider focus:border-primary focus:ring-primary'
                       }`}
-                    placeholder="Ej: 12345678"
+                    placeholder="Documento"
                     autoComplete="off"
                   />
                   {showSuggestions && suggestions.length > 0 && (
@@ -284,7 +284,7 @@ export default function InteraccionModal({ open, onClose, onSubmit, loading, tip
             value={formData.observaciones}
             onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
             className="w-full bg-surface-container-lowest border border-divider rounded-xl px-4 py-3 text-sm text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all min-h-[80px] resize-y"
-            placeholder="Detalles sobre el estado de las prendas, demoras, etc."
+            placeholder="Detalles de la interacción"
           />
         </div>
       </form>

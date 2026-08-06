@@ -141,18 +141,18 @@ export default function ClienteForm({ isModal = false, onSuccessCallback, onCanc
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5" autoComplete="off">
           <h2 className="font-headline text-title-md text-on-surface">Datos personales</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input label="DNI / Documento" error={errors.persona?.documento?.message}
+            <Input label="DNI / Documento" placeholder="DNI o documento" error={errors.persona?.documento?.message}
               {...dniRegister} onBlur={handleDniBlur} />
-            <Input label="Nombre" error={errors.persona?.nombre?.message} disabled={isAutocompleted}
+            <Input label="Nombre" placeholder="Nombre" error={errors.persona?.nombre?.message} disabled={isAutocompleted}
               {...register('persona.nombre')} />
-            <Input label="Apellido" error={errors.persona?.apellido?.message} disabled={isAutocompleted}
+            <Input label="Apellido" placeholder="Apellido" error={errors.persona?.apellido?.message} disabled={isAutocompleted}
               {...register('persona.apellido')} className="sm:col-span-2" />
           </div>
           <h2 className="font-headline text-title-md text-on-surface mt-2">Contacto</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input label="Teléfono" placeholder="Ej: 3812345678" error={errors.telefono?.message}
+            <Input label="Teléfono" placeholder="Teléfono" error={errors.telefono?.message}
               {...register('telefono')} />
-            <Input label="Domicilio" placeholder="Dirección…" error={errors.domicilio?.message} {...register('domicilio')} />
+            <Input label="Domicilio" placeholder="Domicilio" error={errors.domicilio?.message} {...register('domicilio')} />
           </div>
           <div className="flex gap-3 justify-end mt-2">
             <Button type="button" variant="secondary" onClick={handleCancel}>Cancelar</Button>
