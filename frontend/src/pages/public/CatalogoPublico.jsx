@@ -22,7 +22,8 @@ export default function CatalogoPublico() {
   const currentCat = searchParams.get('categoria') ?? '';
 
   const [search, setSearch] = useState(currentSearch);
-  const [selectedCat, setSelectedCat] = useState(currentCat);
+  const [prevSearch, setPrevSearch] = useState(currentSearch);
+  const [prevCat, setPrevCat] = useState(currentCat);
 
   const { categorias, isLoading: loadingCat } = useCategoriasPublicas();
 
@@ -32,22 +33,13 @@ export default function CatalogoPublico() {
       categoria: currentCat,
     });
 
-  // Sync state with URL when back button is used
-  useEffect(() => {
-    let applied = false;
-    if (filters.categoria !== currentCat) {
-      setSelectedCat(currentCat);
-      applied = true;
-    }
-    if (filters.search !== currentSearch) {
-      setSearch(currentSearch);
-      applied = true;
-    }
-
-    if (applied) {
-      applyFilters({ search: currentSearch, categoria: currentCat });
-    }
-  }, [currentSearch, currentCat, filters.search, filters.categoria, applyFilters]);
+  // Sync state with URL when back button is used sin useEffect (estado derivado)
+  if (currentSearch !== prevSearch || currentCat !== prevCat) {
+    setPrevSearch(currentSearch);
+    setPrevCat(currentCat);
+    setSearch(currentSearch);
+    applyFilters({ search: currentSearch, categoria: currentCat });
+  }
 
   // Handle slider arrows
   const scrollContainerRef = useRef(null);
@@ -102,6 +94,7 @@ export default function CatalogoPublico() {
     <div className="min-h-[100dvh] bg-background overflow-x-hidden">
       <PublicNavbar />
 
+      <main>
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <section className="pt-28 pb-8 px-6 md:px-10 bg-surface-container-low">
         <div className="max-w-7xl mx-auto">
@@ -177,7 +170,7 @@ export default function CatalogoPublico() {
                 <button
                   key={value}
                   onClick={() => handleCat(value)}
-                  className={`snap-start flex-shrink-0 px-5 py-2 rounded-full font-label text-sm font-bold whitespace-nowrap transition-all outline-none [-webkit-tap-highlight-color:transparent] transform active:scale-95 border-2 ${selectedCat === value
+                  className={`snap-start flex-shrink-0 px-5 py-2 rounded-full font-label text-sm font-bold whitespace-nowrap transition-all outline-none [-webkit-tap-highlight-color:transparent] transform active:scale-95 border-2 ${currentCat === value
                     ? 'editorial-gradient text-white border-[#fafaeb] dark:border-[#131410]'
                     : 'bg-surface-container text-on-surface border-transparent hover:bg-[#efefe0] dark:hover:bg-[#292a24]'
                     }`}
@@ -204,7 +197,7 @@ export default function CatalogoPublico() {
       </section>
 
       {/* ── Main grid ────────────────────────────────────────────────────── */}
-      <main className="max-w-7xl mx-auto px-6 md:px-10 py-10">
+      <section className="max-w-7xl mx-auto px-6 md:px-10 py-10">
         {error && (
           <div className="text-center py-20">
             <span className="material-symbols-outlined text-5xl text-error mb-4 block">error_outline</span>
@@ -280,6 +273,7 @@ export default function CatalogoPublico() {
             )}
           </>
         )}
+      </section>
       </main>
 
       <PublicFooter />

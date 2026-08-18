@@ -57,6 +57,7 @@ export default function AlquilerForm() {
     control,
     handleSubmit,
     watch,
+    getValues,
     setValue,
     formState: { errors, isSubmitting, isValid },
   } = useForm({
@@ -72,7 +73,9 @@ export default function AlquilerForm() {
     },
   });
 
+  // eslint-disable-next-line react-compiler/react-compiler
   const fechaConstitucion = watch('fecha_constitucion');
+  // eslint-disable-next-line react-compiler/react-compiler
   const fechaRetiro = watch('fecha_retiro');
 
   // Si se cambia la fecha de constitución y es mayor a la de retiro, igualamos retiro
@@ -285,7 +288,7 @@ export default function AlquilerForm() {
                   {...register('monto_total', {
                     required: 'El monto total es obligatorio',
                     min: { value: 0, message: 'El monto no puede ser negativo' },
-                    validate: (val) => parseFloat(val) >= parseFloat(watch('deposito_monto') || 0) || 'El monto total no puede ser menor que el depósito'
+                    validate: (val) => parseFloat(val) >= parseFloat(getValues('deposito_monto') || 0) || 'El monto total no puede ser menor que el depósito'
                   })}
                 />
                 <Input
@@ -298,7 +301,7 @@ export default function AlquilerForm() {
                   {...register('deposito_monto', {
                     required: 'El depósito es obligatorio (puede ser 0)',
                     min: { value: 0, message: 'El depósito no puede ser negativo' },
-                    validate: (val) => parseFloat(val) <= parseFloat(watch('monto_total') || 0) || 'El depósito no puede superar el monto total'
+                    validate: (val) => parseFloat(val) <= parseFloat(getValues('monto_total') || 0) || 'El depósito no puede superar el monto total'
                   })}
                 />
               </div>

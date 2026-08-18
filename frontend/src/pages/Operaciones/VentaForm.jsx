@@ -33,7 +33,7 @@ export default function VentaForm() {
       api.get('/stock', { params: { estado: 'DISPONIBLE', search: stockSearch, limit: 30 } }).then((r) => r.data),
   });
 
-  const { register, control, handleSubmit, watch, formState: { errors, isSubmitting, isValid } } = useForm({
+  const { register, control, handleSubmit, watch, getValues, formState: { errors, isSubmitting, isValid } } = useForm({
     mode: 'onChange',
     defaultValues: { id_cliente: '', sena_monto: 0, monto_total: 0, fecha_retiro: '', especificaciones_medidas: '', observaciones: '' },
   });
@@ -193,7 +193,7 @@ export default function VentaForm() {
                   {...register('monto_total', {
                     required: 'El monto total es obligatorio',
                     min: { value: 0, message: 'El monto no puede ser negativo' },
-                    validate: (val) => parseFloat(val) >= parseFloat(watch('sena_monto') || 0) || 'El monto total no puede ser menor que la seña'
+                    validate: (val) => parseFloat(val) >= parseFloat(getValues('sena_monto') || 0) || 'El monto total no puede ser menor que la seña'
                   })} 
                 />
                 <Input 
@@ -207,7 +207,7 @@ export default function VentaForm() {
                   {...register('sena_monto', {
                     required: 'La seña es obligatoria (puede ser 0)',
                     min: { value: 0, message: 'La seña no puede ser negativa' },
-                    validate: (val) => parseFloat(val) <= parseFloat(watch('monto_total') || 0) || 'La seña no puede superar el monto total'
+                    validate: (val) => parseFloat(val) <= parseFloat(getValues('monto_total') || 0) || 'La seña no puede superar el monto total'
                   })} 
                 />
                 <Input label="Especificaciones de medidas" placeholder="Especificaciones de medidas" {...register('especificaciones_medidas')} />

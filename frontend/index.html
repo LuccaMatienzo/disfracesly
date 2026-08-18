@@ -22,7 +22,7 @@
   <!-- Carga síncrona optimizada de tipografía principal -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap" />
 
-  <!-- Carga síncrona optimizada de iconos (display=swap para mejorar FCP) -->
+  <!-- Carga síncrona optimizada de iconos -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
 
   <!-- ── Favicon y PWA ──────────────────────────────────────────────────── -->
@@ -42,6 +42,13 @@
           document.documentElement.setAttribute('data-theme', theme);
         }
       } catch (e) {}
+      
+      // Prevenir destello de ligaduras (FOIT) de Material Icons
+      if ('fonts' in document) {
+        document.fonts.ready.then(function () {
+          document.documentElement.classList.add('fonts-loaded');
+        });
+      }
     })();
   </script>
 </head>

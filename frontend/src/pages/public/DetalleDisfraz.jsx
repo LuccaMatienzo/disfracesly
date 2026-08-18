@@ -17,9 +17,14 @@ export default function DetalleDisfraz() {
   const [talleSeleccionado, setTalleSeleccionado] = useState(null);
   const [fechaRetiro, setFechaRetiro] = useState('');
   const [fechaDevolucion, setFechaDevolucion] = useState('');
+  const [currentId, setCurrentId] = useState(id);
+
+  if (id !== currentId) {
+    setCurrentId(id);
+    setIsLoading(true);
+  }
 
   useEffect(() => {
-    setIsLoading(true);
     fetchDisfrazById(id)
       .then((data) => {
         setDisfraz(data);

@@ -115,6 +115,7 @@ export default function LandingPage() {
     <div className="min-h-[100dvh] bg-background text-on-background overflow-x-hidden">
       <PublicNavbar />
 
+      <main>
       {/* ── Hero ────────────────────────────────────────────────────────────── */}
       <section className="relative pt-28 pb-20 px-6 md:px-10 overflow-hidden">
         {/* Decorative blobs */}
@@ -351,6 +352,7 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+      </main>
 
       <PublicFooter />
     </div>

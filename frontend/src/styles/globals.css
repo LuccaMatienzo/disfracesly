@@ -305,6 +305,12 @@
   direction: ltr;
   -webkit-font-smoothing: antialiased;
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  /* Ocultar ligaduras (FOIT) hasta que cargue la fuente */
+  color: transparent;
+}
+
+html.fonts-loaded .material-symbols-outlined {
+  color: inherit;
 }
 
 /* ── Base ──────────────────────────────────────────────────────────────────── */

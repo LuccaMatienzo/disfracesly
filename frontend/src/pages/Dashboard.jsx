@@ -80,13 +80,15 @@ function DonutChart({ data }) {
   const circumference = 2 * Math.PI * radius;
 
   let cumulativeOffset = 0;
-  const segments = data.map((item) => {
+  const segments = [];
+  for (let i = 0; i < data.length; i++) {
+    const item = data[i];
     const pct = item.value / total;
     const dashArray = `${pct * circumference} ${circumference}`;
     const dashOffset = -cumulativeOffset * circumference;
     cumulativeOffset += pct;
-    return { ...item, dashArray, dashOffset, pct };
-  });
+    segments.push({ ...item, dashArray, dashOffset, pct });
+  }
 
   return (
     <div className="flex flex-col items-center">
@@ -503,17 +505,7 @@ function UpcomingReturns({ returns: list }) {
   );
 }
 
-// ─── Skeleton Loader ──────────────────────────────────────────────────────────
 
-function SkeletonCard() {
-  return (
-    <div className="bg-card-panel rounded-2xl shadow-card p-5 animate-pulse">
-      <div className="h-3 w-24 bg-surface-container rounded-full mb-3" />
-      <div className="h-10 w-20 bg-surface-container rounded-lg mb-2" />
-      <div className="h-3 w-16 bg-surface-container rounded-full" />
-    </div>
-  );
-}
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 
