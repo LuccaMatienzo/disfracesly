@@ -17,7 +17,9 @@ async function authenticate(req, _res, next) {
     }
 
     const token = authHeader.slice(7); // "Bearer ".length === 7
-    const payload = jwt.verify(token, env.JWT_SECRET);
+    // clockTolerance: 15 segundos de gracia para absorber desincronizaciones
+    // de reloj (clock skew) en entornos distribuidos que causaban 401 tras login.
+    const payload = jwt.verify(token, env.JWT_SECRET, { clockTolerance: 15 });
 
     // Verificar que el usuario siga activo en DB
     const usuario = await prisma.usuario.findFirst({
