@@ -102,10 +102,6 @@ function logout(_req, res) {
  * @param  {import('express').Response} res
  */
 function me(req, res) {
-  // Prevenir que Vercel Edge Cache almacene el 401 o los datos del usuario
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  res.setHeader('Pragma', 'no-cache');
-  res.setHeader('Expires', '0');
   res.json({ usuario: req.user });
 }
 

@@ -106,6 +106,16 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString(), env: env.NODE_ENV });
 });
 
+// ─── Desactivar Caché para la API ─────────────────────────────────────────────
+// Previene que Cloudflare o Vercel Edge Network inyecten `Cache-Control: public`
+// lo cual ocasiona que hagan un "strip" (eliminación) de la cabecera `Set-Cookie`.
+app.use('/api', (req, res, next) => {
+  res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+  res.setHeader('Expires', '-1');
+  res.setHeader('Pragma', 'no-cache');
+  next();
+});
+
 // ─── Rutas de la API ──────────────────────────────────────────────────────────
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/usuarios', apiLimiter, usuarioRoutes);
