@@ -33,14 +33,9 @@ const processQueue = (error) => {
   failedQueue = [];
 };
 
+// El token viaja automáticamente en las cookies gracias a withCredentials: true
 api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
+  (config) => config,
   (error) => Promise.reject(error)
 );
 
@@ -66,21 +61,14 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const storage = localStorage.getItem('refreshToken') ? localStorage : sessionStorage;
-        const refreshToken = storage.getItem('refreshToken');
-        const { data } = await axios.post(`${API_URL}/auth/refresh`, { refreshToken }, { withCredentials: true });
-        
-        storage.setItem('accessToken', data.accessToken);
-        storage.setItem('refreshToken', data.refreshToken);
-        
-        originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
+        // La request viajará automáticamente con la cookie del refreshToken
+        await axios.post(`${API_URL}/auth/refresh`, {}, { withCredentials: true });
         
         processQueue(null);
+        // Reintentar la solicitud fallida (ahora enviará la nueva cookie de accessToken)
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError);
-        localStorage.removeItem('user');
-        sessionStorage.removeItem('user');
         window.location.href = '/acceso';
         return Promise.reject(refreshError);
       } finally {

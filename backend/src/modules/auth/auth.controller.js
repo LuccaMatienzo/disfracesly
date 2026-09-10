@@ -1,5 +1,13 @@
 const { loginService, refreshTokenService } = require('./auth.service');
 const { ApiError } = require('../../utils/ApiError');
+const { env } = require('../../config/env');
+
+const getCookieOptions = (rememberMe = true) => ({
+  httpOnly: true,
+  secure: env.NODE_ENV === 'production',
+  sameSite: 'none',
+  ...(rememberMe && { maxAge: 7 * 24 * 60 * 60 * 1000 }) // 7 días o sesión
+});
 
 /**
  * Controlador: Inicio de sesión.
@@ -15,11 +23,15 @@ const { ApiError } = require('../../utils/ApiError');
  */
 async function login(req, res, next) {
   try {
+    const { rememberMe = true } = req.body;
     const result = await loginService(req.body);
+    
+    const cookieOpts = getCookieOptions(rememberMe);
+    res.cookie('accessToken', result.tokens.accessToken, cookieOpts);
+    res.cookie('refreshToken', result.tokens.refreshToken, cookieOpts);
+
     res.json({
       message: 'Login exitoso',
-      accessToken: result.tokens.accessToken,
-      refreshToken: result.tokens.refreshToken,
       usuario: result.usuario,
     });
   } catch (err) {
@@ -40,10 +52,21 @@ async function login(req, res, next) {
  */
 async function refreshToken(req, res, next) {
   try {
-    const { refreshToken } = req.body;
+    let { refreshToken } = req.cookies;
+    if (!refreshToken) {
+      refreshToken = req.body.refreshToken;
+    }
+    
     if (!refreshToken) throw ApiError.badRequest('refreshToken es requerido');
+    
     const tokens = await refreshTokenService(refreshToken);
-    res.json(tokens);
+    
+    // Al refrescar asumimos mantener la sesión prolongada.
+    const cookieOpts = getCookieOptions(true);
+    res.cookie('accessToken', tokens.accessToken, cookieOpts);
+    res.cookie('refreshToken', tokens.refreshToken, cookieOpts);
+
+    res.json({ message: 'Tokens renovados exitosamente' });
   } catch (err) {
     next(err);
   }
@@ -62,6 +85,9 @@ async function refreshToken(req, res, next) {
  * @param  {import('express').Response} res
  */
 function logout(_req, res) {
+  const cookieOpts = getCookieOptions(false);
+  res.clearCookie('accessToken', cookieOpts);
+  res.clearCookie('refreshToken', cookieOpts);
   res.json({ message: 'Sesión cerrada exitosamente' });
 }
 

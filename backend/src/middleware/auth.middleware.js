@@ -10,13 +10,18 @@ const { notDeleted } = require('../utils/softDelete');
  */
 async function authenticate(req, _res, next) {
   try {
-    const authHeader = req.headers.authorization;
+    let token = req.cookies.accessToken;
 
-    if (!authHeader?.startsWith('Bearer ')) {
-      throw ApiError.unauthorized('Token no proporcionado');
+    if (!token) {
+      const authHeader = req.headers.authorization;
+      if (authHeader?.startsWith('Bearer ')) {
+        token = authHeader.slice(7);
+      }
     }
 
-    const token = authHeader.slice(7); // "Bearer ".length === 7
+    if (!token) {
+      throw ApiError.unauthorized('Token no proporcionado');
+    }
     // clockTolerance: 15 segundos de gracia para absorber desincronizaciones
     // de reloj (clock skew) en entornos distribuidos que causaban 401 tras login.
     const payload = jwt.verify(token, env.JWT_SECRET, { clockTolerance: 15 });

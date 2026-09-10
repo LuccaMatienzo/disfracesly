@@ -26,25 +26,23 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Hidratación del estado desde localStorage o sessionStorage al montar el proveedor
+  // Hidratación del estado verificando la cookie contra el backend
   useEffect(() => {
-    const storage = localStorage.getItem('accessToken') ? localStorage : sessionStorage;
-    const token = storage.getItem('accessToken');
-    const stored = storage.getItem('user');
-    if (token && stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        // Normalizar: versiones antiguas podían guardar rol como objeto { nombre }
-        if (parsed?.rol && typeof parsed.rol === 'object') {
-          parsed.rol = parsed.rol.nombre;
-          storage.setItem('user', JSON.stringify(parsed));
+    let isMounted = true;
+    api.get('/auth/me')
+      .then(({ data }) => {
+        if (isMounted) {
+          setUser(data.usuario);
+          setIsLoading(false);
         }
-        setUser(parsed);
-      } catch {
-        storage.clear();
-      }
-    }
-    setIsLoading(false);
+      })
+      .catch(() => {
+        if (isMounted) {
+          setUser(null);
+          setIsLoading(false);
+        }
+      });
+    return () => { isMounted = false; };
   }, []);
 
   /**
@@ -57,11 +55,7 @@ export function AuthProvider({ children }) {
    * @returns {Promise<object>} Perfil del usuario autenticado
    */
   const login = useCallback(async (correo, contrasena, rememberMe = true) => {
-    const { data } = await api.post('/auth/login', { correo, contrasena });
-    const storage = rememberMe ? localStorage : sessionStorage;
-    storage.setItem('accessToken', data.accessToken);
-    storage.setItem('refreshToken', data.refreshToken);
-    storage.setItem('user', JSON.stringify(data.usuario));
+    const { data } = await api.post('/auth/login', { correo, contrasena, rememberMe });
     setUser(data.usuario);
     return data.usuario;
   }, []);
@@ -75,12 +69,6 @@ export function AuthProvider({ children }) {
    */
   const logout = useCallback(async () => {
     try { await api.post('/auth/logout'); } catch { /* El logout server-side es best-effort */ }
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('user');
-    sessionStorage.removeItem('accessToken');
-    sessionStorage.removeItem('refreshToken');
-    sessionStorage.removeItem('user');
     setUser(null);
   }, []);
 
@@ -92,6 +80,7 @@ export function AuthProvider({ children }) {
    */
   const updateLocalUser = useCallback((updatedData) => {
     setUser(prev => {
+      if (!prev) return prev;
       const newUser = { ...prev, ...updatedData };
       if (updatedData.persona && prev?.persona) {
         newUser.persona = { ...prev.persona, ...updatedData.persona };
@@ -100,8 +89,6 @@ export function AuthProvider({ children }) {
       if (newUser.rol && typeof newUser.rol === 'object') {
         newUser.rol = newUser.rol.nombre;
       }
-      const storage = localStorage.getItem('accessToken') ? localStorage : sessionStorage;
-      storage.setItem('user', JSON.stringify(newUser));
       return newUser;
     });
   }, []);
