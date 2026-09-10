@@ -4,8 +4,8 @@ const { env } = require('../../config/env');
 
 const getCookieOptions = (rememberMe = true) => ({
   httpOnly: true,
-  secure: env.NODE_ENV === 'production',
-  sameSite: 'lax',
+  secure: true, // Forzar secure en producción (HTTPS) siempre, independientemente de NODE_ENV en Render
+  sameSite: 'lax', // Lax es seguro ya que Vercel hace proxy de /api en el mismo dominio
   ...(rememberMe && { maxAge: 7 * 24 * 60 * 60 * 1000 }) // 7 días o sesión
 });
 
@@ -102,6 +102,10 @@ function logout(_req, res) {
  * @param  {import('express').Response} res
  */
 function me(req, res) {
+  // Prevenir que Vercel Edge Cache almacene el 401 o los datos del usuario
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   res.json({ usuario: req.user });
 }
 
