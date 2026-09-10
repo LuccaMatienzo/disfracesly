@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { fetchDisfrazById } from '@/hooks/useCatalogoPublico';
 import PublicNavbar from '@/components/public/PublicNavbar';
 import PublicFooter from '@/components/public/PublicFooter';
+import SEO from '@/components/public/SEO';
 
 
 const PLACEHOLDER = 'https://placehold.co/600x750/efefe0/6b7a7a?text=Disfracesly';
@@ -87,6 +88,11 @@ export default function DetalleDisfraz() {
 
   return (
     <div className="min-h-[100dvh] bg-background overflow-x-hidden">
+      <SEO 
+        title={`${disfraz.nombre} | Alquiler en Disfracesly`}
+        description={disfraz.descripcion || `Alquila el disfraz de ${disfraz.nombre} para tu próximo evento en Tucumán. Calidad artesanal.`}
+        image={disfraz.imagenPrincipal}
+      />
       <PublicNavbar />
 
       <main className="pt-24 pb-16 px-6 md:px-10 max-w-7xl mx-auto">

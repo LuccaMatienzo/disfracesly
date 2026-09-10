@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import PublicNavbar from '@/components/public/PublicNavbar';
 import PublicFooter from '@/components/public/PublicFooter';
 import CostumeCard from '@/components/public/CostumeCard';
+import SEO from '@/components/public/SEO';
 import { useCatalogoPublico, useCategoriasPublicas } from '@/hooks/useCatalogoPublico';
 
 const Skeleton = () => (
@@ -92,6 +93,10 @@ export default function CatalogoPublico() {
 
   return (
     <div className="min-h-[100dvh] bg-background overflow-x-hidden">
+      <SEO 
+        title="Catálogo de Disfraces | Disfracesly" 
+        description="Explora nuestro catálogo completo de disfraces en alquiler y venta. Encuentra el traje ideal para actos patrios, fiestas temáticas y eventos infantiles en Tucumán."
+      />
       <PublicNavbar />
 
       <main>
