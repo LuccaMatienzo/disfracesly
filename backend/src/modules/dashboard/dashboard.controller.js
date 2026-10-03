@@ -10,7 +10,7 @@ const svc = require('./dashboard.service');
  * @route GET /api/dashboard
  */
 async function getDashboard(req, res, next) {
-  try { res.json(await svc.getDashboardData()); } catch (e) { next(e); }
+  try { res.json(await svc.getDashboardData(req.user.rol)); } catch (e) { next(e); }
 }
 
 /**

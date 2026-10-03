@@ -170,37 +170,48 @@ async function getUpcomingReturns(limit = 5) {
 
 // ─── Aggregate endpoint ───────────────────────────────────────────────────────
 
-async function getDashboardData() {
+async function getDashboardData(userRol) {
+  const isManager = userRol === 'Administrador' || userRol === 'Jefe';
+
+  const operationalPromises = [
+    getInPreparation(),
+    getReadyForPickup(),
+    getActiveRentals(),
+    getRecentMovements(),
+    getStockStatus(),
+    getUpcomingReturns(),
+  ];
+
+  const financialPromises = isManager 
+    ? [getMonthlyRevenue(), getCashFlowWeekly()] 
+    : [Promise.resolve(null), Promise.resolve(null)];
+
   const [
     inPreparation,
     readyForPickup,
     activeRentals,
-    monthlyRevenue,
     recentMovements,
-    cashFlowWeekly,
     stockStatus,
     upcomingReturns,
-  ] = await Promise.all([
-    getInPreparation(),
-    getReadyForPickup(),
-    getActiveRentals(),
-    getMonthlyRevenue(),
-    getRecentMovements(),
-    getCashFlowWeekly(),
-    getStockStatus(),
-    getUpcomingReturns(),
-  ]);
+    monthlyRevenue,
+    cashFlowWeekly,
+  ] = await Promise.all([...operationalPromises, ...financialPromises]);
 
-  return {
+  const responseDTO = {
     inPreparation,
     readyForPickup,
     activeRentals,
-    monthlyRevenue,
     recentMovements,
-    cashFlowWeekly,
     stockStatus,
     upcomingReturns,
   };
+
+  if (isManager) {
+    responseDTO.monthlyRevenue = monthlyRevenue;
+    responseDTO.cashFlowWeekly = cashFlowWeekly;
+  }
+
+  return responseDTO;
 }
 
 async function getActiveOperationsDetails(filters = {}) {
