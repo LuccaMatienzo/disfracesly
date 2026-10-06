@@ -23,8 +23,10 @@ const personaRoutes = require('./modules/personas/personas.routes');
 
 const app = express();
 
-// Confiar en los 2 proxies (Vercel -> Render) para express-rate-limit
-app.set('trust proxy', 2);
+// Confiar en toda la cadena de proxies (Vercel Edge -> Cloudflare -> Render)
+// Extrae la IP original más lejana del header X-Forwarded-For para que
+// express-rate-limit no bloquee las IPs de los nodos de Vercel.
+app.set('trust proxy', true);
 
 
 // ─── Seguridad ────────────────────────────────────────────────────────────────
