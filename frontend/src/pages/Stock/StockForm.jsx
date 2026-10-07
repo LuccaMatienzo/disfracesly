@@ -101,7 +101,13 @@ export default function StockForm() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <Input label="Talle" placeholder="Talle" {...register('talle')} />
+            <Input 
+              label="Talle" 
+              placeholder="Talle" 
+              {...register('talle', {
+                onChange: (e) => { e.target.value = e.target.value.replace(/[^a-zA-Z0-9]/g, ''); }
+              })} 
+            />
             <Input label="Medidas" placeholder="Medidas" {...register('medidas')} />
           </div>
 
