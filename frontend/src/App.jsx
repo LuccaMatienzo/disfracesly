@@ -3,29 +3,49 @@ import { useAuth } from '@/context/AuthContext';
 import PageWrapper from '@/components/layout/PageWrapper';
 import { lazy, Suspense, useEffect } from 'react';
 
+// ─── Utilidad para recargar chunks si Vercel hace un nuevo deploy ───────────
+const lazyWithRetry = (componentImport) =>
+  lazy(async () => {
+    const pageHasAlreadyBeenForceRefreshed = JSON.parse(
+      window.sessionStorage.getItem('page-has-been-force-refreshed') || 'false'
+    );
+    try {
+      const component = await componentImport();
+      window.sessionStorage.setItem('page-has-been-force-refreshed', 'false');
+      return component;
+    } catch (error) {
+      if (!pageHasAlreadyBeenForceRefreshed) {
+        window.sessionStorage.setItem('page-has-been-force-refreshed', 'true');
+        window.location.reload();
+        return new Promise(() => {}); // Evitar crasheo mientras recarga
+      }
+      throw error;
+    }
+  });
+
 // ─── Páginas públicas (lazy-loaded) ──────────────────────────────────────────
-const LandingPage = lazy(() => import('@/pages/public/LandingPage'));
-const CatalogoPublico = lazy(() => import('@/pages/public/CatalogoPublico'));
-const DetalleDisfraz = lazy(() => import('@/pages/public/DetalleDisfraz'));
-const SolicitudPedido = lazy(() => import('@/pages/public/SolicitudPedido'));
+const LandingPage = lazyWithRetry(() => import('@/pages/public/LandingPage'));
+const CatalogoPublico = lazyWithRetry(() => import('@/pages/public/CatalogoPublico'));
+const DetalleDisfraz = lazyWithRetry(() => import('@/pages/public/DetalleDisfraz'));
+const SolicitudPedido = lazyWithRetry(() => import('@/pages/public/SolicitudPedido'));
 
 // ─── Páginas del portal de administración (lazy-loaded) ──────────────────────
-const Login = lazy(() => import('@/pages/Login'));
-const Dashboard = lazy(() => import('@/pages/Dashboard'));
-const StockList = lazy(() => import('@/pages/Stock/StockList'));
-const StockForm = lazy(() => import('@/pages/Stock/StockForm'));
-const OperacionesList = lazy(() => import('@/pages/Operaciones/OperacionesList'));
-const AlquilerForm = lazy(() => import('@/pages/Operaciones/AlquilerForm'));
-const VentaForm = lazy(() => import('@/pages/Operaciones/VentaForm'));
-const OperacionDetalle = lazy(() => import('@/pages/Operaciones/OperacionDetalle'));
-const ClientesList = lazy(() => import('@/pages/Clientes/ClientesList'));
-const ClienteForm = lazy(() => import('@/pages/Clientes/ClienteForm'));
-const UsuariosList = lazy(() => import('@/pages/Usuarios/UsuariosList'));
-const UsuarioForm = lazy(() => import('@/pages/Usuarios/UsuarioForm'));
-const FinanzasList = lazy(() => import('@/pages/Finanzas/FinanzasList'));
-const CatalogoList = lazy(() => import('@/pages/Catalogo/CatalogoList'));
-const PiezaForm = lazy(() => import('@/pages/Catalogo/PiezaForm'));
-const DisfrazForm = lazy(() => import('@/pages/Catalogo/DisfrazForm'));
+const Login = lazyWithRetry(() => import('@/pages/Login'));
+const Dashboard = lazyWithRetry(() => import('@/pages/Dashboard'));
+const StockList = lazyWithRetry(() => import('@/pages/Stock/StockList'));
+const StockForm = lazyWithRetry(() => import('@/pages/Stock/StockForm'));
+const OperacionesList = lazyWithRetry(() => import('@/pages/Operaciones/OperacionesList'));
+const AlquilerForm = lazyWithRetry(() => import('@/pages/Operaciones/AlquilerForm'));
+const VentaForm = lazyWithRetry(() => import('@/pages/Operaciones/VentaForm'));
+const OperacionDetalle = lazyWithRetry(() => import('@/pages/Operaciones/OperacionDetalle'));
+const ClientesList = lazyWithRetry(() => import('@/pages/Clientes/ClientesList'));
+const ClienteForm = lazyWithRetry(() => import('@/pages/Clientes/ClienteForm'));
+const UsuariosList = lazyWithRetry(() => import('@/pages/Usuarios/UsuariosList'));
+const UsuarioForm = lazyWithRetry(() => import('@/pages/Usuarios/UsuarioForm'));
+const FinanzasList = lazyWithRetry(() => import('@/pages/Finanzas/FinanzasList'));
+const CatalogoList = lazyWithRetry(() => import('@/pages/Catalogo/CatalogoList'));
+const PiezaForm = lazyWithRetry(() => import('@/pages/Catalogo/PiezaForm'));
+const DisfrazForm = lazyWithRetry(() => import('@/pages/Catalogo/DisfrazForm'));
 
 /**
  * Estilos globales para el efecto de Skeleton loading.
