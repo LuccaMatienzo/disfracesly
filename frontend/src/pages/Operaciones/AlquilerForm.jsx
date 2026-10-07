@@ -28,9 +28,8 @@ const handlePositiveNumbersOnly = (e) => {
 };
 
 const getMinConstitucion = () => {
-  const d = new Date();
-  d.setDate(d.getDate() - 3);
-  return getLocalDatetimeStr(d);
+  // Desactivado temporalmente para carga histórica (permitía hasta 3 días atrás)
+  return undefined;
 };
 
 
