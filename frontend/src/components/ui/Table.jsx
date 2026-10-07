@@ -34,7 +34,7 @@ export default function Table({ columns, data, loading, emptyMessage = 'Sin resu
               {columns.map((col) => (
                 <th
                   key={col.key}
-                  className={`px-4 py-3 text-label-lg font-label font-medium uppercase tracking-wide text-on-surface-variant ${
+                  className={`px-4 py-3 text-label-lg font-label font-medium uppercase tracking-wide text-on-surface-variant align-middle ${
                     col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'
                   }`}
                   style={{ width: col.width }}
@@ -123,7 +123,7 @@ export default function Table({ columns, data, loading, emptyMessage = 'Sin resu
                                before:text-on-surface-variant before:uppercase before:text-xs before:tracking-wide
                                md:table-cell md:before:content-none`
                         }
-                        md:px-4 md:py-3.5 ${mdAlign}
+                        md:px-4 md:py-3.5 md:align-middle ${mdAlign}
                       `}
                     >
                       {col.render ? col.render(row[col.key], row) : row[col.key]}
