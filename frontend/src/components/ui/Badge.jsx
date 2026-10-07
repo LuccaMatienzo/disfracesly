@@ -8,7 +8,7 @@ export const badgeConfig = {
   DISPONIBLE: { label: 'Disponible', cls: 'bg-primary-container text-primary-on-container' },
   RESERVADA: { label: 'Reservada', cls: 'bg-secondary-container text-secondary-on-container' },
   ALQUILADA: { label: 'Alquilada', cls: 'bg-tertiary-container text-tertiary-on-container' },
-  VENDIDA: { label: 'Vendida', cls: 'bg-primary-container text-primary-on-container' },
+  VENDIDA: { label: 'Vendida', cls: 'bg-surface-container-highest text-on-surface' },
   FUERA_DE_SERVICIO: { label: 'Fuera de servicio', cls: 'bg-error-container text-error-on-container' },
   DE_BAJA: { label: 'De baja', cls: 'bg-transparent border border-coral text-coral' },
 
@@ -21,7 +21,7 @@ export const badgeConfig = {
 
   // Etapa venta
   LISTO_PARA_ENTREGA: { label: 'Listo para entrega', cls: 'bg-warning-container text-warning-on-container' },
-  VENDIDO: { label: 'Vendido', cls: 'bg-primary-container text-primary-on-container' },
+  VENDIDO: { label: 'Vendido', cls: 'bg-surface-container-highest text-on-surface' },
 
   // Pagos: Tipo
   SENA: { label: 'Seña', cls: 'bg-coral text-white' },
