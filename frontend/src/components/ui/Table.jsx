@@ -122,6 +122,7 @@ export default function Table({ columns, data, loading, emptyMessage = 'Sin resu
                                before:content-[attr(data-label)] before:font-semibold
                                before:text-on-surface-variant before:uppercase before:text-xs before:tracking-wide
                                md:table-cell md:before:content-none`
+                        }
                         md:px-4 md:py-3.5 md:align-middle ${isActions ? 'md:text-center' : mdAlign}
                       `}
                     >
