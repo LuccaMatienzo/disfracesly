@@ -21,7 +21,7 @@ export const badgeConfig = {
 
   // Etapa venta
   LISTO_PARA_ENTREGA: { label: 'Listo para entrega', cls: 'bg-warning-container text-warning-on-container' },
-  VENDIDO: { label: 'Vendido', cls: 'bg-surface-container-highest text-on-surface' },
+  VENDIDO: { label: 'Vendido', cls: 'bg-primary-container text-primary-on-container' },
 
   // Pagos: Tipo
   SENA: { label: 'Seña', cls: 'bg-coral text-white' },
