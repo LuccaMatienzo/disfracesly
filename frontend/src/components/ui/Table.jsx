@@ -35,7 +35,7 @@ export default function Table({ columns, data, loading, emptyMessage = 'Sin resu
                 <th
                   key={col.key}
                   className={`px-4 py-3 text-label-lg font-label font-medium uppercase tracking-wide text-on-surface-variant align-middle ${
-                    col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'
+                    col.key === 'acciones' ? 'text-center' : col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'
                   }`}
                   style={{ width: col.width }}
                 >
@@ -115,15 +115,14 @@ export default function Table({ columns, data, loading, emptyMessage = 'Sin resu
                       className={`
                         ${rowClassName ? '' : 'text-on-surface'}
                         ${isActions
-                          ? 'block pt-3 mt-2 border-t border-divider text-center md:table-cell md:border-t-0 md:mt-0 md:pt-0'
+                          ? 'block pt-3 mt-2 border-t border-divider text-center md:table-cell md:border-t-0 md:mt-0'
                           : isDescription
                             ? 'flex flex-col gap-1 py-2 text-left before:content-[attr(data-label)] before:font-semibold before:text-on-surface-variant before:uppercase before:text-xs before:tracking-wide md:table-cell md:before:content-none'
                             : `flex justify-between items-center gap-4 py-1.5 text-right
                                before:content-[attr(data-label)] before:font-semibold
                                before:text-on-surface-variant before:uppercase before:text-xs before:tracking-wide
                                md:table-cell md:before:content-none`
-                        }
-                        md:px-4 md:py-3.5 md:align-middle ${mdAlign}
+                        md:px-4 md:py-3.5 md:align-middle ${isActions ? 'md:text-center' : mdAlign}
                       `}
                     >
                       {col.render ? col.render(row[col.key], row) : row[col.key]}
