@@ -899,7 +899,7 @@ export default function OperacionDetalle() {
         open={interaccionModal.open}
         onClose={() => setInteraccionModal({ open: false, tipo: null })}
         onSubmit={handleInteraccionSubmit}
-        loading={createInteraccion.isPending || avanzarAlquiler.isPending}
+        loading={createInteraccion.isPending || avanzarAlquiler.isPending || avanzarVenta.isPending}
         tipo={interaccionModal.tipo}
         operacion={op}
       />
@@ -910,7 +910,7 @@ export default function OperacionDetalle() {
         onSubmit={handleCierreWarningSubmit}
         requiereMonto={cierreWarning.requiereMonto}
         requiereDeposito={cierreWarning.requiereDeposito}
-        loading={createInteraccion.isPending || avanzarAlquiler.isPending}
+        loading={createInteraccion.isPending || avanzarAlquiler.isPending || avanzarVenta.isPending}
       />
 
       <MontosModal

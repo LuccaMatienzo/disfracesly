@@ -24,8 +24,17 @@ export default function Modal({ open, onClose, title, children, size = 'md', foo
     if (open) {
       document.addEventListener('keydown', handleKey);
       document.body.style.overflow = 'hidden';
-      
-      // Animate entry
+    }
+    
+    return () => {
+      document.removeEventListener('keydown', handleKey);
+      document.body.style.overflow = '';
+    };
+  }, [open, handleKey]);
+
+  useEffect(() => {
+    if (open) {
+      // Animate entry only when 'open' changes to true
       if (backdropRef.current && modalRef.current) {
         anime({
           targets: backdropRef.current,
@@ -44,12 +53,7 @@ export default function Modal({ open, onClose, title, children, size = 'md', foo
         });
       }
     }
-    
-    return () => {
-      document.removeEventListener('keydown', handleKey);
-      document.body.style.overflow = '';
-    };
-  }, [open, handleKey]);
+  }, [open]);
 
   if (!open) return null;
 
