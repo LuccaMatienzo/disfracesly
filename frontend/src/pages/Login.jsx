@@ -169,26 +169,39 @@ export default function Login() {
           )}
 
           {/* Submit */}
+          <style>{`
+            @keyframes btnFill {
+              0% { width: 0%; opacity: 0; }
+              10% { opacity: 1; }
+              90% { opacity: 1; }
+              100% { width: 100%; opacity: 0; }
+            }
+          `}</style>
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-4 rounded-xl editorial-gradient text-white font-headline font-bold text-base shadow-lg transition-all flex items-center justify-center gap-3 mt-2 ${
+            className={`relative overflow-hidden w-full py-4 rounded-xl editorial-gradient text-white font-headline font-bold text-base shadow-lg transition-all flex items-center justify-center gap-3 mt-2 ${
               loading
-                ? 'opacity-50 cursor-not-allowed' 
+                ? 'pointer-events-none' 
                 : 'hover:scale-[1.02] active:scale-95'
             }`}
           >
-            {loading ? (
-              <>
-                <span className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Verificando…
-              </>
-            ) : (
-              <>
-                Iniciar sesión
-                <span className="material-symbols-outlined text-xl">arrow_forward</span>
-              </>
+            {loading && (
+              <div 
+                className="absolute inset-y-0 left-0 bg-black/20 z-0 rounded-xl" 
+                style={{ animation: 'btnFill 1.5s infinite ease-in-out' }} 
+              />
             )}
+            <div className="relative z-10 flex items-center justify-center gap-2">
+              {loading ? (
+                <span>Verificando…</span>
+              ) : (
+                <>
+                  Iniciar sesión
+                  <span className="material-symbols-outlined text-xl">arrow_forward</span>
+                </>
+              )}
+            </div>
           </button>
         </form>
 
