@@ -226,7 +226,7 @@ CREATE FUNCTION gestion.fn_cash_flow_weekly() RETURNS TABLE(total_income numeric
 
   SELECT
     COALESCE(SUM(monto) FILTER (WHERE tipo IN ('SENA', 'SALDO', 'AJUSTE')), 0) AS total_income,
-    COALESCE(SUM(monto) FILTER (WHERE tipo = 'DEPOSITO'),                   0) AS deposits_in_custody,
+    COALESCE(SUM(CASE WHEN tipo = 'DEPOSITO' THEN monto WHEN tipo = 'DEVOLUCION_DEPOSITO' THEN -monto ELSE 0 END) FILTER (WHERE tipo IN ('DEPOSITO', 'DEVOLUCION_DEPOSITO')), 0) AS deposits_in_custody,
     (SELECT total FROM saldo_pendiente)                                         AS pending_balance
   FROM pagos_semana;
 $$;
