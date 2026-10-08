@@ -314,6 +314,7 @@ export default function FinanzasList() {
               <select
                 value={filtroFlujo}
                 onChange={(e) => updateFilters({ flujo: e.target.value, page: 1 })}
+                aria-label="Filtrar por flujo"
                 className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-outline-variant bg-surface-container text-on-surface cursor-pointer focus:outline-none"
               >
                 <option value="" className="bg-surface-container text-on-surface">Todos los Movimientos</option>
@@ -328,6 +329,7 @@ export default function FinanzasList() {
               <select
                 value={filtroMetodo}
                 onChange={(e) => updateFilters({ metodo: e.target.value, page: 1 })}
+                aria-label="Filtrar por método"
                 className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-outline-variant bg-surface-container text-on-surface cursor-pointer focus:outline-none"
               >
                 <option value="" className="bg-surface-container text-on-surface">Todos los Métodos</option>
@@ -409,6 +411,7 @@ export default function FinanzasList() {
                   <select
                     value={filtroFlujo}
                     onChange={(e) => updateFilters({ flujo: e.target.value, page: 1 })}
+                    aria-label="Filtrar por flujo"
                     className="appearance-none w-full px-4 py-3 text-body-lg rounded-2xl border border-divider bg-surface-container-low text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     <option value="">Todos los Movimientos</option>
@@ -427,6 +430,7 @@ export default function FinanzasList() {
                   <select
                     value={filtroMetodo}
                     onChange={(e) => updateFilters({ metodo: e.target.value, page: 1 })}
+                    aria-label="Filtrar por método"
                     className="appearance-none w-full px-4 py-3 text-body-lg rounded-2xl border border-divider bg-surface-container-low text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     <option value="">Todos los Métodos</option>
