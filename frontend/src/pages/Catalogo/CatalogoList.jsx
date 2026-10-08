@@ -443,6 +443,7 @@ export default function CatalogoList() {
             {tab !== 'categorias' && (
               <div className="relative inline-block shrink-0">
                 <select
+                  aria-label="Filtrar por categoría"
                   value={categoria}
                   onChange={(e) => updateFilters({ categoria: e.target.value, page: 1 })}
                   className="appearance-none w-auto px-3 py-1 pr-8 text-sm font-medium rounded-full border border-outline-variant bg-surface-container text-on-surface cursor-pointer focus:outline-none"
@@ -521,6 +522,7 @@ export default function CatalogoList() {
                   </span>
                   <div className="relative inline-block w-full">
                     <select
+                      aria-label="Filtrar por categoría en móvil"
                       value={categoria}
                       onChange={(e) => updateFilters({ categoria: e.target.value, page: 1 })}
                       className="appearance-none w-full px-4 py-3 text-body-lg rounded-2xl border border-divider bg-surface-container-low text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"

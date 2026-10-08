@@ -58,7 +58,7 @@ export default function ProfileDropdown({ onOpenSettings, onOpenAccount }) {
         onClick={() => setIsOpen(!isOpen)}
         className={`size-9 rounded-xl gradient-secondary flex items-center justify-center text-white font-headline font-bold text-sm shadow-sm transition-all ${isOpen ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-container-low' : 'hover:opacity-90'
           }`}
-        aria-label="Perfil"
+        aria-label={`Perfil ${initials}`}
         aria-expanded={isOpen}
       >
         {initials}
